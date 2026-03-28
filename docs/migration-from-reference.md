@@ -8,6 +8,10 @@ Current reference implementation:
 
 - `/Users/zylstra/Code/canopy-platform/references/replit/success-story-engine`
 
+For the adapted Canopy-native schema plan, see:
+
+- [data-model-migration-plan.md](/Users/zylstra/Code/canopy-stories/docs/data-model-migration-plan.md)
+
 ## Current Recommendation
 
 Do not copy the entire reference project into this repo all at once.

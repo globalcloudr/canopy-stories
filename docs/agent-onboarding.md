@@ -5,6 +5,7 @@ Before doing anything read:
 docs/current-state/README.md
 docs/product-overview.md
 docs/architecture.md
+docs/data-model-migration-plan.md
 docs/integration-with-canopy.md
 docs/setup-and-provisioning.md
 docs/migration-from-reference.md

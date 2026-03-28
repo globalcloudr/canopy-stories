@@ -8,9 +8,10 @@ Read these in order:
 
 1. `../product-overview.md`
 2. `../architecture.md`
-3. `../integration-with-canopy.md`
-4. `../setup-and-provisioning.md`
-5. `../migration-from-reference.md`
+3. `../data-model-migration-plan.md`
+4. `../integration-with-canopy.md`
+5. `../setup-and-provisioning.md`
+6. `../migration-from-reference.md`
 
 ## Current Reality
 
