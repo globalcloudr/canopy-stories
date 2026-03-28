@@ -5,3 +5,8 @@
 a {
   color: inherit;
 }
+
+/* Ensure primary (dark) buttons always show white text, even when rendered as <a> via asChild */
+.bg-\[var\(--primary\)\] {
+  color: var(--primary-foreground);
+}

@@ -16,6 +16,8 @@ type SubmitState =
 
 export function PublicFormExperience({ form }: PublicFormExperienceProps) {
   const [formData, setFormData] = useState<Record<string, string>>({});
+  const [photoUrls, setPhotoUrls] = useState<string[]>([]);
+  const [uploadingFields, setUploadingFields] = useState<Record<string, boolean>>({});
   const [submitState, setSubmitState] = useState<SubmitState>({ type: "idle" });
 
   const requiredIds = useMemo(
@@ -40,6 +42,7 @@ export function PublicFormExperience({ form }: PublicFormExperienceProps) {
             acc[field.id] = formData[field.id] ?? "";
             return acc;
           }, {}),
+          photoUrls,
         }),
       });
 
@@ -61,6 +64,29 @@ export function PublicFormExperience({ form }: PublicFormExperienceProps) {
       });
     }
   }
+
+  async function handleFileChange(fieldId: string, file: File | null) {
+    if (!file) return;
+    setUploadingFields((prev) => ({ ...prev, [fieldId]: true }));
+    try {
+      const fd = new FormData();
+      fd.append("file", file);
+      const res = await fetch("/api/upload", { method: "POST", body: fd });
+      const payload = (await res.json()) as { url?: string; error?: string };
+      if (!res.ok || !payload.url) throw new Error(payload.error ?? "Upload failed.");
+      setPhotoUrls((prev) => [...prev, payload.url!]);
+      setFormData((prev) => ({ ...prev, [fieldId]: payload.url! }));
+    } catch (err) {
+      setSubmitState({
+        type: "error",
+        message: err instanceof Error ? err.message : "Photo upload failed.",
+      });
+    } finally {
+      setUploadingFields((prev) => ({ ...prev, [fieldId]: false }));
+    }
+  }
+
+  const isUploading = Object.values(uploadingFields).some(Boolean);
 
   return (
     <form className="mt-8 space-y-5" onSubmit={handleSubmit}>
@@ -90,6 +116,31 @@ export function PublicFormExperience({ form }: PublicFormExperienceProps) {
                 </option>
               ))}
             </select>
+          ) : field.type === "file" ? (
+            <div className="space-y-2">
+              <label className="flex cursor-pointer flex-col items-center gap-2 rounded-xl border-2 border-dashed border-slate-300 bg-slate-50 px-4 py-6 text-center transition hover:border-slate-400 hover:bg-slate-100">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} className="h-8 w-8 text-slate-400">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" />
+                </svg>
+                <span className="text-sm font-medium text-slate-600">
+                  {uploadingFields[field.id] ? "Uploading..." : formData[field.id] ? "Photo uploaded ✓" : "Click to upload a photo"}
+                </span>
+                <span className="text-xs text-slate-400">JPG, PNG or WEBP · Max 10MB</span>
+                <input
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp"
+                  className="sr-only"
+                  disabled={uploadingFields[field.id]}
+                  onChange={(e) => handleFileChange(field.id, e.target.files?.[0] ?? null)}
+                />
+              </label>
+              {formData[field.id] && (
+                <div className="flex items-center gap-3 rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2">
+                  <img src={formData[field.id]} alt="Uploaded" className="h-12 w-12 rounded-lg object-cover" />
+                  <span className="text-sm text-emerald-700">Photo ready</span>
+                </div>
+              )}
+            </div>
           ) : (
             <Input
               type={field.type}
@@ -118,8 +169,8 @@ export function PublicFormExperience({ form }: PublicFormExperienceProps) {
         will come in later phases.
       </div>
 
-      <Button type="submit" variant="primary" size="lg" className="w-full" disabled={submitState.type === "submitting"}>
-        {submitState.type === "submitting" ? "Submitting..." : "Submit story information"}
+      <Button type="submit" variant="primary" size="lg" className="w-full" disabled={submitState.type === "submitting" || isUploading}>
+        {isUploading ? "Uploading photo..." : submitState.type === "submitting" ? "Submitting..." : "Submit story information"}
       </Button>
     </form>
   );

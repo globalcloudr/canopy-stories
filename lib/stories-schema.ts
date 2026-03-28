@@ -13,7 +13,7 @@ export type StoryType = (typeof storyTypes)[number];
 export const storyProjectStatuses = ["planning", "active", "paused", "delivered"] as const;
 export type StoryProjectStatus = (typeof storyProjectStatuses)[number];
 
-export const storyFormFieldTypes = ["text", "email", "tel", "textarea", "select"] as const;
+export const storyFormFieldTypes = ["text", "email", "tel", "textarea", "select", "file"] as const;
 export type StoryFormFieldType = (typeof storyFormFieldTypes)[number];
 
 export const storySubmissionStatuses = ["submitted", "reviewed", "processing", "archived"] as const;

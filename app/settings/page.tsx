@@ -5,7 +5,11 @@ import { StoriesShell } from "@/app/_components/stories-shell";
 function SettingRow({
   title,
   description,
-  trailing = <div className="h-7 w-11 rounded-full bg-[#2f76dd]" />,
+  trailing = (
+    <div className="flex h-7 w-11 items-center rounded-full bg-[#2f76dd] px-1">
+      <div className="ml-auto h-5 w-5 rounded-full bg-white shadow-sm" />
+    </div>
+  ),
 }: {
   title: string;
   description: string;

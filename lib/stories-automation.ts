@@ -371,20 +371,22 @@ export async function buildStoryArtifacts(input: StoryAutomationInput): Promise<
     metadata: { source: "submission" },
   }));
 
-  assets.push({
-    workspaceId: input.workspaceId,
-    storyId: input.storyId,
-    assetType: "video",
-    fileName: `${subjectName.toLowerCase().replace(/[^a-z0-9]+/g, "-") || "story"}-story-video.mp4`,
-    fileUrl: video.videoUrl,
-    platform: "instagram-story",
-    dimensions: "1080x1920",
-    fileSize: null,
-    status: video.status,
-    metadata: { duration: video.duration },
-  });
+  if (!video.videoUrl.startsWith("[")) {
+    assets.push({
+      workspaceId: input.workspaceId,
+      storyId: input.storyId,
+      assetType: "video",
+      fileName: `${subjectName.toLowerCase().replace(/[^a-z0-9]+/g, "-") || "story"}-story-video.mp4`,
+      fileUrl: video.videoUrl,
+      platform: "instagram-story",
+      dimensions: "1080x1920",
+      fileSize: null,
+      status: video.status,
+      metadata: { duration: video.duration },
+    });
+  }
 
-  if (video.thumbnailUrl && video.thumbnailUrl !== video.videoUrl) {
+  if (video.thumbnailUrl && !video.thumbnailUrl.startsWith("[") && video.thumbnailUrl !== video.videoUrl) {
     assets.push({
       workspaceId: input.workspaceId,
       storyId: input.storyId,
