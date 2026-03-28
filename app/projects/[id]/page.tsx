@@ -43,7 +43,7 @@ export default async function ProjectDetailPage({ params }: ProjectDetailPagePro
     notFound();
   }
 
-  const { project, forms, submissions, stories } = snapshot;
+  const { project, forms, submissions, stories, packages } = snapshot;
 
   return (
     <StoriesShell
@@ -57,7 +57,7 @@ export default async function ProjectDetailPage({ params }: ProjectDetailPagePro
           <Button asChild variant="secondary">
             <Link href="/projects">Back to projects</Link>
           </Button>
-          <Button asChild variant="primary">
+          <Button asChild variant="primary" className="!text-white hover:!text-white">
             <Link href="/forms">Open forms</Link>
           </Button>
         </>
@@ -128,9 +128,14 @@ export default async function ProjectDetailPage({ params }: ProjectDetailPagePro
                       {story.subjectName || "No subject name"} · updated {formatRelativeDate(story.updatedAt)}
                     </BodyText>
                   </div>
-                  <span className={`inline-flex items-center rounded-full border px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.08em] ${stageClass(story.currentStage)}`}>
-                    {story.currentStage.replace(/_/g, " ")}
-                  </span>
+                  <div className="flex flex-wrap gap-2">
+                    <span className={`inline-flex items-center rounded-full border px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.08em] ${stageClass(story.currentStage)}`}>
+                      {story.currentStage.replace(/_/g, " ")}
+                    </span>
+                    <Button asChild variant="secondary" size="sm">
+                      <Link href={`/stories/${story.id}`}>Open story</Link>
+                    </Button>
+                  </div>
                 </div>
               </Card>
             ))}
@@ -178,6 +183,46 @@ export default async function ProjectDetailPage({ params }: ProjectDetailPagePro
               <Card padding="md" className="sm:p-7">
                 <CardTitle>No submissions yet</CardTitle>
                 <BodyText muted className="mt-2">Open one of this project’s public forms and submit a test entry to populate this view.</BodyText>
+              </Card>
+            ) : null}
+          </div>
+        </Card>
+      </section>
+
+      <section>
+        <Card padding="md" className="sm:p-7">
+          <Eyebrow className="text-[#4f46e5]">Deliverable packages</Eyebrow>
+          <SectionTitle className="mt-3">Finished outputs for this project</SectionTitle>
+          <div className="mt-5 space-y-4">
+            {packages.map((pkg) => (
+              <Card key={pkg.id} variant="soft" padding="sm" className="rounded-[24px]">
+                <div className="flex flex-wrap items-start justify-between gap-4">
+                  <div>
+                    <CardTitle className="text-base">{pkg.name}</CardTitle>
+                    <BodyText muted className="mt-2">
+                      {pkg.description || "Package created from delivered story artifacts."}
+                    </BodyText>
+                    <BodyText muted className="mt-2">
+                      Created {formatRelativeDate(pkg.createdAt)} · downloads {pkg.downloadCount}
+                    </BodyText>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    <Badge variant={pkg.status === "delivered" || pkg.status === "ready" ? "emerald" : "sky"} className="text-[11px] uppercase tracking-[0.08em]">
+                      {pkg.status}
+                    </Badge>
+                    <Button asChild variant="secondary" size="sm">
+                      <Link href={`/package/${pkg.id}`}>Open package</Link>
+                    </Button>
+                  </div>
+                </div>
+              </Card>
+            ))}
+            {packages.length === 0 ? (
+              <Card padding="md" className="sm:p-7">
+                <CardTitle>No packages yet</CardTitle>
+                <BodyText muted className="mt-2">
+                  Packages are created automatically when story automation finishes and the deliverable bundle is ready.
+                </BodyText>
               </Card>
             ) : null}
           </div>

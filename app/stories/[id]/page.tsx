@@ -62,6 +62,11 @@ export default async function StoryDetailPage({ params }: StoryDetailPageProps) 
           <Link href="/stories">
             <Button variant="secondary">Back to Stories</Button>
           </Link>
+          {snapshot.storyPackage ? (
+            <Link href={`/package/${snapshot.storyPackage.id}`}>
+              <Button variant="primary" className="!text-white hover:!text-white">View Package</Button>
+            </Link>
+          ) : null}
           <Link href="/projects">
             <Button variant="secondary">View Projects</Button>
           </Link>
@@ -122,6 +127,11 @@ export default async function StoryDetailPage({ params }: StoryDetailPageProps) 
                   Shareable link: <span className="text-[var(--text-muted)]">{snapshot.storyPackage.shareableLink}</span>
                 </div>
               ) : null}
+              <div className="pt-2">
+                <Link href={`/package/${snapshot.storyPackage.id}`}>
+                  <Button variant="secondary" size="sm">Open Package</Button>
+                </Link>
+              </div>
             </div>
           ) : (
             <BodyText muted className="mt-5">No package has been created for this story yet.</BodyText>

@@ -45,7 +45,7 @@ export default async function ProjectsPage() {
           <Button asChild variant="secondary">
             <Link href="/forms">Intake forms</Link>
           </Button>
-          <Button type="button" variant="primary">
+          <Button type="button" variant="primary" className="!text-white hover:!text-white">
             New project
           </Button>
         </>
@@ -157,7 +157,7 @@ export default async function ProjectsPage() {
               <BodyText muted>Stories should feel like a sibling to PhotoVault, not a separate product universe.</BodyText>
               <BodyText muted>Canopy enables launch and workspace context. Stories owns the project pipeline and the actual work.</BodyText>
             </div>
-            <Button asChild variant="primary" className="mt-5">
+            <Button asChild variant="primary" className="mt-5 !text-white hover:!text-white">
               <Link href="/forms">Open intake workflow</Link>
             </Button>
           </Card>

@@ -1,6 +1,7 @@
-import { BodyText, Card, CardTitle, Eyebrow, SectionTitle } from "@canopy/ui";
+import { BodyText, Card, CardTitle, SectionTitle } from "@canopy/ui";
 import { StoriesShell } from "@/app/_components/stories-shell";
 import { listAssetLibraryItems } from "@/lib/stories-data";
+import { AssetsLibrary } from "@/app/assets/assets-library";
 
 export default async function AssetsPage() {
   const assets = await listAssetLibraryItems();
@@ -38,37 +39,7 @@ export default async function AssetsPage() {
         </Card>
       </section>
 
-      <section className="rounded-xl border border-[var(--border)] bg-white px-4 py-3 text-[15px] text-[var(--text-muted)]">
-        Search assets...
-      </section>
-
-      {assets.length === 0 ? (
-        <Card padding="md" className="sm:p-10">
-          <SectionTitle className="text-center text-[1.8rem] sm:text-[1.8rem]">No assets yet</SectionTitle>
-          <BodyText muted className="mt-3 text-center">
-            Assets will appear here when stories complete the automation pipeline
-          </BodyText>
-        </Card>
-      ) : (
-        <section className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {assets.map((asset) => (
-            <Card key={asset.id} padding="md" className="rounded-[20px] border border-[var(--border)] bg-white sm:p-6">
-              <div className="flex items-start justify-between gap-3">
-                <div className="min-w-0">
-                  <CardTitle className="text-base">{asset.fileName}</CardTitle>
-                  <BodyText muted className="mt-2">{asset.storyTitle}</BodyText>
-                </div>
-                <Eyebrow className="text-slate-400">{asset.assetType}</Eyebrow>
-              </div>
-              <div className="mt-5 space-y-2 text-sm text-[var(--text-muted)]">
-                {asset.platform ? <div>Platform: {asset.platform}</div> : null}
-                {asset.dimensions ? <div>Size: {asset.dimensions}</div> : null}
-                <div>Status: {asset.status}</div>
-              </div>
-            </Card>
-          ))}
-        </section>
-      )}
+      <AssetsLibrary assets={assets} />
     </StoriesShell>
   );
 }

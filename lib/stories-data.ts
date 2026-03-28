@@ -150,6 +150,16 @@ export type PublicSubmissionInput = {
   photoUrls?: string[];
 };
 
+export type ManualStoryCreationInput = {
+  projectId: string;
+  title: string;
+  storyType: StoryType;
+  subjectName: string | null;
+  background: string;
+  details?: string | null;
+  photoUrls?: string[];
+};
+
 function isUuid(value: string) {
   return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value);
 }
@@ -220,6 +230,7 @@ export type ProjectDetailSnapshot = {
   forms: PublishedIntakeForm[];
   submissions: SubmissionListItem[];
   stories: StoryRecord[];
+  packages: StoryPackageRecord[];
 };
 
 export type StoryDetailSnapshot = {
@@ -231,6 +242,15 @@ export type StoryDetailSnapshot = {
   contents: StoryContentRecord[];
   assets: StoryAssetRecord[];
   storyPackage: StoryPackageRecord | null;
+};
+
+export type PackageDetailSnapshot = {
+  storyPackage: StoryPackageRecord;
+  story: StoryRecord | null;
+  projectName: string;
+  workspaceName: string;
+  contents: StoryContentRecord[];
+  assets: StoryAssetRecord[];
 };
 
 function getStoriesServiceEnv(): StoriesServiceEnv | null {
@@ -744,10 +764,21 @@ export async function getStoriesOverviewSnapshot(): Promise<StoriesOverviewSnaps
 }
 
 export async function getProjectDetailSnapshot(projectId: string): Promise<ProjectDetailSnapshot | null> {
-  const [{ projects }, forms, submissions] = await Promise.all([
+  const [{ projects }, forms, submissions, packages] = await Promise.all([
     listProjectDashboard(),
     listPublishedForms(),
     listSubmissionItems(),
+    isStoriesPersistenceEnabled()
+      ? requestJsonOrEmpty<StoryPackageRow[]>(
+          "/rest/v1/story_packages",
+          new URLSearchParams({
+            select:
+              "id,workspace_id,project_id,story_id,name,description,status,package_url,download_count,shareable_link,expires_at,created_at",
+            project_id: `eq.${projectId}`,
+            order: "created_at.desc",
+          })
+        )
+      : Promise.resolve(samplePackages.filter((item) => item.projectId === projectId)),
   ]);
 
   const project = projects.find((item) => item.id === projectId) ?? null;
@@ -767,6 +798,9 @@ export async function getProjectDetailSnapshot(projectId: string): Promise<Proje
     forms: projectForms,
     submissions: projectSubmissions,
     stories,
+    packages: isStoriesPersistenceEnabled()
+      ? (packages as StoryPackageRow[]).map(toStoryPackageRecord)
+      : (packages as StoryPackageRecord[]),
   };
 }
 
@@ -1203,6 +1237,65 @@ export async function createFormFromReferenceTemplate(projectId: string, templat
   return created;
 }
 
+export async function createStoryManually(input: ManualStoryCreationInput) {
+  if (!isStoriesPersistenceEnabled()) {
+    throw new Error("Stories persistence is not configured yet.");
+  }
+
+  const project = await ensureLiveProject(input.projectId);
+  if (!project) {
+    throw new Error("Project not found.");
+  }
+
+  const storySourceData = {
+    background: input.background,
+    details: input.details?.trim() || null,
+    photoUrls: input.photoUrls ?? [],
+  };
+
+  const storyRows = await requestJson<StoryRecordRow[]>(
+    "/rest/v1/story_records?select=*",
+    undefined,
+    {
+      method: "POST",
+      prefer: "return=representation",
+      body: {
+        workspace_id: project.workspace_id,
+        project_id: project.id,
+        submission_id: null,
+        title: input.title.trim(),
+        story_type: input.storyType,
+        subject_name: input.subjectName?.trim() || null,
+        status: "submitted",
+        current_stage: "submitted",
+        source_data_json: storySourceData,
+      },
+    }
+  );
+
+  const story = storyRows[0];
+  if (!story) {
+    throw new Error("Story could not be created.");
+  }
+
+  const storyRecord = toStoryRecord(story);
+  await runStoryAutomation(storyRecord);
+
+  await requestJson<StoryProjectRow[]>(
+    "/rest/v1/story_projects?id=eq." + project.id,
+    undefined,
+    {
+      method: "PATCH",
+      prefer: "return=representation",
+      body: {
+        updated_at: new Date().toISOString(),
+      },
+    }
+  );
+
+  return storyRecord;
+}
+
 export async function listSubmissionItems() {
   if (!isStoriesPersistenceEnabled()) {
     return sampleSubmissions.map((submission) => {
@@ -1491,5 +1584,93 @@ export async function getStoryDetailSnapshot(storyId: string): Promise<StoryDeta
     contents: contents.map(toStoryContentRecord),
     assets: assets.map(toStoryAssetRecord),
     storyPackage: packages[0] ? toStoryPackageRecord(packages[0]) : null,
+  };
+}
+
+export async function getPackageDetailSnapshot(packageId: string): Promise<PackageDetailSnapshot | null> {
+  if (!isStoriesPersistenceEnabled()) {
+    const storyPackage = samplePackages.find((item) => item.id === packageId) ?? null;
+    if (!storyPackage) {
+      return null;
+    }
+
+    const story = storyPackage.storyId ? sampleStories.find((item) => item.id === storyPackage.storyId) ?? null : null;
+    const project = sampleProjects.find((item) => item.id === storyPackage.projectId) ?? null;
+    const contents = story ? sampleContentArtifacts.filter((item) => item.storyId === story.id) : [];
+    const assets = story ? sampleAssets.filter((item) => item.storyId === story.id) : [];
+
+    return {
+      storyPackage,
+      story,
+      projectName: project?.name ?? "Project",
+      workspaceName: project?.workspaceName ?? "Workspace",
+      contents,
+      assets,
+    };
+  }
+
+  const packageRows = await requestJsonOrEmpty<StoryPackageRow[]>(
+    "/rest/v1/story_packages",
+    new URLSearchParams({
+      select:
+        "id,workspace_id,project_id,story_id,name,description,status,package_url,download_count,shareable_link,expires_at,created_at",
+      id: `eq.${packageId}`,
+      limit: "1",
+    })
+  );
+
+  const packageRow = packageRows[0];
+  if (!packageRow) {
+    return null;
+  }
+
+  const [projects, workspaces, storyRows, contents, assets] = await Promise.all([
+    getProjectsByIds([packageRow.project_id]),
+    getOrganizationsByIds([packageRow.workspace_id]),
+    packageRow.story_id
+      ? requestJson<StoryRecordRow[]>(
+          "/rest/v1/story_records",
+          new URLSearchParams({
+            select:
+              "id,workspace_id,project_id,submission_id,title,story_type,subject_name,status,current_stage,source_data_json,error_message,created_at,updated_at",
+            id: `eq.${packageRow.story_id}`,
+            limit: "1",
+          })
+        )
+      : Promise.resolve([]),
+    packageRow.story_id
+      ? requestJsonOrEmpty<StoryContentRow[]>(
+          "/rest/v1/story_content",
+          new URLSearchParams({
+            select: "id,workspace_id,story_id,channel,content_type,title,body,status,metadata_json,generated_at",
+            story_id: `eq.${packageRow.story_id}`,
+            order: "generated_at.asc",
+          })
+        )
+      : Promise.resolve([]),
+    packageRow.story_id
+      ? requestJsonOrEmpty<StoryAssetRow[]>(
+          "/rest/v1/story_assets",
+          new URLSearchParams({
+            select:
+              "id,workspace_id,story_id,asset_type,file_name,file_url,platform,dimensions,file_size,status,metadata_json,created_at",
+            story_id: `eq.${packageRow.story_id}`,
+            order: "created_at.asc",
+          })
+        )
+      : Promise.resolve([]),
+  ]);
+
+  const project = projects[0];
+  const workspace = workspaces[0];
+  const story = storyRows[0] ? toStoryRecord(storyRows[0]) : null;
+
+  return {
+    storyPackage: toStoryPackageRecord(packageRow),
+    story,
+    projectName: project?.name ?? "Project",
+    workspaceName: workspace?.name ?? "Workspace",
+    contents: contents.map(toStoryContentRecord),
+    assets: assets.map(toStoryAssetRecord),
   };
 }

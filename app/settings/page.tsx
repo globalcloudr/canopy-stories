@@ -152,7 +152,7 @@ export default function SettingsPage() {
 
         <div className="flex justify-end gap-3">
           <Button variant="secondary">Reset to Defaults</Button>
-          <Button variant="primary">Save Changes</Button>
+          <Button variant="primary" className="!text-white hover:!text-white">Save Changes</Button>
         </div>
       </div>
     </StoriesShell>
