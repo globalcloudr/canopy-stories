@@ -1,0 +1,7 @@
+@import "tailwindcss";
+@source "../node_modules/@canopy/ui/dist";
+@import "@canopy/ui/styles.css";
+
+a {
+  color: inherit;
+}

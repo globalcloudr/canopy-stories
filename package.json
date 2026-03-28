@@ -1,0 +1,28 @@
+{
+  "name": "canopy-stories",
+  "private": true,
+  "version": "0.1.0",
+  "engines": {
+    "node": "20.x"
+  },
+  "scripts": {
+    "dev": "next dev --hostname 0.0.0.0",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "@canopy/ui": "file:../canopy-platform/packages/ui/canopy-ui-0.1.0.tgz",
+    "@tailwindcss/postcss": "^4.2.2",
+    "next": "16.1.6",
+    "react": "19.2.3",
+    "react-dom": "19.2.3"
+  },
+  "devDependencies": {
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "tailwindcss": "^4.2.2",
+    "typescript": "^5"
+  }
+}
