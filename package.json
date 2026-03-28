@@ -13,6 +13,7 @@
   },
   "dependencies": {
     "@canopy/ui": "file:../canopy-platform/packages/ui/canopy-ui-0.1.0.tgz",
+    "@supabase/supabase-js": "^2.100.1",
     "@tailwindcss/postcss": "^4.2.2",
     "next": "16.1.6",
     "react": "19.2.3",
