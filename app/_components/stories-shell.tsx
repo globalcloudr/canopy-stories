@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 import { Avatar, AvatarFallback, BodyText, Button, Card, Eyebrow, PageTitle, cn } from "@canopy/ui";
 import Link from "next/link";
 
-type NavKey = "home" | "projects" | "forms";
+type NavKey = "home" | "projects" | "forms" | "submissions";
 
 type StoriesShellProps = {
   activeNav: NavKey;
@@ -18,6 +18,7 @@ const navItems: Array<{ key: NavKey; href: string; label: string }> = [
   { key: "home", href: "/", label: "Overview" },
   { key: "projects", href: "/projects", label: "Projects" },
   { key: "forms", href: "/forms", label: "Forms" },
+  { key: "submissions", href: "/submissions", label: "Submissions" },
 ];
 
 function navClass(active: boolean) {
