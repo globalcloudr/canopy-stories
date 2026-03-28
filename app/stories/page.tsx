@@ -14,7 +14,7 @@ export default async function StoriesPage() {
       title="Stories"
       subtitle="Browse and manage your success story library"
       headerActions={
-        <Button asChild variant="primary" className="!text-white hover:!text-white">
+        <Button asChild variant="primary">
           <Link href="/stories/create">Create Story</Link>
         </Button>
       }

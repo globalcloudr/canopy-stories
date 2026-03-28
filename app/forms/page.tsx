@@ -21,7 +21,7 @@ export default async function FormsPage() {
           <Button asChild variant="secondary">
             <Link href="/projects">Back to projects</Link>
           </Button>
-          <Button asChild type="button" variant="primary" className="!text-white hover:!text-white">
+          <Button asChild type="button" variant="primary">
             <Link href="#create-form">Create form</Link>
           </Button>
         </>
@@ -73,7 +73,7 @@ export default async function FormsPage() {
               </div>
               <BodyText muted className="mt-3">{form.description}</BodyText>
               <div className="mt-4 flex flex-wrap gap-3">
-                <Button asChild variant="primary" className="!text-white hover:!text-white">
+                <Button asChild variant="primary">
                   <Link href={form.shareablePath}>Open public form</Link>
                 </Button>
                 <code className="inline-flex h-11 items-center rounded-xl border border-[var(--border)] bg-white px-4 text-sm text-[var(--text-muted)]">

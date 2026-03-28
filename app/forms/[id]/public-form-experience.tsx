@@ -118,7 +118,7 @@ export function PublicFormExperience({ form }: PublicFormExperienceProps) {
         will come in later phases.
       </div>
 
-      <Button type="submit" variant="primary" size="lg" className="w-full !text-white hover:!text-white" disabled={submitState.type === "submitting"}>
+      <Button type="submit" variant="primary" size="lg" className="w-full" disabled={submitState.type === "submitting"}>
         {submitState.type === "submitting" ? "Submitting..." : "Submit story information"}
       </Button>
     </form>

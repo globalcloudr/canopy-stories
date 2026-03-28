@@ -141,7 +141,7 @@ export function CreateFormPanel({ projects }: CreateFormPanelProps) {
       ) : null}
 
       <div className="mt-5">
-        <Button type="button" variant="primary" className="!text-white hover:!text-white" onClick={handleCreate} disabled={!hasLiveProjects || state.type === "submitting"}>
+        <Button type="button" variant="primary" onClick={handleCreate} disabled={!hasLiveProjects || state.type === "submitting"}>
           {state.type === "submitting" ? "Creating..." : "Create live form"}
         </Button>
       </div>

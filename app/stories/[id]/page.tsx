@@ -64,7 +64,7 @@ export default async function StoryDetailPage({ params }: StoryDetailPageProps) 
           </Link>
           {snapshot.storyPackage ? (
             <Link href={`/package/${snapshot.storyPackage.id}`}>
-              <Button variant="primary" className="!text-white hover:!text-white">View Package</Button>
+              <Button variant="primary">View Package</Button>
             </Link>
           ) : null}
           <Link href="/projects">

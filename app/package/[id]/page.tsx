@@ -47,7 +47,7 @@ export default async function PublicPackagePage({ params }: PublicPackagePagePro
         <div className="mt-6 flex flex-wrap gap-3">
           {snapshot.storyPackage.packageUrl ? (
             <a href={snapshot.storyPackage.packageUrl} target="_blank" rel="noopener noreferrer">
-              <Button variant="primary" className="!text-white hover:!text-white">Download Package</Button>
+              <Button variant="primary">Download Package</Button>
             </a>
           ) : (
             <Button variant="secondary">Download All Content</Button>

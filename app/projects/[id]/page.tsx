@@ -57,7 +57,7 @@ export default async function ProjectDetailPage({ params }: ProjectDetailPagePro
           <Button asChild variant="secondary">
             <Link href="/projects">Back to projects</Link>
           </Button>
-          <Button asChild variant="primary" className="!text-white hover:!text-white">
+          <Button asChild variant="primary">
             <Link href="/forms">Open forms</Link>
           </Button>
         </>

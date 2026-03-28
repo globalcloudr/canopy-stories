@@ -72,7 +72,7 @@ export default async function HomePage({ searchParams }: HomePageProps) {
           : `${overview.workspaceCount} workspace${overview.workspaceCount === 1 ? "" : "s"} in the current Stories dataset`
       }
       headerActions={
-        <Button asChild variant="primary" className="!text-white hover:!text-white">
+        <Button asChild variant="primary">
           <Link href="/projects">New Project</Link>
         </Button>
       }
@@ -140,7 +140,7 @@ export default async function HomePage({ searchParams }: HomePageProps) {
             <div className="mx-auto h-12 w-12 rounded-full border border-[var(--border)] bg-[var(--surface-muted)]" aria-hidden="true" />
             <SectionTitle className="mt-6 text-[1.9rem] sm:text-[1.9rem]">No stories in pipeline yet</SectionTitle>
             <BodyText muted className="mt-3">Create a project and submit a form to see the automation in action</BodyText>
-            <Button asChild variant="primary" className="mt-6 !text-white hover:!text-white">
+            <Button asChild variant="primary" className="mt-6">
               <Link href="/projects">Get Started</Link>
             </Button>
           </Card>
@@ -189,7 +189,7 @@ export default async function HomePage({ searchParams }: HomePageProps) {
           <Card padding="md" className="rounded-[24px] border border-[var(--border)] bg-white text-center sm:p-10">
             <SectionTitle className="text-[1.8rem] sm:text-[1.8rem]">No projects yet</SectionTitle>
             <BodyText muted className="mt-3">Create your first project to start automating success story production</BodyText>
-            <Button asChild variant="primary" className="mt-6 !text-white hover:!text-white">
+            <Button asChild variant="primary" className="mt-6">
               <Link href="/projects">Create Project</Link>
             </Button>
           </Card>
