@@ -54,7 +54,7 @@ export default async function PublicFormPage({ params }: PublicFormPageProps) {
                   <option value="" disabled>
                     Select an option
                   </option>
-                  {(field.options ?? []).map((option) => (
+                  {(field.options ?? []).map((option: string) => (
                     <option key={option} value={option}>
                       {option}
                     </option>

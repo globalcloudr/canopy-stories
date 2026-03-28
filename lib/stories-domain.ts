@@ -1,25 +1,18 @@
-export const storyPipelineStages = [
-  "form_sent",
-  "submitted",
-  "ai_processing",
-  "asset_generation",
-  "packaging",
-  "delivered",
-] as const;
+import type {
+  StoryAssetRecord,
+  StoryContentRecord,
+  StoryFormField,
+  StoryFormRecord,
+  StoryPackageRecord,
+  StoryPipelineStage,
+  StoryProjectRecord,
+  StoryRecord,
+  StorySubmissionRecord,
+  StoryType,
+} from "@/lib/stories-schema";
+import { storyPipelineStages, storyTypes } from "@/lib/stories-schema";
 
-export type StoryPipelineStage = (typeof storyPipelineStages)[number];
-
-export const storyTypes = [
-  "ESL",
-  "HSD_GED",
-  "CTE",
-  "EMPLOYER",
-  "STAFF",
-  "PARTNER",
-  "OVERVIEW",
-] as const;
-
-export type StoryType = (typeof storyTypes)[number];
+export { storyPipelineStages, storyTypes };
 
 export type WorkspaceContextRef = {
   workspaceId: string;
@@ -27,84 +20,26 @@ export type WorkspaceContextRef = {
   workspaceName: string;
 };
 
-export type WorkspaceProject = {
-  id: string;
-  workspaceId: string;
+export type WorkspaceProject = StoryProjectRecord & {
   workspaceSlug: string;
   workspaceName: string;
-  name: string;
   seasonLabel: string;
-  status: "active" | "draft" | "paused";
   storyTypeMix: StoryType[];
   activeStories: number;
   deliveredPackages: number;
-  updatedAt: string;
 };
 
-export type StoryForm = {
-  id: string;
-  projectId: string;
-  workspaceId: string;
-  title: string;
-  description: string;
-  storyType: StoryType;
+export type StoryForm = StoryFormRecord & {
   shareablePath: string;
-  isActive: boolean;
-  fields: IntakeFormField[];
 };
 
-export type StorySubmission = {
-  id: string;
-  workspaceId: string;
-  projectId: string;
-  formId: string;
-  submitterName: string;
-  submitterEmail: string;
-  status: "submitted" | "reviewed" | "processing";
-  submittedAt: string;
-};
+export type StorySubmission = StorySubmissionRecord;
 
-export type StoryRecord = {
-  id: string;
-  workspaceId: string;
-  projectId: string;
-  submissionId?: string;
-  title: string;
-  storyType: StoryType;
-  subjectName: string;
-  status: StoryPipelineStage;
-  currentStage: StoryPipelineStage;
-  updatedAt: string;
-};
+export type StoryContentArtifact = StoryContentRecord;
 
-export type StoryContentArtifact = {
-  id: string;
-  workspaceId: string;
-  storyId: string;
-  channel: "blog" | "newsletter" | "social" | "press_release" | "email";
-  contentType: "draft" | "caption" | "feature" | "script";
-  title: string;
-  status: "draft" | "ready" | "approved";
-};
+export type StoryAsset = StoryAssetRecord;
 
-export type StoryAsset = {
-  id: string;
-  workspaceId: string;
-  storyId: string;
-  assetType: "image" | "graphic" | "video" | "document";
-  fileName: string;
-  status: "queued" | "generated" | "ready";
-};
-
-export type StoryPackage = {
-  id: string;
-  workspaceId: string;
-  projectId: string;
-  storyId?: string;
-  name: string;
-  status: "preparing" | "ready" | "delivered";
-  createdAt: string;
-};
+export type StoryPackage = StoryPackageRecord;
 
 export type StoryWorkflowSummary = {
   stage: StoryPipelineStage;
@@ -117,18 +52,7 @@ export type IntakeFormTemplate = {
   name: string;
   description: string;
   storyType: StoryType;
-  fields: IntakeFormField[];
-};
-
-export type IntakeFieldType = "text" | "email" | "tel" | "textarea" | "select";
-
-export type IntakeFormField = {
-  id: string;
-  type: IntakeFieldType;
-  label: string;
-  placeholder?: string;
-  required: boolean;
-  options?: string[];
+  fields: StoryFormField[];
 };
 
 export type PublishedIntakeForm = {
@@ -143,7 +67,7 @@ export type PublishedIntakeForm = {
   submissionCount: number;
   shareablePath: string;
   templateId: string;
-  fields: IntakeFormField[];
+  fields: StoryFormField[];
 };
 
 export const sampleWorkspaces: WorkspaceContextRef[] = [
@@ -171,11 +95,15 @@ export const sampleProjects: WorkspaceProject[] = [
     workspaceSlug: "berkeley-adult-school",
     workspaceName: "Berkeley Adult School",
     name: "Fall 2026 Student Story Campaign",
+    description: "Student and pathway success stories for seasonal campaign delivery.",
     seasonLabel: "Fall 2026",
     status: "active",
+    storyCountTarget: 12,
+    deadlineAt: "2026-11-15T00:00:00.000Z",
     storyTypeMix: ["ESL", "CTE", "HSD_GED"],
     activeStories: 7,
     deliveredPackages: 3,
+    createdAt: "2026-02-01T08:00:00.000Z",
     updatedAt: "2026-03-27T17:00:00.000Z",
   },
   {
@@ -184,11 +112,15 @@ export const sampleProjects: WorkspaceProject[] = [
     workspaceSlug: "smace",
     workspaceName: "SMACE",
     name: "Spring Catalog Success Stories",
+    description: "Staff, program, and partner stories supporting spring catalog outreach.",
     seasonLabel: "Spring 2026",
     status: "active",
+    storyCountTarget: 8,
+    deadlineAt: "2026-05-20T00:00:00.000Z",
     storyTypeMix: ["OVERVIEW", "STAFF", "PARTNER"],
     activeStories: 4,
     deliveredPackages: 5,
+    createdAt: "2026-01-18T09:30:00.000Z",
     updatedAt: "2026-03-26T14:00:00.000Z",
   },
   {
@@ -197,11 +129,15 @@ export const sampleProjects: WorkspaceProject[] = [
     workspaceSlug: "sjdt",
     workspaceName: "SJDT",
     name: "Launch Stories Pilot",
+    description: "Pilot story intake and production workflow for initial launch testing.",
     seasonLabel: "Pilot",
-    status: "draft",
+    status: "planning",
+    storyCountTarget: 3,
+    deadlineAt: null,
     storyTypeMix: ["CTE", "EMPLOYER"],
     activeStories: 2,
     deliveredPackages: 0,
+    createdAt: "2026-03-01T10:00:00.000Z",
     updatedAt: "2026-03-24T10:30:00.000Z",
   },
 ];
@@ -362,6 +298,140 @@ export const samplePublishedForms: PublishedIntakeForm[] = [
     shareablePath: "/forms/pub_form_sjdt_cte_01",
     templateId: "form_cte_pathway",
     fields: sampleIntakeTemplates[1].fields,
+  },
+];
+
+export const sampleSubmissions: StorySubmission[] = [
+  {
+    id: "sub_bas_esl_001",
+    workspaceId: "ws_bas",
+    projectId: "proj_fall_2026_bas",
+    formId: "pub_form_bas_esl_01",
+    submitterName: "Maria R.",
+    submitterEmail: "maria@example.org",
+    data: {
+      city: "Berkeley, CA",
+      background: "Returned to school to improve English and support my children.",
+      goals: "Earn my certificate and help new students feel confident.",
+    },
+    photoUrls: ["/sample-assets/maria-portrait.jpg"],
+    status: "submitted",
+    submittedAt: "2026-03-25T16:00:00.000Z",
+  },
+  {
+    id: "sub_smace_staff_001",
+    workspaceId: "ws_smace",
+    projectId: "proj_spring_2026_smace",
+    formId: "pub_form_smace_staff_01",
+    submitterName: "Anna Teacher",
+    submitterEmail: "anna@example.org",
+    data: {
+      title: "Lead ESL Instructor",
+      impact: "Built a mentoring rhythm that improved retention.",
+    },
+    photoUrls: [],
+    status: "reviewed",
+    submittedAt: "2026-03-22T12:30:00.000Z",
+  },
+];
+
+export const sampleStories: StoryRecord[] = [
+  {
+    id: "story_bas_001",
+    workspaceId: "ws_bas",
+    projectId: "proj_fall_2026_bas",
+    submissionId: "sub_bas_esl_001",
+    title: "Maria finds confidence through Berkeley ESL",
+    storyType: "ESL",
+    subjectName: "Maria R.",
+    status: "asset_generation",
+    currentStage: "asset_generation",
+    sourceData: {
+      submissionId: "sub_bas_esl_001",
+      photoCount: 1,
+    },
+    errorMessage: null,
+    createdAt: "2026-03-25T16:05:00.000Z",
+    updatedAt: "2026-03-27T10:30:00.000Z",
+  },
+  {
+    id: "story_smace_001",
+    workspaceId: "ws_smace",
+    projectId: "proj_spring_2026_smace",
+    submissionId: "sub_smace_staff_001",
+    title: "How mentorship is changing retention at SMACE",
+    storyType: "STAFF",
+    subjectName: "Anna Teacher",
+    status: "delivered",
+    currentStage: "delivered",
+    sourceData: {
+      submissionId: "sub_smace_staff_001",
+      photoCount: 0,
+    },
+    errorMessage: null,
+    createdAt: "2026-03-22T12:45:00.000Z",
+    updatedAt: "2026-03-26T15:00:00.000Z",
+  },
+];
+
+export const sampleContentArtifacts: StoryContentArtifact[] = [
+  {
+    id: "content_bas_blog_001",
+    workspaceId: "ws_bas",
+    storyId: "story_bas_001",
+    channel: "blog",
+    contentType: "feature",
+    title: "Maria finds confidence through Berkeley ESL",
+    body: "Draft blog content placeholder.",
+    status: "ready",
+    metadata: { wordCount: 620 },
+    generatedAt: "2026-03-25T16:12:00.000Z",
+  },
+  {
+    id: "content_smace_news_001",
+    workspaceId: "ws_smace",
+    storyId: "story_smace_001",
+    channel: "newsletter",
+    contentType: "feature",
+    title: "Mentorship and retention at SMACE",
+    body: "Newsletter feature placeholder.",
+    status: "approved",
+    metadata: { wordCount: 240 },
+    generatedAt: "2026-03-22T13:10:00.000Z",
+  },
+];
+
+export const sampleAssets: StoryAsset[] = [
+  {
+    id: "asset_bas_social_001",
+    workspaceId: "ws_bas",
+    storyId: "story_bas_001",
+    assetType: "graphic",
+    fileName: "maria-social-quote.png",
+    fileUrl: "/sample-assets/maria-social-quote.png",
+    platform: "instagram",
+    dimensions: "1080x1080",
+    fileSize: 482120,
+    status: "generated",
+    metadata: null,
+    createdAt: "2026-03-27T10:42:00.000Z",
+  },
+];
+
+export const samplePackages: StoryPackage[] = [
+  {
+    id: "pkg_smace_001",
+    workspaceId: "ws_smace",
+    projectId: "proj_spring_2026_smace",
+    storyId: "story_smace_001",
+    name: "SMACE mentorship package",
+    description: "Delivered story package with newsletter and social assets.",
+    status: "delivered",
+    packageUrl: "/sample-assets/smace-package.zip",
+    downloadCount: 3,
+    shareableLink: "/packages/pkg_smace_001",
+    expiresAt: "2026-06-30T00:00:00.000Z",
+    createdAt: "2026-03-26T15:10:00.000Z",
   },
 ];
 

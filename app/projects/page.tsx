@@ -7,8 +7,9 @@ import {
   sampleProjects,
   sampleWorkflowSummaries,
 } from "@/lib/stories-domain";
+import type { StoryProjectStatus } from "@/lib/stories-schema";
 
-function statusStyles(status: "active" | "draft" | "paused") {
+function statusStyles(status: StoryProjectStatus) {
   if (status === "active") {
     return "border-emerald-200 bg-emerald-50 text-emerald-700";
   }
