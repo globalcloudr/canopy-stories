@@ -6,12 +6,13 @@ This is the fastest entry point for understanding what this repo is for today.
 
 Read these in order:
 
-1. `../product-overview.md`
-2. `../architecture.md`
-3. `../data-model-migration-plan.md`
-4. `../integration-with-canopy.md`
-5. `../setup-and-provisioning.md`
-6. `../migration-from-reference.md`
+1. `../replit-migration-checklist.md`
+2. `../product-overview.md`
+3. `../architecture.md`
+4. `../data-model-migration-plan.md`
+5. `../integration-with-canopy.md`
+6. `../setup-and-provisioning.md`
+7. `../migration-from-reference.md`
 
 ## Current Reality
 
@@ -32,5 +33,5 @@ Read these in order:
 Turn Canopy Stories into the second connected product without:
 
 - moving product workflows into `canopy-platform`
-- copying the entire reference build blindly
+- drifting away from the mature Replit product without an explicit reason
 - overcomplicating Canopy provisioning before the product contract is clear

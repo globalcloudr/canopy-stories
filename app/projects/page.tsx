@@ -1,12 +1,9 @@
 import Link from "next/link";
 import { Badge, BodyText, Button, Card, CardTitle, Eyebrow, SectionTitle } from "@canopy/ui";
 import { StoriesShell } from "@/app/_components/stories-shell";
-import {
-  formatRelativeDate,
-  sampleIntakeTemplates,
-  sampleProjects,
-  sampleWorkflowSummaries,
-} from "@/lib/stories-domain";
+import { formatRelativeDate } from "@/lib/stories-domain";
+import { listProjectDashboard } from "@/lib/stories-data";
+import { referenceIntakeTemplates } from "@/lib/reference-form-templates";
 import type { StoryProjectStatus } from "@/lib/stories-schema";
 
 function statusStyles(status: StoryProjectStatus) {
@@ -21,14 +18,28 @@ function statusStyles(status: StoryProjectStatus) {
   return "border-indigo-200 bg-indigo-50 text-indigo-700";
 }
 
-export default function ProjectsPage() {
+function formatDeadline(value: string | null) {
+  if (!value) {
+    return "No deadline set";
+  }
+
+  return new Date(value).toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
+}
+
+export default async function ProjectsPage() {
+  const { projects, workflow } = await listProjectDashboard();
+
   return (
     <StoriesShell
       activeNav="projects"
       eyebrow="Projects"
       title="Workspace-linked campaigns"
       subtitle="This is the first real operator workspace inside Canopy Stories: practical visibility into live projects, workflow status, and what is ready for intake."
-      headerMeta={`${sampleProjects.length} projects in the current reference slice`}
+      headerMeta={`${projects.length} live project${projects.length === 1 ? "" : "s"} in the current Stories dataset`}
       headerActions={
         <>
           <Button asChild variant="secondary">
@@ -41,7 +52,7 @@ export default function ProjectsPage() {
       }
     >
       <section className="grid gap-4 md:grid-cols-3">
-        {sampleWorkflowSummaries.map((summary) => (
+        {workflow.map((summary) => (
           <Card key={summary.stage} padding="sm" className="rounded-[24px]">
             <Eyebrow className="text-slate-400">{summary.stage.replace(/_/g, " ")}</Eyebrow>
             <SectionTitle className="mt-3 text-3xl sm:text-3xl">{summary.count}</SectionTitle>
@@ -57,10 +68,10 @@ export default function ProjectsPage() {
               <Eyebrow className="text-[#4f46e5]">Active projects</Eyebrow>
               <SectionTitle className="mt-3">Story campaigns in motion</SectionTitle>
             </div>
-            <BodyText muted as="span">{sampleProjects.length} total</BodyText>
+            <BodyText muted as="span">{projects.length} total</BodyText>
           </div>
           <div className="mt-5 space-y-4">
-            {sampleProjects.map((project) => (
+            {projects.map((project) => (
               <Card key={project.id} variant="soft" padding="sm" className="rounded-[24px]">
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div>
@@ -75,17 +86,21 @@ export default function ProjectsPage() {
                 </div>
                 <div className="mt-4 grid gap-3 md:grid-cols-3">
                   <div className="rounded-[20px] border border-[var(--border)] bg-white px-4 py-3">
-                    <CardTitle className="text-sm">Season</CardTitle>
-                    <BodyText muted className="mt-1">{project.seasonLabel}</BodyText>
+                    <CardTitle className="text-sm">Intake forms</CardTitle>
+                    <BodyText muted className="mt-1">{project.intakeForms}</BodyText>
                   </div>
                   <div className="rounded-[20px] border border-[var(--border)] bg-white px-4 py-3">
                     <CardTitle className="text-sm">Stories in flight</CardTitle>
                     <BodyText muted className="mt-1">{project.activeStories}</BodyText>
                   </div>
                   <div className="rounded-[20px] border border-[var(--border)] bg-white px-4 py-3">
-                    <CardTitle className="text-sm">Delivered packages</CardTitle>
-                    <BodyText muted className="mt-1">{project.deliveredPackages}</BodyText>
+                    <CardTitle className="text-sm">Delivered stories</CardTitle>
+                    <BodyText muted className="mt-1">{project.deliveredStories}</BodyText>
                   </div>
+                </div>
+                <div className="mt-4 rounded-[20px] border border-[var(--border)] bg-white px-4 py-3">
+                  <CardTitle className="text-sm">Deadline</CardTitle>
+                  <BodyText muted className="mt-1">{formatDeadline(project.deadlineAt)}</BodyText>
                 </div>
                 <div className="mt-4 flex flex-wrap gap-2">
                   {project.storyTypeMix.map((type) => (
@@ -93,9 +108,27 @@ export default function ProjectsPage() {
                       {type.replace("_", "/")}
                     </Badge>
                   ))}
+                  {project.storyTypeMix.length === 0 ? (
+                    <Badge variant="outline" className="text-xs">
+                      No forms yet
+                    </Badge>
+                  ) : null}
+                </div>
+                <div className="mt-4">
+                  <Button asChild variant="secondary" size="sm">
+                    <Link href={`/projects/${project.id}`}>Open project</Link>
+                  </Button>
                 </div>
               </Card>
             ))}
+            {projects.length === 0 ? (
+              <Card padding="md" className="sm:p-7">
+                <CardTitle>No live projects yet</CardTitle>
+                <BodyText muted className="mt-2">
+                  Create the first Stories project and promote a reference template into a live form to make this workspace fully data-backed.
+                </BodyText>
+              </Card>
+            ) : null}
           </div>
         </Card>
 
@@ -104,7 +137,7 @@ export default function ProjectsPage() {
             <Eyebrow className="text-[#4f46e5]">Intake templates</Eyebrow>
             <SectionTitle className="mt-3">Ready for operator setup</SectionTitle>
             <div className="mt-5 space-y-4">
-              {sampleIntakeTemplates.map((template) => (
+              {referenceIntakeTemplates.map((template) => (
                 <Card key={template.id} variant="soft" padding="sm" className="rounded-[24px]">
                   <div className="flex items-center justify-between gap-3">
                     <CardTitle className="text-base">{template.name}</CardTitle>

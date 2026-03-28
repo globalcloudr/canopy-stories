@@ -3,6 +3,7 @@ You are helping develop Canopy Stories.
 Before doing anything read:
 
 docs/current-state/README.md
+docs/replit-migration-checklist.md
 docs/product-overview.md
 docs/architecture.md
 docs/data-model-migration-plan.md
@@ -20,6 +21,7 @@ Rules:
 
 - Do not move Canopy platform-core responsibilities into this repo.
 - Do not turn this repo into a copy of `references/replit/success-story-engine` without an intentional migration plan.
+- When a Replit page or backend module already exists, prefer faithful migration over reinterpretation.
 - Keep product-specific setup, workflows, and data modeling in this repo.
 - Keep Canopy integration limited to entitlement, launch, workspace context, and onboarding touchpoints.
 - Use the PhotoVault interface as the UI standard for this repo unless the user explicitly changes that direction.

@@ -26,7 +26,7 @@ export async function POST(request: Request, context: RouteContext) {
     });
 
     return NextResponse.json({
-      message: "Submission received. A story record has been created for review.",
+      message: "Submission received. Story automation has started.",
       submissionId: result.submission.id,
       storyId: result.story.id,
     });

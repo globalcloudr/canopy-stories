@@ -36,7 +36,7 @@ export default async function SubmissionsPage() {
 
   return (
     <StoriesShell
-      activeNav="submissions"
+      activeNav="stories"
       eyebrow="Submissions"
       title="Incoming source material"
       subtitle="This is the first operator view tied directly to the persisted intake loop. Each submission should be traceable to the form it came from and the story record it created."

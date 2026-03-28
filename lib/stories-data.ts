@@ -1,12 +1,31 @@
 import {
   getPublishedFormById as getSamplePublishedFormById,
   getPublishedFormsForWorkspace as getSamplePublishedFormsForWorkspace,
+  samplePackages,
   sampleStories,
   sampleSubmissions,
   sampleProjects,
+  samplePublishedForms,
+  sampleWorkflowSummaries,
+  sampleContentArtifacts,
+  sampleAssets,
 } from "@/lib/stories-domain";
-import type { PublishedIntakeForm, StorySubmission } from "@/lib/stories-domain";
-import type { StoryFormField, StoryRecord } from "@/lib/stories-schema";
+import type { PublishedIntakeForm, StorySubmission, StoryWorkflowSummary } from "@/lib/stories-domain";
+import { buildStoryArtifacts } from "@/lib/stories-automation";
+import type {
+  StoryAssetStatus,
+  StoryAssetType,
+  StoryAssetRecord,
+  StoryContentRecord,
+  StoryContentStatus,
+  StoryFormField,
+  StoryPackageRecord,
+  StoryPackageStatus,
+  StoryProjectStatus,
+  StoryRecord,
+  StoryType,
+} from "@/lib/stories-schema";
+import { getReferenceTemplateById } from "@/lib/reference-form-templates";
 
 type StoriesServiceEnv = {
   supabaseUrl: string;
@@ -29,6 +48,12 @@ type StoryProjectRow = {
   id: string;
   workspace_id: string;
   name: string;
+  description?: string | null;
+  status?: string;
+  story_count_target?: number | null;
+  deadline_at?: string | null;
+  created_at?: string;
+  updated_at?: string;
 };
 
 type OrganizationRow = {
@@ -66,6 +91,49 @@ type StoryRecordRow = {
   updated_at: string;
 };
 
+type StoryContentRow = {
+  id: string;
+  workspace_id: string;
+  story_id: string;
+  channel: string;
+  content_type: string;
+  title: string | null;
+  body: string;
+  status: string;
+  metadata_json: Record<string, unknown> | null;
+  generated_at: string;
+};
+
+type StoryAssetRow = {
+  id: string;
+  workspace_id: string;
+  story_id: string;
+  asset_type: string;
+  file_name: string;
+  file_url: string;
+  platform: string | null;
+  dimensions: string | null;
+  file_size: number | null;
+  status: string;
+  metadata_json: Record<string, unknown> | null;
+  created_at: string;
+};
+
+type StoryPackageRow = {
+  id: string;
+  workspace_id: string;
+  project_id: string;
+  story_id: string | null;
+  name: string;
+  description: string | null;
+  status: string;
+  package_url: string | null;
+  download_count: number;
+  shareable_link: string | null;
+  expires_at: string | null;
+  created_at: string;
+};
+
 export type SubmissionListItem = {
   submission: StorySubmission;
   story: StoryRecord | null;
@@ -80,6 +148,89 @@ export type PublicSubmissionInput = {
   submitterEmail: string | null;
   data: Record<string, unknown>;
   photoUrls?: string[];
+};
+
+function isUuid(value: string) {
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value);
+}
+
+export type LiveProjectOption = {
+  id: string;
+  workspaceId: string;
+  name: string;
+  source: "live" | "reference";
+};
+
+export type ProjectDashboardItem = {
+  id: string;
+  workspaceId: string;
+  workspaceSlug: string;
+  workspaceName: string;
+  name: string;
+  description: string;
+  status: StoryProjectStatus;
+  updatedAt: string;
+  deadlineAt: string | null;
+  storyCountTarget: number | null;
+  intakeForms: number;
+  activeStories: number;
+  deliveredStories: number;
+  storyTypeMix: StoryType[];
+};
+
+export type StoriesOverviewSnapshot = {
+  activeProjectCount: number;
+  projectCount: number;
+  formCount: number;
+  submissionCount: number;
+  storyCount: number;
+  storiesInProductionCount: number;
+  deliveredCount: number;
+  workspaceCount: number;
+  latestProject: ProjectDashboardItem | null;
+  latestSubmission: SubmissionListItem | null;
+  recentProjects: Array<
+    ProjectDashboardItem & {
+      formsSubmitted: number;
+    }
+  >;
+  pipelineStories: Array<{
+    id: string;
+    title: string;
+    subject: string;
+    type: StoryType;
+    stage: StoryRecord["currentStage"];
+  }>;
+  workflow: StoryWorkflowSummary[];
+};
+
+export type StoryLibraryItem = {
+  story: StoryRecord;
+  excerpt: string;
+  contentCount: number;
+  hasAssets: boolean;
+};
+
+export type AssetLibraryItem = StoryAssetRecord & {
+  storyTitle: string;
+};
+
+export type ProjectDetailSnapshot = {
+  project: ProjectDashboardItem;
+  forms: PublishedIntakeForm[];
+  submissions: SubmissionListItem[];
+  stories: StoryRecord[];
+};
+
+export type StoryDetailSnapshot = {
+  story: StoryRecord;
+  projectName: string;
+  workspaceName: string;
+  workspaceSlug: string;
+  submission: StorySubmission | null;
+  contents: StoryContentRecord[];
+  assets: StoryAssetRecord[];
+  storyPackage: StoryPackageRecord | null;
 };
 
 function getStoriesServiceEnv(): StoriesServiceEnv | null {
@@ -132,6 +283,17 @@ async function requestJson<T>(
   return (await response.json()) as T;
 }
 
+async function requestJsonOrEmpty<T>(path: string, searchParams?: URLSearchParams) {
+  try {
+    return await requestJson<T>(path, searchParams);
+  } catch (error) {
+    if (error instanceof Error && error.message.includes("42P01")) {
+      return [] as unknown as T;
+    }
+    throw error;
+  }
+}
+
 async function getProjectsByIds(projectIds: string[]) {
   if (projectIds.length === 0) {
     return [];
@@ -140,7 +302,7 @@ async function getProjectsByIds(projectIds: string[]) {
   return requestJson<StoryProjectRow[]>(
     "/rest/v1/story_projects",
     new URLSearchParams({
-      select: "id,workspace_id,name",
+      select: "id,workspace_id,name,description,status,story_count_target,deadline_at,created_at,updated_at",
       id: `in.(${projectIds.join(",")})`,
     })
   );
@@ -156,6 +318,20 @@ async function getOrganizationsByIds(ids: string[]) {
     new URLSearchParams({
       select: "id,name,slug",
       id: `in.(${ids.join(",")})`,
+    })
+  );
+}
+
+async function getOrganizationsBySlugs(slugs: string[]) {
+  if (slugs.length === 0) {
+    return [];
+  }
+
+  return requestJson<OrganizationRow[]>(
+    "/rest/v1/organizations",
+    new URLSearchParams({
+      select: "id,name,slug",
+      slug: `in.(${slugs.join(",")})`,
     })
   );
 }
@@ -195,6 +371,402 @@ function toPublishedForm(
     shareablePath: `/forms/${form.public_slug}`,
     templateId: form.id,
     fields: form.fields_json ?? [],
+  };
+}
+
+function createEmptyWorkflowSummary() {
+  return new Map<StoryWorkflowSummary["stage"], number>([
+    ["form_sent", 0],
+    ["submitted", 0],
+    ["ai_processing", 0],
+    ["asset_generation", 0],
+    ["packaging", 0],
+    ["delivered", 0],
+  ]);
+}
+
+function toProjectStatus(value: string | undefined | null): StoryProjectStatus {
+  if (value === "active" || value === "paused" || value === "delivered") {
+    return value;
+  }
+
+  return "planning";
+}
+
+function toStoryRecord(row: StoryRecordRow): StoryRecord {
+  return {
+    id: row.id,
+    workspaceId: row.workspace_id,
+    projectId: row.project_id,
+    submissionId: row.submission_id,
+    title: row.title,
+    storyType: row.story_type,
+    subjectName: row.subject_name,
+    status: row.status,
+    currentStage: row.current_stage,
+    sourceData: row.source_data_json,
+    errorMessage: row.error_message,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+  };
+}
+
+function toStoryContentRecord(row: StoryContentRow): StoryContentRecord {
+  return {
+    id: row.id,
+    workspaceId: row.workspace_id,
+    storyId: row.story_id,
+    channel: row.channel as StoryContentRecord["channel"],
+    contentType: row.content_type as StoryContentRecord["contentType"],
+    title: row.title,
+    body: row.body,
+    status: row.status as StoryContentStatus,
+    metadata: row.metadata_json,
+    generatedAt: row.generated_at,
+  };
+}
+
+function toStoryAssetRecord(row: StoryAssetRow): StoryAssetRecord {
+  return {
+    id: row.id,
+    workspaceId: row.workspace_id,
+    storyId: row.story_id,
+    assetType: row.asset_type as StoryAssetType,
+    fileName: row.file_name,
+    fileUrl: row.file_url,
+    platform: row.platform,
+    dimensions: row.dimensions,
+    fileSize: row.file_size,
+    status: row.status as StoryAssetStatus,
+    metadata: row.metadata_json,
+    createdAt: row.created_at,
+  };
+}
+
+function toStoryPackageRecord(row: StoryPackageRow): StoryPackageRecord {
+  return {
+    id: row.id,
+    workspaceId: row.workspace_id,
+    projectId: row.project_id,
+    storyId: row.story_id,
+    name: row.name,
+    description: row.description,
+    status: row.status as StoryPackageStatus,
+    packageUrl: row.package_url,
+    downloadCount: row.download_count,
+    shareableLink: row.shareable_link,
+    expiresAt: row.expires_at,
+    createdAt: row.created_at,
+  };
+}
+
+async function patchStoryRecord(storyId: string, body: Record<string, unknown>) {
+  return requestJson<StoryRecordRow[]>(`/rest/v1/story_records?id=eq.${storyId}&select=*`, undefined, {
+    method: "PATCH",
+    prefer: "return=representation",
+    body,
+  });
+}
+
+async function patchSubmissionRecord(submissionId: string, body: Record<string, unknown>) {
+  return requestJson<StorySubmissionRow[]>(`/rest/v1/story_submissions?id=eq.${submissionId}&select=*`, undefined, {
+    method: "PATCH",
+    prefer: "return=representation",
+    body,
+  });
+}
+
+async function runStoryAutomation(story: StoryRecord) {
+  await patchStoryRecord(story.id, {
+    status: "ai_processing",
+    current_stage: "ai_processing",
+    updated_at: new Date().toISOString(),
+    error_message: null,
+  });
+
+  try {
+    const artifacts = await buildStoryArtifacts({
+      workspaceId: story.workspaceId,
+      projectId: story.projectId,
+      storyId: story.id,
+      title: story.title,
+      storyType: story.storyType,
+      subjectName: story.subjectName,
+      sourceData: story.sourceData,
+    });
+
+    if (artifacts.contents.length > 0) {
+      await requestJson<StoryContentRow[]>("/rest/v1/story_content?select=*", undefined, {
+        method: "POST",
+        prefer: "return=representation",
+        body: artifacts.contents.map((content) => ({
+          workspace_id: content.workspaceId,
+          story_id: content.storyId,
+          channel: content.channel,
+          content_type: content.contentType,
+          title: content.title,
+          body: content.body,
+          status: content.status,
+          metadata_json: content.metadata,
+        })),
+      });
+    }
+
+    await patchStoryRecord(story.id, {
+      status: "asset_generation",
+      current_stage: "asset_generation",
+      updated_at: new Date().toISOString(),
+    });
+
+    if (artifacts.assets.length > 0) {
+      await requestJson<StoryAssetRow[]>("/rest/v1/story_assets?select=*", undefined, {
+        method: "POST",
+        prefer: "return=representation",
+        body: artifacts.assets.map((asset) => ({
+          workspace_id: asset.workspaceId,
+          story_id: asset.storyId,
+          asset_type: asset.assetType,
+          file_name: asset.fileName,
+          file_url: asset.fileUrl,
+          platform: asset.platform,
+          dimensions: asset.dimensions,
+          file_size: asset.fileSize,
+          status: asset.status,
+          metadata_json: asset.metadata,
+        })),
+      });
+    }
+
+    await requestJson<StoryPackageRow[]>("/rest/v1/story_packages?select=*", undefined, {
+      method: "POST",
+      prefer: "return=representation",
+      body: {
+        workspace_id: artifacts.storyPackage.workspaceId,
+        project_id: artifacts.storyPackage.projectId,
+        story_id: artifacts.storyPackage.storyId,
+        name: artifacts.storyPackage.name,
+        description: artifacts.storyPackage.description,
+        status: artifacts.storyPackage.status,
+        package_url: artifacts.storyPackage.packageUrl,
+        download_count: artifacts.storyPackage.downloadCount,
+        shareable_link: artifacts.storyPackage.shareableLink,
+        expires_at: artifacts.storyPackage.expiresAt,
+      },
+    });
+
+    await patchStoryRecord(story.id, {
+      status: "delivered",
+      current_stage: "delivered",
+      updated_at: new Date().toISOString(),
+      error_message: null,
+    });
+
+    if (story.submissionId) {
+      await patchSubmissionRecord(story.submissionId, {
+        status: "reviewed",
+      });
+    }
+  } catch (error) {
+    await patchStoryRecord(story.id, {
+      status: "blocked",
+      current_stage: "submitted",
+      updated_at: new Date().toISOString(),
+      error_message: error instanceof Error ? error.message : "Automation failed.",
+    });
+
+    throw error;
+  }
+}
+
+export async function listProjectDashboard() {
+  if (!isStoriesPersistenceEnabled()) {
+    return {
+      projects: sampleProjects.map((project) => ({
+        id: project.id,
+        workspaceId: project.workspaceId,
+        workspaceSlug: project.workspaceSlug,
+        workspaceName: project.workspaceName,
+        name: project.name,
+        description: project.description ?? "",
+        status: project.status,
+        updatedAt: project.updatedAt,
+        deadlineAt: project.deadlineAt,
+        storyCountTarget: project.storyCountTarget,
+        intakeForms: samplePublishedForms.filter((form) => form.projectId === project.id).length,
+        activeStories: project.activeStories,
+        deliveredStories: project.deliveredPackages,
+        storyTypeMix: project.storyTypeMix,
+      })),
+      workflow: sampleWorkflowSummaries,
+    };
+  }
+
+  const projects = await requestJson<StoryProjectRow[]>(
+    "/rest/v1/story_projects",
+    new URLSearchParams({
+      select: "id,workspace_id,name,description,status,story_count_target,deadline_at,created_at,updated_at",
+      order: "updated_at.desc",
+    })
+  );
+
+  if (projects.length === 0) {
+    return {
+      projects: [] as ProjectDashboardItem[],
+      workflow: sampleWorkflowSummaries.map((summary) => ({ ...summary, count: 0 })),
+    };
+  }
+
+  const projectIds = [...new Set(projects.map((project) => project.id))];
+  const workspaceIds = [...new Set(projects.map((project) => project.workspace_id))];
+
+  const [forms, stories, workspaces] = await Promise.all([
+    requestJson<StoryFormRow[]>(
+      "/rest/v1/story_forms",
+      new URLSearchParams({
+        select: "id,workspace_id,project_id,title,description,story_type,fields_json,public_slug,is_active",
+        project_id: `in.(${projectIds.join(",")})`,
+      })
+    ),
+    requestJson<StoryRecordRow[]>(
+      "/rest/v1/story_records",
+      new URLSearchParams({
+        select: "id,workspace_id,project_id,submission_id,title,story_type,subject_name,status,current_stage,source_data_json,error_message,created_at,updated_at",
+        project_id: `in.(${projectIds.join(",")})`,
+      })
+    ),
+    getOrganizationsByIds(workspaceIds),
+  ]);
+
+  const formsByProjectId = new Map<string, StoryFormRow[]>();
+  const storiesByProjectId = new Map<string, StoryRecordRow[]>();
+  const workflowCounts = createEmptyWorkflowSummary();
+
+  for (const form of forms) {
+    formsByProjectId.set(form.project_id, [...(formsByProjectId.get(form.project_id) ?? []), form]);
+  }
+
+  for (const story of stories) {
+    storiesByProjectId.set(story.project_id, [...(storiesByProjectId.get(story.project_id) ?? []), story]);
+    workflowCounts.set(story.current_stage, (workflowCounts.get(story.current_stage) ?? 0) + 1);
+  }
+
+  const workspaceMap = new Map(workspaces.map((workspace) => [workspace.id, workspace]));
+
+  return {
+    projects: projects.map<ProjectDashboardItem>((project) => {
+      const projectForms = formsByProjectId.get(project.id) ?? [];
+      const projectStories = storiesByProjectId.get(project.id) ?? [];
+      const workspace = workspaceMap.get(project.workspace_id);
+      const storyTypeMix = [...new Set(projectForms.map((form) => form.story_type as StoryType))];
+      const deliveredStories = projectStories.filter((story) => story.current_stage === "delivered").length;
+      const activeStories = projectStories.filter((story) => story.current_stage !== "delivered").length;
+
+      return {
+        id: project.id,
+        workspaceId: project.workspace_id,
+        workspaceSlug: workspace?.slug ?? "workspace",
+        workspaceName: workspace?.name ?? "Workspace",
+        name: project.name,
+        description: project.description ?? "",
+        status: toProjectStatus(project.status),
+        updatedAt: project.updated_at ?? project.created_at ?? new Date().toISOString(),
+        deadlineAt: project.deadline_at ?? null,
+        storyCountTarget: project.story_count_target ?? null,
+        intakeForms: projectForms.length,
+        activeStories,
+        deliveredStories,
+        storyTypeMix,
+      };
+    }),
+    workflow: sampleWorkflowSummaries.map((summary) => ({
+      ...summary,
+      count: workflowCounts.get(summary.stage) ?? 0,
+    })),
+  };
+}
+
+export async function getStoriesOverviewSnapshot(): Promise<StoriesOverviewSnapshot> {
+  const [{ projects, workflow }, submissions, forms] = await Promise.all([
+    listProjectDashboard(),
+    listSubmissionItems(),
+    listPublishedForms(),
+  ]);
+
+  const storyCount = workflow.reduce((sum, item) => sum + item.count, 0);
+  const deliveredCount = workflow.find((item) => item.stage === "delivered")?.count ?? 0;
+  const workspaceCount = new Set(projects.map((project) => project.workspaceId)).size;
+  const activeProjectCount = projects.filter((project) => project.status === "active").length;
+  const storiesInProductionCount =
+    (workflow.find((item) => item.stage === "ai_processing")?.count ?? 0) +
+    (workflow.find((item) => item.stage === "asset_generation")?.count ?? 0) +
+    (workflow.find((item) => item.stage === "packaging")?.count ?? 0);
+
+  const formsSubmittedByProjectId = new Map<string, number>();
+  const seenStoryIds = new Set<string>();
+  const pipelineStories: StoriesOverviewSnapshot["pipelineStories"] = [];
+
+  for (const item of submissions) {
+    formsSubmittedByProjectId.set(
+      item.submission.projectId,
+      (formsSubmittedByProjectId.get(item.submission.projectId) ?? 0) + 1
+    );
+
+    if (item.story && !seenStoryIds.has(item.story.id)) {
+      seenStoryIds.add(item.story.id);
+      pipelineStories.push({
+        id: item.story.id,
+        title: item.story.title,
+        subject: item.story.subjectName || item.submission.submitterName || "Unknown",
+        type: item.story.storyType,
+        stage: item.story.currentStage,
+      });
+    }
+  }
+
+  return {
+    activeProjectCount,
+    projectCount: projects.length,
+    formCount: forms.length,
+    submissionCount: submissions.length,
+    storyCount,
+    storiesInProductionCount,
+    deliveredCount,
+    workspaceCount,
+    latestProject: projects[0] ?? null,
+    latestSubmission: submissions[0] ?? null,
+    recentProjects: projects.slice(0, 3).map((project) => ({
+      ...project,
+      formsSubmitted: formsSubmittedByProjectId.get(project.id) ?? 0,
+    })),
+    pipelineStories: pipelineStories.slice(0, 8),
+    workflow,
+  };
+}
+
+export async function getProjectDetailSnapshot(projectId: string): Promise<ProjectDetailSnapshot | null> {
+  const [{ projects }, forms, submissions] = await Promise.all([
+    listProjectDashboard(),
+    listPublishedForms(),
+    listSubmissionItems(),
+  ]);
+
+  const project = projects.find((item) => item.id === projectId) ?? null;
+
+  if (!project) {
+    return null;
+  }
+
+  const projectForms = forms.filter((form) => form.projectId === projectId);
+  const projectSubmissions = submissions.filter((item) => item.submission.projectId === projectId);
+  const stories = projectSubmissions
+    .map((item) => item.story)
+    .filter((story): story is StoryRecord => story !== null);
+
+  return {
+    project,
+    forms: projectForms,
+    submissions: projectSubmissions,
+    stories,
   };
 }
 
@@ -254,22 +826,153 @@ export async function listPublishedForms(workspaceSlug?: string | null) {
   );
 }
 
+export async function listLiveProjectOptions() {
+  if (!isStoriesPersistenceEnabled()) {
+    return sampleProjects.map((row) => ({
+      id: `sample:${row.id}`,
+      workspaceId: row.workspaceId,
+      name: row.name,
+      source: "reference" as const,
+    }));
+  }
+
+  const [rows, workspaces] = await Promise.all([
+    requestJson<StoryProjectRow[]>(
+      "/rest/v1/story_projects",
+      new URLSearchParams({
+        select: "id,workspace_id,name,updated_at",
+        order: "updated_at.desc",
+      })
+    ),
+    getOrganizationsBySlugs([...new Set(sampleProjects.map((project) => project.workspaceSlug))]),
+  ]);
+
+  const liveOptions = rows.map((row) => ({
+    id: row.id,
+    workspaceId: row.workspace_id,
+    name: row.name,
+    source: "live" as const,
+  }));
+
+  const existingKeys = new Set(liveOptions.map((row) => row.name));
+  const workspaceBySlug = new Map(workspaces.map((workspace) => [workspace.slug ?? "", workspace]));
+
+  const referenceOptions = sampleProjects
+    .filter((project) => !existingKeys.has(project.name))
+    .filter((project) => workspaceBySlug.has(project.workspaceSlug))
+    .map((project) => ({
+      id: `sample:${project.id}`,
+      workspaceId: workspaceBySlug.get(project.workspaceSlug)?.id ?? "",
+      name: `${project.name} (Reference)`,
+      source: "reference" as const,
+    }));
+
+  return [...liveOptions, ...referenceOptions];
+}
+
+async function ensureLiveProject(projectId: string) {
+  if (!isStoriesPersistenceEnabled()) {
+    throw new Error("Stories persistence is not configured yet.");
+  }
+
+  if (!projectId.startsWith("sample:")) {
+    const rows = await requestJson<StoryProjectRow[]>(
+      "/rest/v1/story_projects",
+      new URLSearchParams({
+        select: "id,workspace_id,name",
+        id: `eq.${projectId}`,
+        limit: "1",
+      })
+    );
+
+    return rows[0] ?? null;
+  }
+
+  const sampleId = projectId.replace(/^sample:/, "");
+  const sampleProject = sampleProjects.find((project) => project.id === sampleId);
+
+  if (!sampleProject) {
+    throw new Error("Reference project not found.");
+  }
+
+  const organizations = await getOrganizationsBySlugs([sampleProject.workspaceSlug]);
+  const workspace = organizations[0];
+
+  if (!workspace) {
+    throw new Error(`Workspace slug '${sampleProject.workspaceSlug}' was not found in organizations.`);
+  }
+
+  const existingRows = await requestJson<StoryProjectRow[]>(
+    "/rest/v1/story_projects",
+    new URLSearchParams({
+      select: "id,workspace_id,name,description,status,story_count_target,deadline_at,created_at,updated_at",
+      workspace_id: `eq.${workspace.id}`,
+      name: `eq.${sampleProject.name}`,
+      limit: "1",
+    })
+  );
+
+  if (existingRows[0]) {
+    return existingRows[0];
+  }
+
+  const createdRows = await requestJson<StoryProjectRow[]>(
+    "/rest/v1/story_projects?select=*",
+    undefined,
+    {
+      method: "POST",
+      prefer: "return=representation",
+      body: {
+        workspace_id: workspace.id,
+        name: sampleProject.name,
+        description: sampleProject.description,
+        status: sampleProject.status,
+        story_count_target: sampleProject.storyCountTarget,
+        deadline_at: sampleProject.deadlineAt,
+      },
+    }
+  );
+
+  return createdRows[0] ?? null;
+}
+
 export async function getPublishedFormById(formId: string) {
   if (!isStoriesPersistenceEnabled()) {
     return getSamplePublishedFormById(formId);
   }
 
-  const rows = await requestJson<StoryFormRow[]>(
-    "/rest/v1/story_forms",
-    new URLSearchParams({
-      select: "id,workspace_id,project_id,title,description,story_type,fields_json,public_slug,is_active",
-      or: `(id.eq.${formId},public_slug.eq.${formId})`,
-      is_active: "eq.true",
-      limit: "1",
-    })
-  );
+  const baseLookupParams = {
+    select: "id,workspace_id,project_id,title,description,story_type,fields_json,public_slug,is_active",
+    is_active: "eq.true",
+    limit: "1",
+  };
 
-  const form = rows[0];
+  let form: StoryFormRow | null = null;
+
+  if (!isUuid(formId)) {
+    const slugRows = await requestJson<StoryFormRow[]>(
+      "/rest/v1/story_forms",
+      new URLSearchParams({
+        ...baseLookupParams,
+        public_slug: `eq.${formId}`,
+      })
+    );
+
+    form = slugRows[0] ?? null;
+  }
+
+  if (!form && isUuid(formId)) {
+    const idRows = await requestJson<StoryFormRow[]>(
+      "/rest/v1/story_forms",
+      new URLSearchParams({
+        ...baseLookupParams,
+        id: `eq.${formId}`,
+      })
+    );
+
+    form = idRows[0] ?? null;
+  }
+
   if (!form) {
     return null;
   }
@@ -319,6 +1022,13 @@ export async function createSubmissionFromPublicForm(formId: string, payload: Pu
     throw new Error(`Missing required fields: ${missingFields.map((field) => field.label).join(", ")}`);
   }
 
+  const storySourceData = {
+    ...payload.data,
+    photoUrls: payload.photoUrls ?? [],
+    submitterName: payload.submitterName,
+    submitterEmail: payload.submitterEmail,
+  };
+
   if (!isStoriesPersistenceEnabled()) {
     const storyId = `story_preview_${Date.now()}`;
     const submissionId = `submission_preview_${Date.now()}`;
@@ -346,7 +1056,7 @@ export async function createSubmissionFromPublicForm(formId: string, payload: Pu
         subjectName: payload.submitterName,
         status: "submitted" as const,
         currentStage: "submitted" as const,
-        sourceData: payload.data,
+        sourceData: storySourceData,
         errorMessage: null,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
@@ -393,7 +1103,7 @@ export async function createSubmissionFromPublicForm(formId: string, payload: Pu
         subject_name: payload.submitterName,
         status: "submitted",
         current_stage: "submitted",
-        source_data_json: payload.data,
+        source_data_json: storySourceData,
       },
     }
   );
@@ -403,6 +1113,10 @@ export async function createSubmissionFromPublicForm(formId: string, payload: Pu
   if (!story) {
     throw new Error("Story record could not be created.");
   }
+
+  const storyRecord = toStoryRecord(story);
+
+  await runStoryAutomation(storyRecord);
 
   await requestJson<StoryProjectRow[]>(
     "/rest/v1/story_projects?id=eq." + form.projectId,
@@ -429,22 +1143,64 @@ export async function createSubmissionFromPublicForm(formId: string, payload: Pu
       status: submission.status,
       submittedAt: submission.submitted_at,
     },
-    story: {
-      id: story.id,
-      workspaceId: story.workspace_id,
-      projectId: story.project_id,
-      submissionId: story.submission_id,
-      title: story.title,
-      storyType: story.story_type,
-      subjectName: story.subject_name,
-      status: story.status,
-      currentStage: story.current_stage,
-      sourceData: story.source_data_json,
-      errorMessage: story.error_message,
-      createdAt: story.created_at,
-      updatedAt: story.updated_at,
-    },
-  };
+      story: {
+        ...storyRecord,
+      },
+    };
+}
+
+function slugify(value: string) {
+  return value
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 48);
+}
+
+export async function createFormFromReferenceTemplate(projectId: string, templateId: string) {
+  const template = getReferenceTemplateById(templateId);
+
+  if (!template) {
+    throw new Error("Template not found.");
+  }
+
+  if (!isStoriesPersistenceEnabled()) {
+    throw new Error("Stories persistence is not configured yet.");
+  }
+
+  const project = await ensureLiveProject(projectId);
+  if (!project) {
+    throw new Error("Project not found.");
+  }
+
+  const baseSlug = slugify(`${project.name}-${template.name}`);
+  const publicSlug = `${baseSlug}-${Date.now().toString().slice(-6)}`;
+
+  const createdRows = await requestJson<StoryFormRow[]>(
+    "/rest/v1/story_forms?select=*",
+    undefined,
+    {
+      method: "POST",
+      prefer: "return=representation",
+      body: {
+        workspace_id: project.workspace_id,
+        project_id: project.id,
+        title: template.name,
+        description: template.description,
+        story_type: template.storyType,
+        fields_json: template.fields,
+        public_slug: publicSlug,
+        is_active: true,
+      },
+    }
+  );
+
+  const created = createdRows[0];
+  if (!created) {
+    throw new Error("Form could not be created.");
+  }
+
+  return created;
 }
 
 export async function listSubmissionItems() {
@@ -523,21 +1279,7 @@ export async function listSubmissionItems() {
         submittedAt: submission.submitted_at,
       },
       story: story
-        ? {
-            id: story.id,
-            workspaceId: story.workspace_id,
-            projectId: story.project_id,
-            submissionId: story.submission_id,
-            title: story.title,
-            storyType: story.story_type,
-            subjectName: story.subject_name,
-            status: story.status,
-            currentStage: story.current_stage,
-            sourceData: story.source_data_json,
-            errorMessage: story.error_message,
-            createdAt: story.created_at,
-            updatedAt: story.updated_at,
-          }
+        ? toStoryRecord(story)
         : null,
       formTitle: form?.title ?? "Form",
       projectName: project?.name ?? "Project",
@@ -545,4 +1287,209 @@ export async function listSubmissionItems() {
       workspaceSlug: workspace?.slug ?? "workspace",
     };
   });
+}
+
+export async function listStoryLibraryItems(): Promise<StoryLibraryItem[]> {
+  if (!isStoriesPersistenceEnabled()) {
+    return sampleStories.map<StoryLibraryItem>((story) => ({
+      story,
+      excerpt:
+        sampleContentArtifacts.find((item) => item.storyId === story.id)?.body.slice(0, 200) ??
+        "Content is being generated...",
+      contentCount: sampleContentArtifacts.filter((item) => item.storyId === story.id).length,
+      hasAssets: sampleAssets.some((item) => item.storyId === story.id),
+    }));
+  }
+
+  const [stories, contents, assets] = await Promise.all([
+    requestJson<StoryRecordRow[]>(
+      "/rest/v1/story_records",
+      new URLSearchParams({
+        select:
+          "id,workspace_id,project_id,submission_id,title,story_type,subject_name,status,current_stage,source_data_json,error_message,created_at,updated_at",
+        order: "created_at.desc",
+      })
+    ),
+    requestJsonOrEmpty<StoryContentRow[]>(
+      "/rest/v1/story_content",
+      new URLSearchParams({
+        select: "id,workspace_id,story_id,channel,content_type,title,body,status,metadata_json,generated_at",
+      })
+    ),
+    requestJsonOrEmpty<StoryAssetRow[]>(
+      "/rest/v1/story_assets",
+      new URLSearchParams({
+        select:
+          "id,workspace_id,story_id,asset_type,file_name,file_url,platform,dimensions,file_size,status,metadata_json,created_at",
+      })
+    ),
+  ]);
+
+  const contentByStoryId = new Map<string, StoryContentRow[]>();
+  const assetStoryIds = new Set<string>();
+
+  for (const content of contents) {
+    contentByStoryId.set(content.story_id, [...(contentByStoryId.get(content.story_id) ?? []), content]);
+  }
+
+  for (const asset of assets) {
+    assetStoryIds.add(asset.story_id);
+  }
+
+  return stories.map<StoryLibraryItem>((row) => {
+    const story = toStoryRecord(row);
+    const relatedContent = contentByStoryId.get(row.id) ?? [];
+    const excerptSource = relatedContent[0]?.body ?? "Content is being generated...";
+
+    return {
+      story,
+      excerpt: excerptSource.slice(0, 200),
+      contentCount: relatedContent.length,
+      hasAssets: assetStoryIds.has(row.id),
+    };
+  });
+}
+
+export async function listAssetLibraryItems(): Promise<AssetLibraryItem[]> {
+  if (!isStoriesPersistenceEnabled()) {
+    return sampleAssets.map<AssetLibraryItem>((asset) => ({
+      ...asset,
+      storyTitle: sampleStories.find((story) => story.id === asset.storyId)?.title ?? "Story",
+    }));
+  }
+
+  const [assets, stories] = await Promise.all([
+    requestJsonOrEmpty<StoryAssetRow[]>(
+      "/rest/v1/story_assets",
+      new URLSearchParams({
+        select:
+          "id,workspace_id,story_id,asset_type,file_name,file_url,platform,dimensions,file_size,status,metadata_json,created_at",
+        order: "created_at.desc",
+      })
+    ),
+    requestJson<StoryRecordRow[]>(
+      "/rest/v1/story_records",
+      new URLSearchParams({
+        select:
+          "id,workspace_id,project_id,submission_id,title,story_type,subject_name,status,current_stage,source_data_json,error_message,created_at,updated_at",
+      })
+    ),
+  ]);
+
+  const storyTitleById = new Map(stories.map((story) => [story.id, story.title]));
+
+  return assets.map<AssetLibraryItem>((asset) => ({
+    ...toStoryAssetRecord(asset),
+    storyTitle: storyTitleById.get(asset.story_id) ?? "Story",
+  }));
+}
+
+export async function getStoryDetailSnapshot(storyId: string): Promise<StoryDetailSnapshot | null> {
+  if (!isStoriesPersistenceEnabled()) {
+    const story = sampleStories.find((item) => item.id === storyId) ?? null;
+    if (!story) {
+      return null;
+    }
+
+    const project = sampleProjects.find((item) => item.id === story.projectId);
+    const submission = sampleSubmissions.find((item) => item.id === story.submissionId) ?? null;
+    const contents = sampleContentArtifacts.filter((item) => item.storyId === storyId);
+    const assets = sampleAssets.filter((item) => item.storyId === storyId);
+    const storyPackage = samplePackages.find((item) => item.storyId === storyId) ?? null;
+
+    return {
+      story,
+      projectName: project?.name ?? "Project",
+      workspaceName: project?.workspaceName ?? "Workspace",
+      workspaceSlug: project?.workspaceSlug ?? "workspace",
+      submission,
+      contents,
+      assets,
+      storyPackage,
+    };
+  }
+
+  const storyRows = await requestJson<StoryRecordRow[]>(
+    "/rest/v1/story_records",
+    new URLSearchParams({
+      select:
+        "id,workspace_id,project_id,submission_id,title,story_type,subject_name,status,current_stage,source_data_json,error_message,created_at,updated_at",
+      id: `eq.${storyId}`,
+      limit: "1",
+    })
+  );
+
+  const row = storyRows[0];
+  if (!row) {
+    return null;
+  }
+
+  const [projects, workspaces, submissions, contents, assets, packages] = await Promise.all([
+    getProjectsByIds([row.project_id]),
+    getOrganizationsByIds([row.workspace_id]),
+    row.submission_id
+      ? requestJson<StorySubmissionRow[]>(
+          "/rest/v1/story_submissions",
+          new URLSearchParams({
+            select: "id,workspace_id,project_id,form_id,submitter_name,submitter_email,submission_data_json,photo_urls,status,submitted_at",
+            id: `eq.${row.submission_id}`,
+            limit: "1",
+          })
+        )
+      : Promise.resolve([]),
+    requestJsonOrEmpty<StoryContentRow[]>(
+      "/rest/v1/story_content",
+      new URLSearchParams({
+        select: "id,workspace_id,story_id,channel,content_type,title,body,status,metadata_json,generated_at",
+        story_id: `eq.${storyId}`,
+        order: "generated_at.asc",
+      })
+    ),
+    requestJsonOrEmpty<StoryAssetRow[]>(
+      "/rest/v1/story_assets",
+      new URLSearchParams({
+        select:
+          "id,workspace_id,story_id,asset_type,file_name,file_url,platform,dimensions,file_size,status,metadata_json,created_at",
+        story_id: `eq.${storyId}`,
+        order: "created_at.asc",
+      })
+    ),
+    requestJsonOrEmpty<StoryPackageRow[]>(
+      "/rest/v1/story_packages",
+      new URLSearchParams({
+        select:
+          "id,workspace_id,project_id,story_id,name,description,status,package_url,download_count,shareable_link,expires_at,created_at",
+        story_id: `eq.${storyId}`,
+        order: "created_at.desc",
+      })
+    ),
+  ]);
+
+  const project = projects[0];
+  const workspace = workspaces[0];
+  const submissionRow = submissions[0] ?? null;
+
+  return {
+    story: toStoryRecord(row),
+    projectName: project?.name ?? "Project",
+    workspaceName: workspace?.name ?? "Workspace",
+    workspaceSlug: workspace?.slug ?? "workspace",
+    submission: submissionRow
+      ? {
+          id: submissionRow.id,
+          workspaceId: submissionRow.workspace_id,
+          projectId: submissionRow.project_id,
+          formId: submissionRow.form_id,
+          submitterName: submissionRow.submitter_name,
+          submitterEmail: submissionRow.submitter_email,
+          data: submissionRow.submission_data_json,
+          photoUrls: submissionRow.photo_urls ?? [],
+          status: submissionRow.status,
+          submittedAt: submissionRow.submitted_at,
+        }
+      : null,
+    contents: contents.map(toStoryContentRecord),
+    assets: assets.map(toStoryAssetRecord),
+    storyPackage: packages[0] ? toStoryPackageRecord(packages[0]) : null,
+  };
 }

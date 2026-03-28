@@ -1,15 +1,17 @@
 import Link from "next/link";
 import { Badge, BodyText, Button, Card, CardTitle, Eyebrow, SectionTitle } from "@canopy/ui";
 import { StoriesShell } from "@/app/_components/stories-shell";
-import { listPublishedForms } from "@/lib/stories-data";
+import { listLiveProjectOptions, listPublishedForms } from "@/lib/stories-data";
+import { referenceIntakeTemplates } from "@/lib/reference-form-templates";
+import { CreateFormPanel } from "@/app/forms/create-form-panel";
 
 export default async function FormsPage() {
-  const forms = await listPublishedForms();
+  const [forms, projects] = await Promise.all([listPublishedForms(), listLiveProjectOptions()]);
   const workspaces = [...new Set(forms.map((form) => form.workspaceName))];
 
   return (
     <StoriesShell
-      activeNav="forms"
+      activeNav="projects"
       eyebrow="Forms"
       title="Templates and public intake"
       subtitle="This page now reads from the Stories product data layer. Public forms here can become real submission entry points instead of staying as static previews."
@@ -19,12 +21,39 @@ export default async function FormsPage() {
           <Button asChild variant="secondary">
             <Link href="/projects">Back to projects</Link>
           </Button>
-          <Button type="button" variant="primary">
-            Create form
+          <Button asChild type="button" variant="primary">
+            <Link href="#create-form">Create form</Link>
           </Button>
         </>
       }
     >
+      <CreateFormPanel projects={projects} />
+
+      <section className="rounded-[28px] border border-[var(--border)] bg-white p-6 shadow-[var(--shadow-sm)] sm:p-7">
+        <Eyebrow className="text-[#4f46e5]">Reference templates</Eyebrow>
+        <SectionTitle className="mt-3">Promoted from the mature Stories app</SectionTitle>
+        <BodyText muted className="mt-3">
+          These are the full template forms from the tested Replit app. They are product templates, not yet published
+          workspace forms, so they should remain visible even before the live Stories tables are fully populated.
+        </BodyText>
+        <div className="mt-5 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+          {referenceIntakeTemplates.map((template) => (
+            <Card key={template.id} variant="soft" padding="sm" className="rounded-[24px]">
+              <div className="flex items-center justify-between gap-3">
+                <CardTitle className="text-base">{template.name}</CardTitle>
+                <Badge variant="outline" className="text-[11px] uppercase tracking-[0.08em]">
+                  {template.storyType.replace("_", "/")}
+                </Badge>
+              </div>
+              <BodyText muted className="mt-2">{template.description}</BodyText>
+              <div className="mt-4 rounded-[20px] border border-[var(--border)] bg-white px-4 py-3 text-sm text-[var(--text-muted)]">
+                {template.fields.length} fields
+              </div>
+            </Card>
+          ))}
+        </div>
+      </section>
+
       <section className="rounded-[28px] border border-[var(--border)] bg-white p-6 shadow-[var(--shadow-sm)] sm:p-7">
         <Eyebrow className="text-[#4f46e5]">Published intake</Eyebrow>
         <SectionTitle className="mt-3">Active public forms</SectionTitle>
