@@ -9,13 +9,8 @@ import {
   AvatarFallback,
   BodyText,
   Button,
+  CanopyHeader,
   Card,
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
   Eyebrow,
   PageTitle,
   cn,
@@ -93,13 +88,6 @@ function SettingsIcon({ className }: { className?: string }) {
   );
 }
 
-function ChevronDown({ className }: { className?: string }) {
-  return (
-    <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className={className} aria-hidden="true">
-      <polyline points="6 9 12 15 18 9" />
-    </svg>
-  );
-}
 
 const navItems: Array<{ key: NavKey; href: string; label: string; icon: (p: { className?: string }) => ReactNode }> = [
   { key: "home", href: "/", label: "Dashboard", icon: DashboardIcon },
@@ -281,120 +269,28 @@ export function StoriesShell({
     <main className="min-h-screen bg-[var(--background)] md:h-screen md:overflow-hidden">
 
       {/* ── Top bar ─────────────────────────────────────────────────────────── */}
-      <div className="border-b border-[var(--border)] bg-white/95">
-        <div className="flex h-14 items-center justify-between gap-3 px-4 sm:px-6">
-
-          {/* Left: brand + workspace switcher */}
-          <div className="flex min-w-0 items-center gap-3">
-            {/* Canopy brand mark */}
-            <div className="flex shrink-0 items-center gap-2">
-              <div
-                className="grid h-8 w-8 place-items-center rounded-[7px] bg-[#0f1f3d] text-[0.95rem] font-extrabold tracking-[-0.02em] text-white"
-                aria-hidden="true"
-              >
-                C
-              </div>
-              <span className="text-[0.95rem] font-bold tracking-[-0.01em] text-[var(--foreground)]">Canopy</span>
-            </div>
-
-            {/* Workspace dropdown */}
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  variant="secondary"
-                  size="sm"
-                  className="hidden min-w-[200px] justify-start gap-1.5 shadow-none sm:inline-flex"
-                >
-                  <span className="mr-0.5 text-[0.7rem] font-bold uppercase tracking-[0.06em] text-[var(--text-muted)]">
-                    Workspace
-                  </span>
-                  <span className="truncate">{workspaceLabel}</span>
-                  <ChevronDown className="ml-auto shrink-0 text-[var(--text-muted)]" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="start" className="w-72 bg-white">
-                <DropdownMenuLabel>Switch workspace</DropdownMenuLabel>
-                {isPlatformOperator && (
-                  <DropdownMenuItem asChild>
-                    <a href={PORTAL_URL}>Platform overview</a>
-                  </DropdownMenuItem>
-                )}
-                {orgs.map((org) => (
-                  <DropdownMenuItem
-                    key={org.id}
-                    onSelect={() => setActiveOrgId(org.id)}
-                    className={org.id === activeOrgId ? "font-semibold" : ""}
-                  >
-                    {org.name}
-                    {org.id === activeOrgId && (
-                      <span className="ml-auto text-[11px] text-[var(--text-muted)]">active</span>
-                    )}
-                  </DropdownMenuItem>
-                ))}
-                {orgs.length === 0 && !loadingSession && (
-                  <DropdownMenuItem disabled>No workspaces found</DropdownMenuItem>
-                )}
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
-
-          {/* Right: product switcher + avatar */}
-          <div className="flex shrink-0 items-center gap-2 sm:gap-3">
-            {/* Product / app switcher */}
-            <a
-              href={PORTAL_URL}
-              className="hidden sm:flex items-center gap-1.5 rounded-md border border-[var(--border)] bg-[var(--surface)] px-3 py-[5px] text-[0.8rem] font-medium text-[var(--foreground)] no-underline transition-colors hover:bg-[var(--surface-muted)]"
-            >
-              <span className="mr-0.5 text-[0.7rem] font-bold uppercase tracking-[0.06em] text-[var(--text-muted)]">App</span>
-              Stories
-              <ChevronDown className="ml-0.5 text-[var(--text-muted)]" />
-            </a>
-
-            {/* Avatar + account dropdown */}
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  variant="secondary"
-                  size="icon"
-                  className="h-10 w-10 rounded-full border-[var(--border)] bg-[var(--surface-muted)] text-sm font-semibold text-[var(--foreground)] shadow-none hover:bg-[var(--surface)]"
-                  aria-label="Open account menu"
-                >
-                  {loadingSession ? "…" : initials}
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-72 p-0 bg-white">
-                <div className="flex items-start justify-between gap-3 border-b border-[var(--border)] px-4 py-3">
-                  <div className="min-w-0">
-                    <p className="truncate text-base font-semibold text-[var(--foreground)]">{displayName}</p>
-                    {userName && <p className="truncate text-[0.8rem] text-[var(--text-muted)]">{userEmail}</p>}
-                  </div>
-                  {isPlatformOperator && (
-                    <span className="shrink-0 rounded-full border border-slate-200 bg-slate-50 px-2 py-0.5 text-xs font-medium text-slate-600">
-                      operator
-                    </span>
-                  )}
-                </div>
-                <div className="p-2">
-                  <DropdownMenuItem asChild>
-                    <a href={PORTAL_URL}>Portal overview</a>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <a href="mailto:info@akkedisdigital.com?subject=Canopy%20Stories%20Feedback">
-                      Questions / feedback
-                    </a>
-                  </DropdownMenuItem>
-                </div>
-                <DropdownMenuSeparator />
-                <div className="p-2">
-                  <DropdownMenuItem disabled={signingOut} onSelect={() => void signOut()}>
-                    {signingOut ? "Signing out…" : "Sign out"}
-                  </DropdownMenuItem>
-                </div>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
-        </div>
-      </div>
+      <CanopyHeader
+        brandHref="/"
+        workspaceLabel={workspaceLabel}
+        workspaceLinks={orgs.map((org) => ({
+          id: org.id,
+          label: org.name,
+          onSelect: () => setActiveOrgId(org.id),
+          active: org.id === activeOrgId,
+        }))}
+        isPlatformOperator={isPlatformOperator}
+        platformOverviewHref={PORTAL_URL}
+        userInitials={loadingSession ? "…" : initials}
+        displayName={displayName}
+        email={userName ? userEmail : null}
+        roleLabel={isPlatformOperator ? "operator" : null}
+        accountMenuItems={[
+          { label: "Portal overview", href: PORTAL_URL },
+          { label: "Questions / feedback", href: "mailto:info@akkedisdigital.com?subject=Canopy%20Stories%20Feedback" },
+        ]}
+        onSignOut={() => void signOut()}
+        signOutLabel={signingOut ? "Signing out…" : "Sign out"}
+      />
 
       {/* ── Main layout ─────────────────────────────────────────────────────── */}
       <div className="md:grid md:h-[calc(100vh-3.5rem)] md:grid-cols-[260px_minmax(0,1fr)]">
