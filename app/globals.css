@@ -2,15 +2,6 @@
 @source "../node_modules/@canopy/ui/dist";
 @import "@canopy/ui/styles.css";
 
-/* Invert surface / background: white page, light-blue cards */
-:root {
-  --background: #ffffff;
-  --surface: #eef2ff;
-  --surface-muted: #e0e7ff;
-  --border: #c7d2fe;
-  --border-strong: #818cf8;
-}
-
 a {
   color: inherit;
 }

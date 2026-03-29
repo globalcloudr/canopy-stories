@@ -306,11 +306,11 @@ export function StoriesShell({
       <div className="md:grid md:h-[calc(100vh-3.5rem)] md:grid-cols-[260px_minmax(0,1fr)]">
 
         {/* Sidebar */}
-        <aside className="hidden border-r border-[var(--border)] bg-[var(--surface)] md:block">
+        <aside className="hidden border-r border-[#e5e7eb] bg-white md:block">
           <div className="flex h-full flex-col">
 
             {/* Workspace lockup */}
-            <section className="flex items-center gap-4 border-b border-[var(--border)] px-6 py-6">
+            <section className="flex items-center gap-4 border-b border-[#e5e7eb] px-6 py-6">
               <div className="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-[#2f76dd] text-[1.05rem] font-semibold tracking-[-0.02em] text-white">
                 {loadingSession ? "…" : orgInitials}
               </div>
@@ -343,7 +343,7 @@ export function StoriesShell({
         {/* Content */}
         <div className="min-w-0 overflow-y-auto">
           <div className="mx-auto flex min-h-full w-full max-w-7xl flex-col gap-6 px-4 py-6 sm:px-6">
-            <Card padding="md" className="bg-[var(--surface)] sm:p-8">
+            <Card padding="md" className="sm:p-8">
               <div className="flex flex-wrap items-start justify-between gap-5">
                 <div className="min-w-0">
                   <Eyebrow className="text-[#4f46e5]">{eyebrow}</Eyebrow>
