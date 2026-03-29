@@ -280,7 +280,7 @@ export function StoriesShell({
 
       {/* ── Top bar ─────────────────────────────────────────────────────────── */}
       <CanopyHeader
-        brandHref="/"
+        brandHref={PORTAL_URL}
         workspaceLabel={workspaceLabel}
         workspaceLinks={orgs.map((org) => ({
           id: org.id,
