@@ -5,6 +5,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { BodyText, Button, Card, CardTitle, Input, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@canopy/ui";
 import { StoriesShell } from "@/app/_components/stories-shell";
+import { pipelineStageLabel, storyTypeLabel } from "@/lib/stories-domain";
 
 type Story = {
   id: string;
@@ -38,7 +39,6 @@ export default function StoriesPage() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [typeFilter, setTypeFilter] = useState("all");
-  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
 
   useEffect(() => {
     fetch("/api/stories")
@@ -88,13 +88,13 @@ export default function StoriesPage() {
         <Select value={typeFilter} onValueChange={setTypeFilter}>
           <SelectTrigger className="w-44">
             <SelectValue>
-              {typeFilter === "all" ? "All Types" : typeFilter.replace("_", "/")}
+              {typeFilter === "all" ? "All Types" : storyTypeLabel(typeFilter)}
             </SelectValue>
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All Types</SelectItem>
             <SelectItem value="ESL">ESL</SelectItem>
-            <SelectItem value="HSD_GED">HSD/GED</SelectItem>
+            <SelectItem value="HSD_GED">HSD / GED</SelectItem>
             <SelectItem value="CTE">CTE</SelectItem>
             <SelectItem value="EMPLOYER">Employer</SelectItem>
             <SelectItem value="STAFF">Staff</SelectItem>
@@ -102,33 +102,17 @@ export default function StoriesPage() {
             <SelectItem value="OVERVIEW">Overview</SelectItem>
           </SelectContent>
         </Select>
-        <div className="flex items-center gap-1 rounded-xl border border-[var(--border)] bg-white p-1">
-          <button
-            type="button"
-            onClick={() => setViewMode("grid")}
-            className={`h-8 rounded-lg px-3 text-sm font-medium transition-colors ${viewMode === "grid" ? "bg-[var(--surface-muted)] text-[var(--foreground)]" : "text-[var(--text-muted)]"}`}
-          >
-            Grid
-          </button>
-          <button
-            type="button"
-            onClick={() => setViewMode("list")}
-            className={`h-8 rounded-lg px-3 text-sm font-medium transition-colors ${viewMode === "list" ? "bg-[var(--surface-muted)] text-[var(--foreground)]" : "text-[var(--text-muted)]"}`}
-          >
-            List
-          </button>
-        </div>
       </div>
 
       {/* Content */}
       {loading ? (
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {[1, 2, 3, 4, 5, 6].map((i) => (
-            <Card key={i} padding="sm" className="h-40 animate-pulse rounded-[20px] bg-[var(--surface-muted)]" />
+        <div className="space-y-3">
+          {[1, 2, 3, 4, 5].map((i) => (
+            <div key={i} className="h-14 animate-pulse rounded-xl bg-[var(--surface-muted)]" />
           ))}
         </div>
       ) : filtered.length === 0 ? (
-        <Card padding="md" className="py-12 text-center">
+        <div className="py-12 text-center">
           <CardTitle>
             {search || typeFilter !== "all" ? "No stories match your filters" : "No stories yet"}
           </CardTitle>
@@ -137,41 +121,31 @@ export default function StoriesPage() {
               ? "Try clearing your search or type filter."
               : "Stories are created automatically when intake forms are submitted."}
           </BodyText>
-        </Card>
+        </div>
       ) : (
-        <div className={viewMode === "grid" ? "grid gap-4 md:grid-cols-2 lg:grid-cols-3" : "space-y-3"}>
+        <div className="divide-y divide-[var(--border)]">
           {filtered.map((story) => (
-            <Card
-              key={story.id}
-              padding="sm"
-              className={`flex flex-col rounded-[20px] transition hover:shadow-sm ${viewMode === "list" ? "flex-row items-center gap-4" : ""}`}
-            >
-              <div className={`flex items-start justify-between gap-3 ${viewMode === "list" ? "flex-1" : ""}`}>
-                <div className="min-w-0">
-                  <CardTitle className="text-base leading-snug">{story.title || "Untitled Story"}</CardTitle>
-                  {story.subjectName && (
-                    <BodyText muted className="mt-1 text-[12px]">{story.subjectName}</BodyText>
-                  )}
-                </div>
-                <span className={`shrink-0 rounded-full border px-2 py-0.5 text-[11px] font-semibold uppercase tracking-[0.06em] ${stageBadge(story.currentStage)}`}>
-                  {story.currentStage.replace(/_/g, " ")}
-                </span>
-              </div>
-
-              {viewMode === "grid" && (
-                <div className="mt-3">
+            <div key={story.id} className="flex flex-wrap items-center justify-between gap-3 py-4">
+              <div className="min-w-0">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="font-medium text-[var(--foreground)]">{story.title || "Untitled Story"}</span>
                   <span className={`rounded-full px-2 py-0.5 text-[11px] font-semibold uppercase tracking-[0.06em] ${typeColors[story.storyType] ?? "bg-gray-100 text-gray-700"}`}>
-                    {story.storyType.replace("_", "/")}
+                    {storyTypeLabel(story.storyType)}
                   </span>
                 </div>
-              )}
-
-              <div className={`${viewMode === "grid" ? "mt-4" : "shrink-0"}`}>
-                <Button asChild variant="primary" size="sm" className={viewMode === "grid" ? "w-full" : ""}>
-                  <Link href={`/stories/${story.id}`}>Open Story</Link>
+                {story.subjectName && (
+                  <BodyText muted className="mt-0.5 text-[13px]">{story.subjectName}</BodyText>
+                )}
+              </div>
+              <div className="flex items-center gap-2">
+                <span className={`rounded-full border px-2 py-0.5 text-[11px] font-semibold uppercase tracking-[0.06em] ${stageBadge(story.currentStage)}`}>
+                  {pipelineStageLabel(story.currentStage)}
+                </span>
+                <Button asChild variant="secondary" size="sm">
+                  <Link href={`/stories/${story.id}`}>Open</Link>
                 </Button>
               </div>
-            </Card>
+            </div>
           ))}
         </div>
       )}

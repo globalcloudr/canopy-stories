@@ -2127,3 +2127,73 @@ export async function getPackageDetailSnapshot(packageId: string): Promise<Packa
     assets: assets.map(toStoryAssetRecord),
   };
 }
+
+// ── Workspace API keys ────────────────────────────────────────────────────────
+
+type WorkspaceApiKeyRow = {
+  id: string;
+  workspace_id: string;
+  openai_api_key: string | null;
+  video_api_key: string | null;
+  video_api_provider: string | null;
+  updated_at: string;
+};
+
+export type WorkspaceApiKeys = {
+  openaiApiKey: string | null;
+  videoApiKey: string | null;
+  videoApiProvider: string | null;
+};
+
+export async function getWorkspaceApiKeys(workspaceId: string): Promise<WorkspaceApiKeys | null> {
+  const env = getStoriesServiceEnv();
+  if (!env) return null;
+  const rows = await requestJsonOrEmpty<WorkspaceApiKeyRow[]>(
+    "/rest/v1/workspace_api_keys",
+    new URLSearchParams({
+      select: "id,workspace_id,openai_api_key,video_api_key,video_api_provider,updated_at",
+      workspace_id: `eq.${workspaceId}`,
+      limit: "1",
+    })
+  );
+  const row = rows[0];
+  if (!row) return null;
+  return {
+    openaiApiKey: row.openai_api_key,
+    videoApiKey: row.video_api_key,
+    videoApiProvider: row.video_api_provider,
+  };
+}
+
+export async function upsertWorkspaceApiKeys(
+  workspaceId: string,
+  keys: Partial<WorkspaceApiKeys>
+): Promise<void> {
+  const env = getStoriesServiceEnv();
+  if (!env) throw new Error("Missing service env");
+
+  const body: Record<string, unknown> = {
+    workspace_id: workspaceId,
+    updated_at: new Date().toISOString(),
+  };
+  if (keys.openaiApiKey !== undefined) body.openai_api_key = keys.openaiApiKey || null;
+  if (keys.videoApiKey !== undefined) body.video_api_key = keys.videoApiKey || null;
+  if (keys.videoApiProvider !== undefined) body.video_api_provider = keys.videoApiProvider || null;
+
+  const url = new URL("/rest/v1/workspace_api_keys", env.supabaseUrl);
+  const res = await fetch(url.toString(), {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      apikey: env.serviceRoleKey,
+      Authorization: `Bearer ${env.serviceRoleKey}`,
+      Prefer: "resolution=merge-duplicates",
+    },
+    body: JSON.stringify(body),
+  });
+
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(`Failed to save API keys: ${text}`);
+  }
+}

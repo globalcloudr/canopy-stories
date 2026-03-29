@@ -2,6 +2,7 @@ export const dynamic = "force-dynamic";
 import type { ReactNode } from "react";
 import { BodyText, Button, CardTitle } from "@canopy/ui";
 import { StoriesShell } from "@/app/_components/stories-shell";
+import { ApiKeysSection } from "@/app/settings/api-keys-section";
 
 function SettingRow({
   title,
@@ -119,21 +120,15 @@ export default function SettingsPage() {
           <StaticField label="Logo URL" value="https://example.com/logo.png" />
         </SettingSection>
 
-        <SettingSection
-          title="API Keys"
-          description="Manage integrations and API access"
-        >
-          <StaticField
-            label="OpenAI API"
-            value="Connected via Stories automation — content generation uses the configured key when the pipeline runs."
-            trailing={<Button variant="secondary" size="sm">Configure</Button>}
-          />
-          <StaticField
-            label="Video Generation API"
-            value="Not configured — add a provider key for JSON2Video or Creatomate when the video pipeline is restored."
-            trailing={<Button variant="secondary" size="sm">Setup Guide</Button>}
-          />
-        </SettingSection>
+        <div className="grid gap-8 border-b border-[var(--border)] pb-8 md:grid-cols-[200px_1fr]">
+          <div className="pt-4">
+            <h2 className="text-[0.95rem] font-semibold text-[var(--foreground)]">API Keys</h2>
+            <BodyText muted className="mt-1 text-[13px] leading-relaxed">
+              Add your own keys for content generation and video creation. Keys are encrypted and only used within your workspace.
+            </BodyText>
+          </div>
+          <ApiKeysSection />
+        </div>
 
         <div className="flex justify-end gap-3 pt-2">
           <Button variant="secondary">Reset to Defaults</Button>
