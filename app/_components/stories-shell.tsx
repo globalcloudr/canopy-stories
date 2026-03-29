@@ -312,7 +312,7 @@ export function StoriesShell({
                   <ChevronDown className="ml-auto shrink-0 text-[var(--text-muted)]" />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="start" className="w-72">
+              <DropdownMenuContent align="start" className="w-72 bg-white">
                 <DropdownMenuLabel>Switch workspace</DropdownMenuLabel>
                 {isPlatformOperator && (
                   <DropdownMenuItem asChild>
@@ -362,7 +362,7 @@ export function StoriesShell({
                   {loadingSession ? "…" : initials}
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-72 p-0">
+              <DropdownMenuContent align="end" className="w-72 p-0 bg-white">
                 <div className="flex items-start justify-between gap-3 border-b border-[var(--border)] px-4 py-3">
                   <div className="min-w-0">
                     <p className="truncate text-base font-semibold text-[var(--foreground)]">{displayName}</p>

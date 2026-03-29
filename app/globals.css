@@ -6,6 +6,11 @@ a {
   color: inherit;
 }
 
+/* Ensure dropdown/select/popover content has an opaque background */
+[data-radix-popper-content-wrapper] > * {
+  background-color: white;
+}
+
 /* Ensure primary (dark) buttons always show white text, even when rendered as <a> via asChild */
 .bg-\[var\(--primary\)\] {
   color: var(--primary-foreground);
