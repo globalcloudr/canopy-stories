@@ -80,7 +80,3 @@ Shared Supabase project with canopy-platform and photovault.
 Product-owned tables: `story_projects`, `story_forms`, `story_submissions`, `story_records`, `story_content`, `story_assets`, `story_packages`, `workspace_api_keys`
 
 Migration SQL files are in `docs/sql/`.
-
-Key pending migrations to run in Supabase dashboard:
-- `docs/sql/2026-03-29-cs-003-workspace-api-keys.sql` — workspace API key storage
-- `docs/sql/2026-03-29-cs-004-notification-email.sql` — notification email column
