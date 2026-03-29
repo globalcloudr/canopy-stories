@@ -7,7 +7,10 @@ type KeyStatus = {
   hasOpenaiKey: boolean;
   hasVideoKey: boolean;
   videoApiProvider: string;
+  notificationEmail: string | null;
 };
+
+const ACTIVE_ORG_KEY = "cs_active_org_id_v1";
 
 function MaskedKeyField({
   label,
@@ -43,12 +46,10 @@ function MaskedKeyField({
                 className="font-mono text-[13px]"
               />
             ) : (
-              <div className="flex items-center gap-3">
-                <span className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[12px] font-medium ${isSet ? "border-emerald-200 bg-emerald-50 text-emerald-700" : "border-[var(--border)] bg-[var(--surface-muted)] text-[var(--text-muted)]"}`}>
-                  <span className={`h-1.5 w-1.5 rounded-full ${isSet ? "bg-emerald-500" : "bg-slate-400"}`} />
-                  {isSet ? "Key saved" : "Not configured"}
-                </span>
-              </div>
+              <span className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[12px] font-medium ${isSet ? "border-emerald-200 bg-emerald-50 text-emerald-700" : "border-[var(--border)] bg-[var(--surface-muted)] text-[var(--text-muted)]"}`}>
+                <span className={`h-1.5 w-1.5 rounded-full ${isSet ? "bg-emerald-500" : "bg-slate-400"}`} />
+                {isSet ? "Key saved" : "Not configured"}
+              </span>
             )}
           </div>
         </div>
@@ -69,13 +70,12 @@ function MaskedKeyField({
   );
 }
 
-const ACTIVE_ORG_KEY = "cs_active_org_id_v1";
-
 export function ApiKeysSection() {
   const [workspaceId, setWorkspaceId] = useState<string | null>(null);
   const [status, setStatus] = useState<KeyStatus | null>(null);
   const [openaiKey, setOpenaiKey] = useState("");
   const [videoKey, setVideoKey] = useState("");
+  const [notificationEmail, setNotificationEmail] = useState("");
   const [saving, setSaving] = useState(false);
   const [saveMessage, setSaveMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
 
@@ -90,19 +90,27 @@ export function ApiKeysSection() {
     if (!workspaceId) return;
     fetch(`/api/settings/api-keys?workspaceId=${workspaceId}`)
       .then((r) => r.json())
-      .then((data) => setStatus(data as KeyStatus))
+      .then((data) => {
+        const s = data as KeyStatus;
+        setStatus(s);
+        if (s.notificationEmail) setNotificationEmail(s.notificationEmail);
+      })
       .catch(() => {});
   }, [workspaceId]);
 
   async function handleSave() {
     if (!workspaceId) return;
-    if (!openaiKey.trim() && !videoKey.trim()) return;
+    const hasKeyChange = openaiKey.trim() || videoKey.trim();
+    const hasEmailChange = notificationEmail.trim() !== (status?.notificationEmail ?? "");
+    if (!hasKeyChange && !hasEmailChange) return;
+
     setSaving(true);
     setSaveMessage(null);
     try {
       const body: Record<string, string> = { workspaceId };
       if (openaiKey.trim()) body.openaiApiKey = openaiKey.trim();
       if (videoKey.trim()) body.videoApiKey = videoKey.trim();
+      body.notificationEmail = notificationEmail.trim();
 
       const res = await fetch("/api/settings/api-keys", {
         method: "POST",
@@ -111,14 +119,16 @@ export function ApiKeysSection() {
       });
       const payload = (await res.json()) as { ok?: boolean; error?: string };
       if (!res.ok) throw new Error(payload.error ?? "Save failed.");
+
       setStatus((prev) => ({
         hasOpenaiKey: openaiKey.trim() ? true : (prev?.hasOpenaiKey ?? false),
         hasVideoKey: videoKey.trim() ? true : (prev?.hasVideoKey ?? false),
         videoApiProvider: prev?.videoApiProvider ?? "json2video",
+        notificationEmail: notificationEmail.trim() || null,
       }));
       setOpenaiKey("");
       setVideoKey("");
-      setSaveMessage({ type: "success", text: "API keys saved." });
+      setSaveMessage({ type: "success", text: "Settings saved." });
     } catch (err) {
       setSaveMessage({ type: "error", text: err instanceof Error ? err.message : "Save failed." });
     } finally {
@@ -126,10 +136,29 @@ export function ApiKeysSection() {
     }
   }
 
-  const hasChanges = openaiKey.trim().length > 0 || videoKey.trim().length > 0;
+  const hasChanges =
+    openaiKey.trim().length > 0 ||
+    videoKey.trim().length > 0 ||
+    notificationEmail.trim() !== (status?.notificationEmail ?? "");
 
   return (
     <div className="divide-y divide-[var(--border)]">
+      <div className="py-4">
+        <CardTitle className="text-base">Package ready notifications</CardTitle>
+        <BodyText muted className="mt-1 text-[13px]">
+          Where to send an email when a story package is ready to review and download.
+        </BodyText>
+        <div className="mt-3">
+          <Input
+            type="email"
+            placeholder="you@school.org"
+            value={notificationEmail}
+            onChange={(e) => setNotificationEmail(e.target.value)}
+            className="max-w-sm"
+          />
+        </div>
+      </div>
+
       <MaskedKeyField
         label="OpenAI API key"
         description="Used to generate blog posts, social captions, press releases, and newsletter content."
@@ -140,33 +169,27 @@ export function ApiKeysSection() {
       />
       <MaskedKeyField
         label="Video generation API key"
-        description="Used to create short-form video assets for each story. Currently supports JSON2Video and Creatomate."
+        description="Used to create short-form video assets for each story. Supports JSON2Video and Creatomate."
         isSet={status?.hasVideoKey ?? false}
         value={videoKey}
         onChange={setVideoKey}
         placeholder="Your video API key"
       />
-      {hasChanges && (
-        <div className="flex items-center justify-between gap-4 py-4">
-          {saveMessage ? (
-            <BodyText className={`text-[13px] ${saveMessage.type === "success" ? "text-emerald-700" : "text-rose-600"}`}>
-              {saveMessage.text}
-            </BodyText>
-          ) : (
-            <BodyText muted className="text-[13px]">
-              Keys are encrypted and never exposed outside your workspace.
-            </BodyText>
-          )}
-          <Button variant="primary" size="sm" onClick={handleSave} disabled={saving}>
-            {saving ? "Saving…" : "Save keys"}
-          </Button>
-        </div>
-      )}
-      {!hasChanges && saveMessage?.type === "success" && (
-        <div className="py-4">
-          <BodyText className="text-[13px] text-emerald-700">{saveMessage.text}</BodyText>
-        </div>
-      )}
+
+      <div className="flex items-center justify-between gap-4 py-4">
+        {saveMessage ? (
+          <BodyText className={`text-[13px] ${saveMessage.type === "success" ? "text-emerald-700" : "text-rose-600"}`}>
+            {saveMessage.text}
+          </BodyText>
+        ) : (
+          <BodyText muted className="text-[13px]">
+            API keys are encrypted and never exposed outside your workspace.
+          </BodyText>
+        )}
+        <Button variant="primary" size="sm" onClick={handleSave} disabled={saving || !hasChanges}>
+          {saving ? "Saving…" : "Save"}
+        </Button>
+      </div>
     </div>
   );
 }

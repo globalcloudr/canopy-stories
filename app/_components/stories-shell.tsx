@@ -21,7 +21,7 @@ import { supabase } from "@/lib/supabase-client";
 
 type OrgOption = { id: string; name: string; slug: string };
 
-type NavKey = "home" | "projects" | "stories" | "assets" | "settings";
+type NavKey = "home" | "projects" | "stories" | "assets" | "settings" | "help";
 
 type StoriesShellProps = {
   activeNav: NavKey;
@@ -88,6 +88,15 @@ function SettingsIcon({ className }: { className?: string }) {
   );
 }
 
+function HelpIcon({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className={className} aria-hidden="true">
+      <circle cx="12" cy="12" r="9" />
+      <path d="M9.5 9.5a2.5 2.5 0 0 1 4.9.8c0 1.7-2.4 2.2-2.4 4" strokeLinecap="round" />
+      <circle cx="12" cy="17" r="0.6" fill="currentColor" stroke="none" />
+    </svg>
+  );
+}
 
 const navItems: Array<{ key: NavKey; href: string; label: string; icon: (p: { className?: string }) => ReactNode }> = [
   { key: "home", href: "/", label: "Dashboard", icon: DashboardIcon },
@@ -95,6 +104,7 @@ const navItems: Array<{ key: NavKey; href: string; label: string; icon: (p: { cl
   { key: "stories", href: "/stories", label: "Stories", icon: FileIcon },
   { key: "assets", href: "/assets", label: "Assets", icon: ImageIcon },
   { key: "settings", href: "/settings", label: "Settings", icon: SettingsIcon },
+  { key: "help", href: "/help", label: "Help", icon: HelpIcon },
 ];
 
 function navClass(active: boolean) {

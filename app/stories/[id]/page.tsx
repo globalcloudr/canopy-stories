@@ -4,6 +4,8 @@ import { Badge, BodyText, Button, Card, CardTitle, Eyebrow, PageTitle, SectionTi
 import { StoriesShell } from "@/app/_components/stories-shell";
 import { getStoryDetailSnapshot } from "@/lib/stories-data";
 import { formatRelativeDate, pipelineStageLabel, storyTypeLabel, contentStatusLabel } from "@/lib/stories-domain";
+import { ContentReviewButtons } from "./content-review-buttons";
+import { StoryProgressBar } from "@/app/_components/story-progress-bar";
 
 type StoryDetailPageProps = {
   params: Promise<{
@@ -55,10 +57,12 @@ export default async function StoryDetailPage({ params }: StoryDetailPageProps) 
       }
       headerMeta={`Created ${formatRelativeDate(snapshot.story.createdAt)}`}
     >
-      <section className="flex flex-wrap items-center gap-3">
-        <Badge variant={stageTone(snapshot.story.currentStage)}>{pipelineStageLabel(snapshot.story.currentStage)}</Badge>
-        <Badge variant="outline">{storyTypeLabel(snapshot.story.storyType)}</Badge>
-        {snapshot.storyPackage ? <Badge variant="outline">{contentStatusLabel(snapshot.storyPackage.status) || snapshot.storyPackage.status}</Badge> : null}
+      <section className="space-y-4">
+        <StoryProgressBar currentStage={snapshot.story.currentStage} />
+        <div className="flex flex-wrap items-center gap-3">
+          <Badge variant="outline">{storyTypeLabel(snapshot.story.storyType)}</Badge>
+          {snapshot.storyPackage ? <Badge variant="outline">{contentStatusLabel(snapshot.storyPackage.status) || snapshot.storyPackage.status}</Badge> : null}
+        </div>
       </section>
 
       <section className="grid gap-4 md:grid-cols-3">
@@ -145,6 +149,9 @@ export default async function StoryDetailPage({ params }: StoryDetailPageProps) 
                 </div>
                 <div className="mt-5 rounded-2xl border border-[var(--border)] bg-[var(--surface-muted)] p-5 text-sm leading-7 text-[var(--foreground)] whitespace-pre-wrap break-words">
                   {content.body}
+                </div>
+                <div className="mt-4 border-t border-[var(--border)] pt-4">
+                  <ContentReviewButtons contentId={content.id} currentStatus={content.status} />
                 </div>
               </Card>
             ))}

@@ -6,7 +6,166 @@ import { BodyText, Button, Card, CardTitle } from "@canopy/ui";
 import { StoriesShell } from "@/app/_components/stories-shell";
 import { PipelineBoard } from "@/app/_components/pipeline-board";
 import { FormBuilderDialog } from "@/app/_components/form-builder-dialog";
-import type { FlatProject, FlatForm } from "@/lib/stories-data";
+import { pipelineStageLabel } from "@/lib/stories-domain";
+import type { FlatProject, FlatForm, FormSubmissionItem } from "@/lib/stories-data";
+
+// ─── Form responses tab ──────────────────────────────────────────────────────
+
+function FormResponsesTab({
+  forms,
+  onCreateForm,
+  onDeleteForm,
+  typeColors,
+}: {
+  forms: FlatForm[];
+  onCreateForm: () => void;
+  onDeleteForm: (id: string) => void;
+  typeColors: Record<string, string>;
+}) {
+  const [expandedFormId, setExpandedFormId] = useState<string | null>(null);
+  const [responses, setResponses] = useState<Record<string, FormSubmissionItem[]>>({});
+  const [loadingId, setLoadingId] = useState<string | null>(null);
+
+  async function toggleResponses(formId: string) {
+    if (expandedFormId === formId) {
+      setExpandedFormId(null);
+      return;
+    }
+    setExpandedFormId(formId);
+    if (responses[formId]) return; // already loaded
+    setLoadingId(formId);
+    try {
+      const res = await fetch(`/api/submissions?formId=${formId}`);
+      if (res.ok) {
+        const data = (await res.json()) as FormSubmissionItem[];
+        setResponses((prev) => ({ ...prev, [formId]: data }));
+      }
+    } finally {
+      setLoadingId(null);
+    }
+  }
+
+  if (forms.length === 0) {
+    return (
+      <div className="space-y-3">
+        <div className="flex items-center justify-between">
+          <p className="text-sm font-semibold text-[var(--foreground)]">0 forms</p>
+          <Button variant="primary" size="sm" onClick={onCreateForm}>+ Create Form</Button>
+        </div>
+        <div className="py-12 text-center">
+          <CardTitle>No forms yet</CardTitle>
+          <BodyText muted className="mt-2">Create an intake form to start collecting story submissions.</BodyText>
+          <div className="mt-5">
+            <Button variant="primary" onClick={onCreateForm}>Create Form</Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-3">
+      <div className="flex items-center justify-between">
+        <p className="text-sm font-semibold text-[var(--foreground)]">{forms.length} form{forms.length !== 1 ? "s" : ""}</p>
+        <Button variant="primary" size="sm" onClick={onCreateForm}>+ Create Form</Button>
+      </div>
+      <div className="divide-y divide-[var(--border)]">
+        {forms.map((form) => (
+          <div key={form.id}>
+            <div className="flex flex-wrap items-center justify-between gap-3 py-4">
+              <div className="min-w-0">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="font-medium text-[var(--foreground)]">{form.title}</span>
+                  <span className={`rounded-full px-2 py-0.5 text-[11px] font-semibold uppercase tracking-[0.06em] ${typeColors[form.storyType] ?? "bg-gray-100 text-gray-700"}`}>
+                    {form.storyType.replace("_", "/")}
+                  </span>
+                  <span className={`rounded-full border px-2 py-0.5 text-[11px] font-semibold ${form.submissionCount > 0 ? "border-emerald-200 bg-emerald-50 text-emerald-700" : "border-[var(--border)] bg-[var(--surface-muted)] text-[var(--text-muted)]"}`}>
+                    {form.submissionCount} response{form.submissionCount !== 1 ? "s" : ""}
+                  </span>
+                </div>
+                {form.description && (
+                  <BodyText muted className="mt-0.5 text-[13px]">{form.description}</BodyText>
+                )}
+              </div>
+              <div className="flex items-center gap-2">
+                {form.submissionCount > 0 && (
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    onClick={() => toggleResponses(form.id)}
+                  >
+                    {expandedFormId === form.id ? "Hide responses" : "View responses"}
+                  </Button>
+                )}
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => {
+                    navigator.clipboard.writeText(`${window.location.origin}/forms/${form.publicSlug}`);
+                  }}
+                >
+                  Copy Link
+                </Button>
+                <Button asChild variant="primary" size="sm">
+                  <Link href={`/forms/${form.publicSlug}`} target="_blank">Open</Link>
+                </Button>
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  className="text-rose-600 hover:bg-rose-50"
+                  onClick={() => onDeleteForm(form.id)}
+                >
+                  Delete
+                </Button>
+              </div>
+            </div>
+
+            {/* Inline response list */}
+            {expandedFormId === form.id && (
+              <div className="mb-4 rounded-2xl border border-[var(--border)] bg-[var(--surface-muted)] p-4">
+                {loadingId === form.id ? (
+                  <BodyText muted className="text-[13px]">Loading responses…</BodyText>
+                ) : (responses[form.id] ?? []).length === 0 ? (
+                  <BodyText muted className="text-[13px]">No responses found.</BodyText>
+                ) : (
+                  <div className="divide-y divide-[var(--border)]">
+                    {(responses[form.id] ?? []).map((r) => (
+                      <div key={r.id} className="flex flex-wrap items-center justify-between gap-3 py-3">
+                        <div>
+                          <span className="text-[14px] font-medium text-[var(--foreground)]">
+                            {r.submitterName || "Unnamed respondent"}
+                          </span>
+                          {r.submitterEmail && (
+                            <span className="ml-2 text-[13px] text-[var(--text-muted)]">{r.submitterEmail}</span>
+                          )}
+                          <div className="mt-0.5 flex items-center gap-2">
+                            <span className="text-[12px] text-[var(--text-muted)]">
+                              {new Date(r.submittedAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
+                            </span>
+                            {r.storyStage && (
+                              <span className="rounded-full border border-indigo-200 bg-indigo-50 px-2 py-0.5 text-[11px] font-semibold text-indigo-700">
+                                {pipelineStageLabel(r.storyStage)}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                        {r.storyId && (
+                          <Button asChild variant="secondary" size="sm">
+                            <Link href={`/stories/${r.storyId}`}>Open Story</Link>
+                          </Button>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
 
 type Story = {
   id: string;
@@ -197,33 +356,54 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
       }
     >
       {/* Stat row */}
-      <div className="flex flex-wrap gap-x-8 gap-y-4 border-b border-[var(--border)] pb-5">
-        <div>
-          <p className="text-[12px] font-medium uppercase tracking-[0.06em] text-[var(--text-muted)]">Story goal</p>
-          <p className="mt-1 text-2xl font-bold text-[var(--foreground)]">{project.storyCountTarget ?? "—"}</p>
-          <p className="mt-0.5 text-[12px] text-[var(--text-muted)]">{stories.length} created</p>
-        </div>
-        <div>
-          <p className="text-[12px] font-medium uppercase tracking-[0.06em] text-[var(--text-muted)]">Forms</p>
-          <p className="mt-1 text-2xl font-bold text-[var(--foreground)]">{forms.length}</p>
-          <p className="mt-0.5 text-[12px] text-[var(--text-muted)]">active</p>
-        </div>
-        <div>
-          <p className="text-[12px] font-medium uppercase tracking-[0.06em] text-[var(--text-muted)]">Delivered</p>
-          <p className="mt-1 text-2xl font-bold text-[var(--foreground)]">
-            {stories.filter((s) => s.currentStage === "delivered").length}
-          </p>
-          <p className="mt-0.5 text-[12px] text-[var(--text-muted)]">stories</p>
-        </div>
-        <div>
-          <p className="text-[12px] font-medium uppercase tracking-[0.06em] text-[var(--text-muted)]">Status</p>
-          <p className="mt-1">
-            <span className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-[0.06em] ${statusBadge(project.status)}`}>
-              {project.status}
-            </span>
-          </p>
-        </div>
-      </div>
+      {(() => {
+        const delivered = stories.filter((s) => s.currentStage === "delivered").length;
+        const target = project.storyCountTarget ?? stories.length;
+        const pct = target > 0 ? Math.min(100, Math.round((delivered / target) * 100)) : 0;
+        return (
+          <div className="space-y-4 border-b border-[var(--border)] pb-5">
+            <div className="flex flex-wrap gap-x-8 gap-y-4">
+              <div>
+                <p className="text-[12px] font-medium uppercase tracking-[0.06em] text-[var(--text-muted)]">Story goal</p>
+                <p className="mt-1 text-2xl font-bold text-[var(--foreground)]">{project.storyCountTarget ?? "—"}</p>
+                <p className="mt-0.5 text-[12px] text-[var(--text-muted)]">{stories.length} created</p>
+              </div>
+              <div>
+                <p className="text-[12px] font-medium uppercase tracking-[0.06em] text-[var(--text-muted)]">Forms</p>
+                <p className="mt-1 text-2xl font-bold text-[var(--foreground)]">{forms.length}</p>
+                <p className="mt-0.5 text-[12px] text-[var(--text-muted)]">active</p>
+              </div>
+              <div>
+                <p className="text-[12px] font-medium uppercase tracking-[0.06em] text-[var(--text-muted)]">Delivered</p>
+                <p className="mt-1 text-2xl font-bold text-[var(--foreground)]">{delivered}</p>
+                <p className="mt-0.5 text-[12px] text-[var(--text-muted)]">stories</p>
+              </div>
+              <div>
+                <p className="text-[12px] font-medium uppercase tracking-[0.06em] text-[var(--text-muted)]">Status</p>
+                <p className="mt-1">
+                  <span className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-[0.06em] ${statusBadge(project.status)}`}>
+                    {project.status}
+                  </span>
+                </p>
+              </div>
+            </div>
+            {target > 0 && (
+              <div className="max-w-sm">
+                <div className="mb-1.5 flex items-center justify-between text-[12px]">
+                  <span className="font-medium text-[var(--text-muted)]">Delivery progress</span>
+                  <span className="font-semibold text-[var(--foreground)]">{delivered} of {target} delivered · {pct}%</span>
+                </div>
+                <div className="h-2 w-full overflow-hidden rounded-full bg-[var(--surface-muted)]">
+                  <div
+                    className="h-full rounded-full bg-[#1e40af] transition-all duration-500"
+                    style={{ width: `${pct}%` }}
+                  />
+                </div>
+              </div>
+            )}
+          </div>
+        );
+      })()}
 
       {/* Tabs */}
       <div className="border-b border-[var(--border)]">
@@ -258,66 +438,12 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
 
       {/* Tab: Forms */}
       {activeTab === "forms" && (
-        <div className="space-y-3">
-          <div className="flex items-center justify-between">
-            <p className="text-sm font-semibold text-[var(--foreground)]">{forms.length} form{forms.length !== 1 ? "s" : ""}</p>
-            <Button variant="primary" size="sm" onClick={() => setFormBuilderOpen(true)}>
-              + Create Form
-            </Button>
-          </div>
-
-          {forms.length === 0 ? (
-            <div className="py-12 text-center">
-              <CardTitle>No forms yet</CardTitle>
-              <BodyText muted className="mt-2">Create an intake form to start collecting story submissions.</BodyText>
-              <div className="mt-5">
-                <Button variant="primary" onClick={() => setFormBuilderOpen(true)}>
-                  Create Form
-                </Button>
-              </div>
-            </div>
-          ) : (
-            <div className="divide-y divide-[var(--border)]">
-              {forms.map((form) => (
-                <div key={form.id} className="flex flex-wrap items-center justify-between gap-3 py-4">
-                  <div className="min-w-0">
-                    <div className="flex items-center gap-2">
-                      <span className="font-medium text-[var(--foreground)]">{form.title}</span>
-                      <span className={`rounded-full px-2 py-0.5 text-[11px] font-semibold uppercase tracking-[0.06em] ${typeColors[form.storyType] ?? "bg-gray-100 text-gray-700"}`}>
-                        {form.storyType.replace("_", "/")}
-                      </span>
-                    </div>
-                    {form.description && (
-                      <BodyText muted className="mt-0.5 text-[13px]">{form.description}</BodyText>
-                    )}
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Button
-                      variant="secondary"
-                      size="sm"
-                      onClick={() => {
-                        navigator.clipboard.writeText(`${window.location.origin}/forms/${form.publicSlug}`);
-                      }}
-                    >
-                      Copy Link
-                    </Button>
-                    <Button asChild variant="primary" size="sm">
-                      <Link href={`/forms/${form.publicSlug}`} target="_blank">Open</Link>
-                    </Button>
-                    <Button
-                      variant="secondary"
-                      size="sm"
-                      className="text-rose-600 hover:bg-rose-50"
-                      onClick={() => handleDeleteForm(form.id)}
-                    >
-                      Delete
-                    </Button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
+        <FormResponsesTab
+          forms={forms}
+          onCreateForm={() => setFormBuilderOpen(true)}
+          onDeleteForm={handleDeleteForm}
+          typeColors={typeColors}
+        />
       )}
 
       {/* Tab: Content */}

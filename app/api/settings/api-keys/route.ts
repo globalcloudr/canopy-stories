@@ -11,11 +11,12 @@ export async function GET(request: Request) {
 
   try {
     const keys = await getWorkspaceApiKeys(workspaceId);
-    // Return masked values — never expose raw keys to the browser
+    // Return masked key status — actual key values are never sent to the browser
     return NextResponse.json({
       hasOpenaiKey: !!keys?.openaiApiKey,
       hasVideoKey: !!keys?.videoApiKey,
       videoApiProvider: keys?.videoApiProvider ?? "json2video",
+      notificationEmail: keys?.notificationEmail ?? null,
     });
   } catch (error) {
     return NextResponse.json(
@@ -32,6 +33,7 @@ export async function POST(request: Request) {
       openaiApiKey?: string;
       videoApiKey?: string;
       videoApiProvider?: string;
+      notificationEmail?: string;
     };
 
     if (!body.workspaceId?.trim()) {
@@ -42,12 +44,13 @@ export async function POST(request: Request) {
       openaiApiKey: body.openaiApiKey,
       videoApiKey: body.videoApiKey,
       videoApiProvider: body.videoApiProvider,
+      notificationEmail: body.notificationEmail,
     });
 
     return NextResponse.json({ ok: true });
   } catch (error) {
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Failed to save API keys." },
+      { error: error instanceof Error ? error.message : "Failed to save settings." },
       { status: 500 }
     );
   }

@@ -13,6 +13,7 @@ import {
 } from "@/lib/stories-domain";
 import type { PublishedIntakeForm, StorySubmission, StoryWorkflowSummary } from "@/lib/stories-domain";
 import { buildStoryArtifacts } from "@/lib/stories-automation";
+import { sendPackageReadyEmail } from "@/lib/stories-email";
 import type {
   StoryAssetStatus,
   StoryAssetType,
@@ -589,6 +590,23 @@ async function runStoryAutomation(story: StoryRecord) {
       await patchSubmissionRecord(story.submissionId, {
         status: "reviewed",
       });
+    }
+
+    // Send package-ready email if workspace has a notification address configured
+    try {
+      const keys = await getWorkspaceApiKeys(story.workspaceId);
+      if (keys?.notificationEmail) {
+        const workspaces = await getOrganizationsByIds([story.workspaceId]);
+        await sendPackageReadyEmail({
+          to: keys.notificationEmail,
+          subjectName: story.subjectName,
+          storyTitle: story.title,
+          storyId: story.id,
+          workspaceName: workspaces[0]?.name ?? "your workspace",
+        });
+      }
+    } catch {
+      // Email failure is non-fatal
     }
   } catch (error) {
     await patchStoryRecord(story.id, {
@@ -1385,6 +1403,57 @@ export async function listSubmissionItems() {
   });
 }
 
+export type FormSubmissionItem = {
+  id: string;
+  submitterName: string | null;
+  submitterEmail: string | null;
+  status: string;
+  submittedAt: string;
+  storyId: string | null;
+  storyStage: string | null;
+};
+
+export async function listSubmissionsForForm(formId: string): Promise<FormSubmissionItem[]> {
+  if (!isStoriesPersistenceEnabled()) return [];
+
+  const submissions = await requestJsonOrEmpty<StorySubmissionRow[]>(
+    "/rest/v1/story_submissions",
+    new URLSearchParams({
+      select: "id,submitter_name,submitter_email,status,submitted_at",
+      form_id: `eq.${formId}`,
+      order: "submitted_at.desc",
+    })
+  );
+
+  if (submissions.length === 0) return [];
+
+  const submissionIds = submissions.map((s) => s.id);
+  const stories = await requestJsonOrEmpty<{ id: string; submission_id: string | null; current_stage: string }[]>(
+    "/rest/v1/story_records",
+    new URLSearchParams({
+      select: "id,submission_id,current_stage",
+      submission_id: `in.(${submissionIds.join(",")})`,
+    })
+  );
+
+  const storyBySubmission = new Map(
+    stories.filter((s) => s.submission_id).map((s) => [s.submission_id!, s])
+  );
+
+  return submissions.map((row) => {
+    const story = storyBySubmission.get(row.id) ?? null;
+    return {
+      id: row.id,
+      submitterName: row.submitter_name,
+      submitterEmail: row.submitter_email,
+      status: row.status,
+      submittedAt: row.submitted_at,
+      storyId: story?.id ?? null,
+      storyStage: story?.current_stage ?? null,
+    };
+  });
+}
+
 export async function listStoryLibraryItems(): Promise<StoryLibraryItem[]> {
   if (!isStoriesPersistenceEnabled()) {
     return sampleStories.map<StoryLibraryItem>((story) => ({
@@ -1789,6 +1858,7 @@ export type FlatForm = {
   isActive: boolean;
   shareableLink: string;
   createdAt: string;
+  submissionCount: number;
 };
 
 export async function listFormsForProject(projectId: string): Promise<FlatForm[]> {
@@ -1807,6 +1877,7 @@ export async function listFormsForProject(projectId: string): Promise<FlatForm[]
         isActive: true,
         shareableLink: f.shareablePath,
         createdAt: new Date().toISOString(),
+        submissionCount: 0,
       }));
   }
 
@@ -1818,6 +1889,22 @@ export async function listFormsForProject(projectId: string): Promise<FlatForm[]
       order: "created_at.asc",
     })
   );
+
+  if (rows.length === 0) return [];
+
+  // Fetch submission counts for all forms in one query
+  const formIds = rows.map((r) => r.id);
+  const submissionRows = await requestJsonOrEmpty<{ form_id: string }[]>(
+    "/rest/v1/story_submissions",
+    new URLSearchParams({
+      select: "form_id",
+      form_id: `in.(${formIds.join(",")})`,
+    })
+  );
+  const countByFormId = new Map<string, number>();
+  for (const s of submissionRows) {
+    countByFormId.set(s.form_id, (countByFormId.get(s.form_id) ?? 0) + 1);
+  }
 
   return rows.map((row) => ({
     id: row.id,
@@ -1831,6 +1918,7 @@ export async function listFormsForProject(projectId: string): Promise<FlatForm[]
     isActive: row.is_active,
     shareableLink: `/forms/${row.public_slug}`,
     createdAt: (row as any).created_at ?? new Date().toISOString(),
+    submissionCount: countByFormId.get(row.id) ?? 0,
   }));
 }
 
@@ -2136,6 +2224,7 @@ type WorkspaceApiKeyRow = {
   openai_api_key: string | null;
   video_api_key: string | null;
   video_api_provider: string | null;
+  notification_email: string | null;
   updated_at: string;
 };
 
@@ -2143,6 +2232,7 @@ export type WorkspaceApiKeys = {
   openaiApiKey: string | null;
   videoApiKey: string | null;
   videoApiProvider: string | null;
+  notificationEmail: string | null;
 };
 
 export async function getWorkspaceApiKeys(workspaceId: string): Promise<WorkspaceApiKeys | null> {
@@ -2151,7 +2241,7 @@ export async function getWorkspaceApiKeys(workspaceId: string): Promise<Workspac
   const rows = await requestJsonOrEmpty<WorkspaceApiKeyRow[]>(
     "/rest/v1/workspace_api_keys",
     new URLSearchParams({
-      select: "id,workspace_id,openai_api_key,video_api_key,video_api_provider,updated_at",
+      select: "id,workspace_id,openai_api_key,video_api_key,video_api_provider,notification_email,updated_at",
       workspace_id: `eq.${workspaceId}`,
       limit: "1",
     })
@@ -2162,6 +2252,7 @@ export async function getWorkspaceApiKeys(workspaceId: string): Promise<Workspac
     openaiApiKey: row.openai_api_key,
     videoApiKey: row.video_api_key,
     videoApiProvider: row.video_api_provider,
+    notificationEmail: row.notification_email,
   };
 }
 
@@ -2179,6 +2270,7 @@ export async function upsertWorkspaceApiKeys(
   if (keys.openaiApiKey !== undefined) body.openai_api_key = keys.openaiApiKey || null;
   if (keys.videoApiKey !== undefined) body.video_api_key = keys.videoApiKey || null;
   if (keys.videoApiProvider !== undefined) body.video_api_provider = keys.videoApiProvider || null;
+  if (keys.notificationEmail !== undefined) body.notification_email = keys.notificationEmail || null;
 
   const url = new URL("/rest/v1/workspace_api_keys", env.supabaseUrl);
   const res = await fetch(url.toString(), {
@@ -2196,4 +2288,16 @@ export async function upsertWorkspaceApiKeys(
     const text = await res.text();
     throw new Error(`Failed to save API keys: ${text}`);
   }
+}
+
+export async function updateContentStatus(
+  contentId: string,
+  workspaceId: string,
+  status: "draft" | "ready" | "approved"
+): Promise<void> {
+  const params = new URLSearchParams({ id: `eq.${contentId}`, workspace_id: `eq.${workspaceId}` });
+  await requestJson<unknown>(`/rest/v1/story_content?${params.toString()}`, undefined, {
+    method: "PATCH",
+    body: { status },
+  });
 }
