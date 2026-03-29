@@ -196,33 +196,33 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
         </>
       }
     >
-      {/* Metric cards */}
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        <Card padding="sm" className="rounded-[20px]">
-          <p className="text-[12px] font-medium uppercase tracking-[0.06em] text-[var(--text-muted)]">Story Goal</p>
-          <p className="mt-1 text-3xl font-bold text-[var(--foreground)]">{project.storyCountTarget ?? "—"}</p>
-          <p className="mt-1 text-[12px] text-[var(--text-muted)]">{stories.length} stories created</p>
-        </Card>
-        <Card padding="sm" className="rounded-[20px]">
+      {/* Stat row */}
+      <div className="flex flex-wrap gap-x-8 gap-y-4 border-b border-[var(--border)] pb-5">
+        <div>
+          <p className="text-[12px] font-medium uppercase tracking-[0.06em] text-[var(--text-muted)]">Story goal</p>
+          <p className="mt-1 text-2xl font-bold text-[var(--foreground)]">{project.storyCountTarget ?? "—"}</p>
+          <p className="mt-0.5 text-[12px] text-[var(--text-muted)]">{stories.length} created</p>
+        </div>
+        <div>
           <p className="text-[12px] font-medium uppercase tracking-[0.06em] text-[var(--text-muted)]">Forms</p>
-          <p className="mt-1 text-3xl font-bold text-[var(--foreground)]">{forms.length}</p>
-          <p className="mt-1 text-[12px] text-[var(--text-muted)]">intake forms active</p>
-        </Card>
-        <Card padding="sm" className="rounded-[20px]">
+          <p className="mt-1 text-2xl font-bold text-[var(--foreground)]">{forms.length}</p>
+          <p className="mt-0.5 text-[12px] text-[var(--text-muted)]">active</p>
+        </div>
+        <div>
+          <p className="text-[12px] font-medium uppercase tracking-[0.06em] text-[var(--text-muted)]">Delivered</p>
+          <p className="mt-1 text-2xl font-bold text-[var(--foreground)]">
+            {stories.filter((s) => s.currentStage === "delivered").length}
+          </p>
+          <p className="mt-0.5 text-[12px] text-[var(--text-muted)]">stories</p>
+        </div>
+        <div>
           <p className="text-[12px] font-medium uppercase tracking-[0.06em] text-[var(--text-muted)]">Status</p>
           <p className="mt-1">
-            <span className={`inline-flex items-center rounded-full border px-3 py-1 text-sm font-semibold uppercase tracking-[0.06em] ${statusBadge(project.status)}`}>
+            <span className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-[0.06em] ${statusBadge(project.status)}`}>
               {project.status}
             </span>
           </p>
-        </Card>
-        <Card padding="sm" className="rounded-[20px]">
-          <p className="text-[12px] font-medium uppercase tracking-[0.06em] text-[var(--text-muted)]">Delivered</p>
-          <p className="mt-1 text-3xl font-bold text-[var(--foreground)]">
-            {stories.filter((s) => s.currentStage === "delivered").length}
-          </p>
-          <p className="mt-1 text-[12px] text-[var(--text-muted)]">stories delivered</p>
-        </Card>
+        </div>
       </div>
 
       {/* Tabs */}
@@ -251,16 +251,8 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
 
       {/* Tab: Overview */}
       {activeTab === "overview" && (
-        <div className="space-y-4">
-          {project.description && (
-            <Card padding="sm" className="rounded-[20px]">
-              <BodyText muted>{project.description}</BodyText>
-            </Card>
-          )}
-          <div>
-            <p className="mb-3 text-sm font-semibold text-[var(--foreground)]">Story Pipeline</p>
-            <PipelineBoard stories={pipelineStories} />
-          </div>
+        <div className="space-y-5">
+          <PipelineBoard stories={pipelineStories} />
         </div>
       )}
 
@@ -275,7 +267,7 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
           </div>
 
           {forms.length === 0 ? (
-            <Card padding="md" className="py-12 text-center">
+            <div className="py-12 text-center">
               <CardTitle>No forms yet</CardTitle>
               <BodyText muted className="mt-2">Create an intake form to start collecting story submissions.</BodyText>
               <div className="mt-5">
@@ -283,47 +275,45 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
                   Create Form
                 </Button>
               </div>
-            </Card>
+            </div>
           ) : (
-            <div className="space-y-3">
+            <div className="divide-y divide-[var(--border)]">
               {forms.map((form) => (
-                <Card key={form.id} padding="sm" className="rounded-[20px]">
-                  <div className="flex flex-wrap items-start justify-between gap-3">
-                    <div className="min-w-0">
-                      <CardTitle className="text-base">{form.title}</CardTitle>
-                      <div className="mt-1 flex items-center gap-2">
-                        <span className={`rounded-full px-2 py-0.5 text-[11px] font-semibold uppercase tracking-[0.06em] ${typeColors[form.storyType] ?? "bg-gray-100 text-gray-700"}`}>
-                          {form.storyType.replace("_", "/")}
-                        </span>
-                        {form.description && (
-                          <BodyText muted className="text-[12px]">{form.description}</BodyText>
-                        )}
-                      </div>
-                    </div>
+                <div key={form.id} className="flex flex-wrap items-center justify-between gap-3 py-4">
+                  <div className="min-w-0">
                     <div className="flex items-center gap-2">
-                      <Button
-                        variant="secondary"
-                        size="sm"
-                        onClick={() => {
-                          navigator.clipboard.writeText(`${window.location.origin}/forms/${form.publicSlug}`);
-                        }}
-                      >
-                        Copy Link
-                      </Button>
-                      <Button asChild variant="primary" size="sm">
-                        <Link href={`/forms/${form.publicSlug}`} target="_blank">Open</Link>
-                      </Button>
-                      <Button
-                        variant="secondary"
-                        size="sm"
-                        className="text-rose-600 hover:bg-rose-50"
-                        onClick={() => handleDeleteForm(form.id)}
-                      >
-                        Delete
-                      </Button>
+                      <span className="font-medium text-[var(--foreground)]">{form.title}</span>
+                      <span className={`rounded-full px-2 py-0.5 text-[11px] font-semibold uppercase tracking-[0.06em] ${typeColors[form.storyType] ?? "bg-gray-100 text-gray-700"}`}>
+                        {form.storyType.replace("_", "/")}
+                      </span>
                     </div>
+                    {form.description && (
+                      <BodyText muted className="mt-0.5 text-[13px]">{form.description}</BodyText>
+                    )}
                   </div>
-                </Card>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      onClick={() => {
+                        navigator.clipboard.writeText(`${window.location.origin}/forms/${form.publicSlug}`);
+                      }}
+                    >
+                      Copy Link
+                    </Button>
+                    <Button asChild variant="primary" size="sm">
+                      <Link href={`/forms/${form.publicSlug}`} target="_blank">Open</Link>
+                    </Button>
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      className="text-rose-600 hover:bg-rose-50"
+                      onClick={() => handleDeleteForm(form.id)}
+                    >
+                      Delete
+                    </Button>
+                  </div>
+                </div>
               ))}
             </div>
           )}
@@ -336,44 +326,42 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
           <p className="text-sm font-semibold text-[var(--foreground)]">{stories.length} stor{stories.length !== 1 ? "ies" : "y"}</p>
 
           {stories.length === 0 ? (
-            <Card padding="md" className="py-12 text-center">
+            <div className="py-12 text-center">
               <CardTitle>No stories yet</CardTitle>
               <BodyText muted className="mt-2">Stories are created automatically when intake forms are submitted.</BodyText>
-            </Card>
+            </div>
           ) : (
-            <div className="space-y-3">
+            <div className="divide-y divide-[var(--border)]">
               {stories.map((story) => (
-                <Card key={story.id} padding="sm" className="rounded-[20px]">
-                  <div className="flex flex-wrap items-start justify-between gap-3">
-                    <div className="min-w-0">
-                      <CardTitle className="text-base">{story.title}</CardTitle>
-                      <div className="mt-1 flex items-center gap-2">
-                        <span className={`rounded-full px-2 py-0.5 text-[11px] font-semibold uppercase tracking-[0.06em] ${typeColors[story.storyType] ?? "bg-gray-100 text-gray-700"}`}>
-                          {story.storyType.replace("_", "/")}
-                        </span>
-                        {story.subjectName && (
-                          <BodyText muted className="text-[12px]">{story.subjectName}</BodyText>
-                        )}
-                      </div>
-                    </div>
+                <div key={story.id} className="flex flex-wrap items-center justify-between gap-3 py-4">
+                  <div className="min-w-0">
                     <div className="flex items-center gap-2">
-                      <span className={`rounded-full border px-2 py-0.5 text-[11px] font-semibold uppercase tracking-[0.06em] ${stageBadge(story.currentStage)}`}>
-                        {story.currentStage.replace(/_/g, " ")}
+                      <span className="font-medium text-[var(--foreground)]">{story.title}</span>
+                      <span className={`rounded-full px-2 py-0.5 text-[11px] font-semibold uppercase tracking-[0.06em] ${typeColors[story.storyType] ?? "bg-gray-100 text-gray-700"}`}>
+                        {story.storyType.replace("_", "/")}
                       </span>
-                      <Button asChild variant="primary" size="sm">
-                        <Link href={`/stories/${story.id}`}>Open</Link>
-                      </Button>
-                      <Button
-                        variant="secondary"
-                        size="sm"
-                        className="text-rose-600 hover:bg-rose-50"
-                        onClick={() => handleDeleteStory(story.id)}
-                      >
-                        Delete
-                      </Button>
                     </div>
+                    {story.subjectName && (
+                      <BodyText muted className="mt-0.5 text-[13px]">{story.subjectName}</BodyText>
+                    )}
                   </div>
-                </Card>
+                  <div className="flex items-center gap-2">
+                    <span className={`rounded-full border px-2 py-0.5 text-[11px] font-semibold uppercase tracking-[0.06em] ${stageBadge(story.currentStage)}`}>
+                      {story.currentStage.replace(/_/g, " ")}
+                    </span>
+                    <Button asChild variant="primary" size="sm">
+                      <Link href={`/stories/${story.id}`}>Open</Link>
+                    </Button>
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      className="text-rose-600 hover:bg-rose-50"
+                      onClick={() => handleDeleteStory(story.id)}
+                    >
+                      Delete
+                    </Button>
+                  </div>
+                </div>
               ))}
             </div>
           )}
@@ -386,29 +374,31 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
           <p className="text-sm font-semibold text-[var(--foreground)]">{assets.length} asset{assets.length !== 1 ? "s" : ""}</p>
 
           {assets.length === 0 ? (
-            <Card padding="md" className="py-12 text-center">
+            <div className="py-12 text-center">
               <CardTitle>No assets yet</CardTitle>
               <BodyText muted className="mt-2">Assets are generated automatically as stories move through the pipeline.</BodyText>
-            </Card>
+            </div>
           ) : (
-            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="divide-y divide-[var(--border)]">
               {assets.map((asset) => (
-                <Card key={asset.id} padding="sm" className="rounded-[20px]">
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.06em] text-[var(--text-muted)]">
-                    {asset.assetType.replace(/_/g, " ")}
-                  </p>
-                  <CardTitle className="mt-1 text-sm">{asset.storyTitle}</CardTitle>
-                  <div className="mt-3 flex items-center gap-2">
-                    <span className={`rounded-full border px-2 py-0.5 text-[11px] font-semibold ${asset.status === "ready" ? "border-emerald-200 bg-emerald-50 text-emerald-700" : "border-gray-200 bg-gray-50 text-gray-600"}`}>
+                <div key={asset.id} className="flex items-center justify-between gap-3 py-4">
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2">
+                      <span className="font-medium text-[var(--foreground)]">{asset.storyTitle}</span>
+                      <span className="text-[11px] font-semibold uppercase tracking-[0.06em] text-[var(--text-muted)]">
+                        {asset.assetType}
+                      </span>
+                    </div>
+                    <span className={`mt-0.5 inline-block rounded-full border px-2 py-0.5 text-[11px] font-semibold ${asset.status === "ready" ? "border-emerald-200 bg-emerald-50 text-emerald-700" : "border-gray-200 bg-gray-50 text-gray-600"}`}>
                       {asset.status}
                     </span>
-                    {asset.fileUrl && (
-                      <Button asChild variant="secondary" size="sm">
-                        <a href={asset.fileUrl} target="_blank" rel="noopener noreferrer">Download</a>
-                      </Button>
-                    )}
                   </div>
-                </Card>
+                  {asset.fileUrl && (
+                    <Button asChild variant="secondary" size="sm">
+                      <a href={asset.fileUrl} target="_blank" rel="noopener noreferrer">Download</a>
+                    </Button>
+                  )}
+                </div>
               ))}
             </div>
           )}
@@ -421,46 +411,43 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
           <p className="text-sm font-semibold text-[var(--foreground)]">{packages.length} package{packages.length !== 1 ? "s" : ""}</p>
 
           {packages.length === 0 ? (
-            <Card padding="md" className="py-12 text-center">
+            <div className="py-12 text-center">
               <CardTitle>No packages yet</CardTitle>
               <BodyText muted className="mt-2">
-                Packages are created automatically when story automation finishes and the deliverable bundle is ready.
+                Packages are created automatically when the content bundle is ready to deliver.
               </BodyText>
-            </Card>
+            </div>
           ) : (
-            <div className="space-y-3">
+            <div className="divide-y divide-[var(--border)]">
               {packages.map((pkg) => (
-                <Card key={pkg.id} padding="sm" className="rounded-[20px]">
-                  <div className="flex flex-wrap items-start justify-between gap-3">
-                    <div className="min-w-0">
-                      <CardTitle className="text-base">{pkg.name}</CardTitle>
-                      {pkg.description && (
-                        <BodyText muted className="mt-1 text-[12px]">{pkg.description}</BodyText>
-                      )}
-                      <BodyText muted className="mt-1 text-[12px]">{pkg.downloadCount} downloads</BodyText>
-                    </div>
+                <div key={pkg.id} className="flex flex-wrap items-center justify-between gap-3 py-4">
+                  <div className="min-w-0">
                     <div className="flex items-center gap-2">
+                      <span className="font-medium text-[var(--foreground)]">{pkg.name}</span>
                       <span className={`rounded-full border px-2 py-0.5 text-[11px] font-semibold uppercase tracking-[0.06em] ${pkg.status === "delivered" || pkg.status === "ready" ? "border-emerald-200 bg-emerald-50 text-emerald-700" : "border-indigo-200 bg-indigo-50 text-indigo-700"}`}>
                         {pkg.status}
                       </span>
-                      <Button
-                        variant="secondary"
-                        size="sm"
-                        onClick={() => navigator.clipboard.writeText(`${window.location.origin}/package/${pkg.id}`)}
-                      >
-                        Copy Link
-                      </Button>
-                      <Button
-                        variant="secondary"
-                        size="sm"
-                        className="text-rose-600 hover:bg-rose-50"
-                        onClick={() => handleDeletePackage(pkg.id)}
-                      >
-                        Delete
-                      </Button>
                     </div>
+                    <BodyText muted className="mt-0.5 text-[13px]">{pkg.downloadCount} downloads</BodyText>
                   </div>
-                </Card>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      onClick={() => navigator.clipboard.writeText(`${window.location.origin}/package/${pkg.id}`)}
+                    >
+                      Copy Link
+                    </Button>
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      className="text-rose-600 hover:bg-rose-50"
+                      onClick={() => handleDeletePackage(pkg.id)}
+                    >
+                      Delete
+                    </Button>
+                  </div>
+                </div>
               ))}
             </div>
           )}

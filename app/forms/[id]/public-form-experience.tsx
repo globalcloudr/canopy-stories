@@ -88,6 +88,22 @@ export function PublicFormExperience({ form }: PublicFormExperienceProps) {
 
   const isUploading = Object.values(uploadingFields).some(Boolean);
 
+  if (submitState.type === "success") {
+    return (
+      <div className="mt-8 rounded-[24px] border border-emerald-200 bg-emerald-50 px-6 py-10 text-center">
+        <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-emerald-100 text-emerald-600">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="h-6 w-6">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+          </svg>
+        </div>
+        <p className="text-lg font-semibold text-emerald-900">Thank you!</p>
+        <p className="mt-2 text-[15px] leading-6 text-emerald-800">
+          Your story is in good hands. We'll use what you shared to create content — no further action needed from you.
+        </p>
+      </div>
+    );
+  }
+
   return (
     <form className="mt-8 space-y-5" onSubmit={handleSubmit}>
       {form.fields.map((field) => (
@@ -152,25 +168,14 @@ export function PublicFormExperience({ form }: PublicFormExperienceProps) {
         </div>
       ))}
 
-      {submitState.type === "success" ? (
-        <div className="rounded-[24px] border border-emerald-200 bg-emerald-50 px-4 py-3">
-          <BodyText className="text-emerald-800">{submitState.message}</BodyText>
-        </div>
-      ) : null}
-
       {submitState.type === "error" ? (
         <div className="rounded-[24px] border border-rose-200 bg-rose-50 px-4 py-3">
           <BodyText className="text-rose-700">{submitState.message}</BodyText>
         </div>
       ) : null}
 
-      <div className="rounded-[24px] border border-[var(--border)] bg-[var(--surface-muted)] px-4 py-3 text-sm leading-6 text-[var(--text-muted)]">
-        This first persistence slice saves the submission and creates a linked story record. Asset uploads and automation
-        will come in later phases.
-      </div>
-
       <Button type="submit" variant="primary" size="lg" className="w-full" disabled={submitState.type === "submitting" || isUploading}>
-        {isUploading ? "Uploading photo..." : submitState.type === "submitting" ? "Submitting..." : "Submit story information"}
+        {isUploading ? "Uploading photo…" : submitState.type === "submitting" ? "Submitting…" : "Share your story"}
       </Button>
     </form>
   );

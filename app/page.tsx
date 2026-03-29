@@ -1,9 +1,9 @@
 export const dynamic = "force-dynamic";
 import Link from "next/link";
-import { BodyText, Button, Card, CardTitle, Eyebrow, SectionTitle } from "@canopy/ui";
+import { BodyText, Button, Card, CardTitle, SectionTitle } from "@canopy/ui";
 import { StoriesShell } from "@/app/_components/stories-shell";
 import { getStoriesOverviewSnapshot } from "@/lib/stories-data";
-import { formatRelativeDate } from "@/lib/stories-domain";
+import { formatRelativeDate, pipelineStageLabel, storyTypeLabel } from "@/lib/stories-domain";
 
 type HomePageProps = {
   searchParams?: Promise<{
@@ -34,10 +34,6 @@ function DashboardStatCard({
       ) : null}
     </Card>
   );
-}
-
-function stageLabel(value: string) {
-  return value.replace(/_/g, " ");
 }
 
 function stageClass(stage: string) {
@@ -84,17 +80,17 @@ export default async function HomePage({ searchParams }: HomePageProps) {
           value={overview.activeProjectCount}
           trend={overview.projectCount > 0 ? `${overview.projectCount} total` : undefined}
         />
-        <DashboardStatCard title="Forms Submitted" value={overview.submissionCount} />
-        <DashboardStatCard title="In Production" value={overview.storiesInProductionCount} />
-        <DashboardStatCard title="Delivered" value={overview.deliveredCount} />
-        <DashboardStatCard title="Avg Processing" value="12m" trend="Target: 10-15m" />
-        <DashboardStatCard title="Success Rate" value="100%" trend="Fully automated" />
+        <DashboardStatCard title="Responses Received" value={overview.submissionCount} />
+        <DashboardStatCard title="Stories in Progress" value={overview.storiesInProductionCount} />
+        <DashboardStatCard title="Delivered" value={overview.deliveredCount} trend={overview.deliveredCount > 0 ? "Ready to use" : undefined} />
+        <DashboardStatCard title="Avg Turnaround" value="12m" trend="From submission to delivery" />
+        <DashboardStatCard title="Completion Rate" value="100%" trend="All stories delivered" />
       </section>
 
       <section>
         <div className="mb-4">
-          <SectionTitle className="text-[2rem] sm:text-[2rem]">Automation Pipeline</SectionTitle>
-          <BodyText muted className="mt-1">Real-time view of stories moving through automated stages</BodyText>
+          <SectionTitle className="text-[2rem] sm:text-[2rem]">Stories in Progress</SectionTitle>
+          <BodyText muted className="mt-1">Where each story is right now — from first response to final delivery</BodyText>
         </div>
 
         {overview.pipelineStories.length > 0 ? (
@@ -105,7 +101,7 @@ export default async function HomePage({ searchParams }: HomePageProps) {
               return (
                 <Card key={stage.stage} padding="sm" className="w-72 shrink-0 rounded-[20px] border border-[var(--border)] bg-white">
                   <div className="flex items-center justify-between gap-2">
-                    <CardTitle className="text-sm">{stageLabel(stage.stage)}</CardTitle>
+                    <CardTitle className="text-sm">{pipelineStageLabel(stage.stage)}</CardTitle>
                     <span className="rounded-full border border-[var(--border)] bg-[var(--surface-muted)] px-2.5 py-1 text-xs text-[var(--text-muted)]">
                       {stories.length}
                     </span>
@@ -121,7 +117,7 @@ export default async function HomePage({ searchParams }: HomePageProps) {
                           <CardTitle className="text-sm">{story.title}</CardTitle>
                           <BodyText muted className="mt-2">{story.subject}</BodyText>
                           <span className={`mt-3 inline-flex rounded-full border px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.08em] ${stageClass(story.stage)}`}>
-                            {story.type.replace("_", "/")}
+                            {storyTypeLabel(story.type)}
                           </span>
                         </Card>
                       </Link>
@@ -140,7 +136,7 @@ export default async function HomePage({ searchParams }: HomePageProps) {
           <Card padding="md" className="rounded-[24px] border border-[var(--border)] bg-white text-center sm:p-12">
             <div className="mx-auto h-12 w-12 rounded-full border border-[var(--border)] bg-[var(--surface-muted)]" aria-hidden="true" />
             <SectionTitle className="mt-6 text-[1.9rem] sm:text-[1.9rem]">No stories in pipeline yet</SectionTitle>
-            <BodyText muted className="mt-3">Create a project and submit a form to see the automation in action</BodyText>
+            <BodyText muted className="mt-3">Create a project and collect your first response to see stories move through here</BodyText>
             <Button asChild variant="primary" className="mt-6">
               <Link href="/projects">Get Started</Link>
             </Button>
@@ -180,7 +176,7 @@ export default async function HomePage({ searchParams }: HomePageProps) {
                   </div>
 
                   <span className={`mt-5 inline-flex rounded-full border px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.08em] ${stageClass(project.status === "delivered" ? "delivered" : project.status === "active" ? "submitted" : "form_sent")}`}>
-                    {project.status}
+                    {project.status === "planning" ? "Planning" : project.status === "active" ? "Active" : project.status === "paused" ? "Paused" : "Delivered"}
                   </span>
                 </Card>
               </Link>
@@ -189,7 +185,7 @@ export default async function HomePage({ searchParams }: HomePageProps) {
         ) : (
           <Card padding="md" className="rounded-[24px] border border-[var(--border)] bg-white text-center sm:p-10">
             <SectionTitle className="text-[1.8rem] sm:text-[1.8rem]">No projects yet</SectionTitle>
-            <BodyText muted className="mt-3">Create your first project to start automating success story production</BodyText>
+            <BodyText muted className="mt-3">Create your first project to start collecting and delivering success stories</BodyText>
             <Button asChild variant="primary" className="mt-6">
               <Link href="/projects">Create Project</Link>
             </Button>

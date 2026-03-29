@@ -1,6 +1,7 @@
 "use client";
 
-import { Badge, Card, CardTitle, BodyText } from "@canopy/ui";
+import { Card, BodyText } from "@canopy/ui";
+import { pipelineStageLabel, storyTypeLabel } from "@/lib/stories-domain";
 
 type PipelineStory = {
   id: string;
@@ -11,12 +12,12 @@ type PipelineStory = {
 };
 
 const stages = [
-  { key: "form_sent", label: "Form Sent" },
-  { key: "submitted", label: "Submitted" },
-  { key: "ai_processing", label: "AI Processing" },
-  { key: "asset_generation", label: "Asset Generation" },
-  { key: "packaging", label: "Packaging" },
-  { key: "delivered", label: "Delivered" },
+  { key: "form_sent" },
+  { key: "submitted" },
+  { key: "ai_processing" },
+  { key: "asset_generation" },
+  { key: "packaging" },
+  { key: "delivered" },
 ] as const;
 
 const typeColors: Record<string, string> = {
@@ -53,7 +54,7 @@ export function PipelineBoard({ stories }: { stories: PipelineStory[] }) {
         return (
           <div key={stage.key} className="w-[260px] flex-shrink-0">
             <div className={`mb-2 flex items-center justify-between rounded-xl border px-3 py-2 ${headerClass}`}>
-              <span className="text-[13px] font-semibold text-[var(--foreground)]">{stage.label}</span>
+              <span className="text-[13px] font-semibold text-[var(--foreground)]">{pipelineStageLabel(stage.key)}</span>
               <span className="rounded-full bg-white/80 px-2 py-0.5 text-[12px] font-semibold text-[var(--text-muted)]">
                 {items.length}
               </span>
@@ -69,7 +70,7 @@ export function PipelineBoard({ stories }: { stories: PipelineStory[] }) {
                     <span
                       className={`inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide ${typeColors[story.type] ?? "bg-gray-100 text-gray-700"}`}
                     >
-                      {story.type.replace("_", "/")}
+                      {storyTypeLabel(story.type)}
                     </span>
                   </div>
                 </Card>

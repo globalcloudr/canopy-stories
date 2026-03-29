@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Badge, BodyText, Button, Card, CardTitle, Eyebrow, PageTitle, SectionTitle } from "@canopy/ui";
+import { packageStatusLabel } from "@/lib/stories-domain";
 import { PublicStoriesFrame } from "@/app/_components/stories-shell";
 import { getPackageDetailSnapshot } from "@/lib/stories-data";
 
@@ -27,9 +28,9 @@ export default async function PublicPackagePage({ params }: PublicPackagePagePro
 
   return (
     <PublicStoriesFrame
-      eyebrow="Package"
-      title={snapshot.storyPackage.name}
-      subtitle={snapshot.storyPackage.description || `${snapshot.projectName} · ${snapshot.workspaceName}`}
+      eyebrow={snapshot.workspaceName}
+      title={snapshot.story ? `${snapshot.story.title}` : snapshot.storyPackage.name}
+      subtitle={`Here's the content package for ${snapshot.projectName}.`}
     >
       <Card padding="md" className="sm:p-8">
         <div className="flex flex-wrap items-start justify-between gap-4">
@@ -40,7 +41,7 @@ export default async function PublicPackagePage({ params }: PublicPackagePagePro
             </BodyText>
           </div>
           <Badge variant={snapshot.storyPackage.status === "ready" || snapshot.storyPackage.status === "delivered" ? "emerald" : "sky"}>
-            {snapshot.storyPackage.status}
+            {packageStatusLabel(snapshot.storyPackage.status)}
           </Badge>
         </div>
 
@@ -94,8 +95,7 @@ export default async function PublicPackagePage({ params }: PublicPackagePagePro
               <div className="mt-5 space-y-4">
                 {socialContent.map((post) => (
                   <div key={post.id} className="rounded-2xl border border-[var(--border)] bg-[var(--surface-muted)] p-5">
-                    <CardTitle className="text-base">{post.title || post.contentType}</CardTitle>
-                    <BodyText muted className="mt-2">{post.contentType}</BodyText>
+                    <CardTitle className="text-base">{post.title || "Post"}</CardTitle>
                     <div className="mt-4 whitespace-pre-wrap break-words text-[15px] leading-7 text-[var(--foreground)]">
                       {post.body}
                     </div>
@@ -128,36 +128,51 @@ export default async function PublicPackagePage({ params }: PublicPackagePagePro
 
         <div className="space-y-6">
           <Card padding="md" className="sm:p-7">
-            <Eyebrow>Overview</Eyebrow>
-            <PageTitle className="mt-3 text-[2rem]">Package summary</PageTitle>
-            <div className="mt-5 space-y-3 text-[15px] text-[var(--foreground)]">
-              {snapshot.story ? <div>Story: {snapshot.story.title}</div> : null}
-              <div>Status: {snapshot.storyPackage.status}</div>
-              <div>Assets: {snapshot.assets.length}</div>
-              <div>Content pieces: {snapshot.contents.length}</div>
-              {snapshot.storyPackage.expiresAt ? <div>Expires: {new Date(snapshot.storyPackage.expiresAt).toLocaleDateString()}</div> : null}
+            <Eyebrow>Summary</Eyebrow>
+            <PageTitle className="mt-3 text-[2rem]">What's included</PageTitle>
+            <div className="mt-5 grid grid-cols-[100px_1fr] gap-2 text-[15px]">
+              <span className="text-[var(--text-muted)]">Status</span>
+              <span>{packageStatusLabel(snapshot.storyPackage.status)}</span>
+              <span className="text-[var(--text-muted)]">Content</span>
+              <span>{snapshot.contents.length} piece{snapshot.contents.length === 1 ? "" : "s"}</span>
+              <span className="text-[var(--text-muted)]">Media</span>
+              <span>{snapshot.assets.length} file{snapshot.assets.length === 1 ? "" : "s"}</span>
+              {snapshot.storyPackage.expiresAt ? (
+                <>
+                  <span className="text-[var(--text-muted)]">Expires</span>
+                  <span>{new Date(snapshot.storyPackage.expiresAt).toLocaleDateString()}</span>
+                </>
+              ) : null}
             </div>
           </Card>
 
           <Card padding="md" className="sm:p-7">
-            <Eyebrow>Assets</Eyebrow>
-            <PageTitle className="mt-3 text-[2rem]">Media included</PageTitle>
+            <Eyebrow>Media</Eyebrow>
+            <PageTitle className="mt-3 text-[2rem]">Download files</PageTitle>
             <div className="mt-5 space-y-4">
               {videoAssets.map((asset) => (
                 <div key={asset.id} className="rounded-2xl border border-[var(--border)] bg-[var(--surface-muted)] p-5">
                   <CardTitle className="text-base">{asset.fileName}</CardTitle>
-                  <BodyText muted className="mt-2">Video · {asset.status}</BodyText>
-                  <BodyText muted className="mt-2 break-all">{asset.fileUrl}</BodyText>
+                  <BodyText muted className="mt-2">Video</BodyText>
+                  {asset.fileUrl ? (
+                    <a href={asset.fileUrl} target="_blank" rel="noopener noreferrer" className="mt-3 block text-sm underline underline-offset-2">
+                      Download
+                    </a>
+                  ) : null}
                 </div>
               ))}
               {imageAssets.map((asset) => (
                 <div key={asset.id} className="rounded-2xl border border-[var(--border)] bg-[var(--surface-muted)] p-5">
                   <CardTitle className="text-base">{asset.fileName}</CardTitle>
-                  <BodyText muted className="mt-2">Image · {asset.status}</BodyText>
-                  <BodyText muted className="mt-2 break-all">{asset.fileUrl}</BodyText>
+                  <BodyText muted className="mt-2">Image</BodyText>
+                  {asset.fileUrl ? (
+                    <a href={asset.fileUrl} target="_blank" rel="noopener noreferrer" className="mt-3 block text-sm underline underline-offset-2">
+                      Download
+                    </a>
+                  ) : null}
                 </div>
               ))}
-              {snapshot.assets.length === 0 ? <BodyText muted>No media assets yet.</BodyText> : null}
+              {snapshot.assets.length === 0 ? <BodyText muted>No media files in this package yet.</BodyText> : null}
             </div>
           </Card>
         </div>

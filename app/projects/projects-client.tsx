@@ -197,20 +197,14 @@ export function ProjectsClient({ initial }: { initial: FlatProject[] }) {
               </div>
 
               {project.description ? (
-                <BodyText muted className="mt-2 line-clamp-2 text-[13px]">
+                <BodyText muted className="mt-1.5 line-clamp-2 text-[13px]">
                   {project.description}
                 </BodyText>
               ) : null}
 
-              <div className="mt-3 grid grid-cols-2 gap-2 text-[13px]">
-                <div className="rounded-[14px] border border-[var(--border)] bg-white px-3 py-2">
-                  <p className="font-medium text-[var(--foreground)]">{project.storyCountTarget ?? 0}</p>
-                  <p className="text-[var(--text-muted)]">Story goal</p>
-                </div>
-                <div className="rounded-[14px] border border-[var(--border)] bg-white px-3 py-2">
-                  <p className="font-medium text-[var(--foreground)]">{formatDeadline(project.deadlineAt)}</p>
-                  <p className="text-[var(--text-muted)]">Deadline</p>
-                </div>
+              <div className="mt-3 flex gap-4 text-[13px] text-[var(--text-muted)]">
+                {project.storyCountTarget ? <span>{project.storyCountTarget} stories</span> : null}
+                <span>{formatDeadline(project.deadlineAt)}</span>
               </div>
 
               <div className="mt-4 flex items-center gap-2">

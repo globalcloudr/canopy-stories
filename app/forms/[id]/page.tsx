@@ -18,17 +18,8 @@ export default async function PublicFormPage({ params }: PublicFormPageProps) {
   }
 
   return (
-    <PublicStoriesFrame eyebrow="Public intake form" title={form.title} subtitle={form.description}>
+    <PublicStoriesFrame eyebrow={form.workspaceName} title={form.title} subtitle={form.description || "Tell us your story — we'll use your answers to create content for your school."}>
       <section className="rounded-[28px] border border-[var(--border)] bg-white p-6 shadow-[var(--shadow-sm)] sm:p-8">
-        <div className="flex flex-wrap gap-3">
-          <span className="rounded-full border border-[var(--border)] bg-[var(--surface-muted)] px-3 py-1 text-sm text-[var(--text-muted)]">
-            Workspace: {form.workspaceName}
-          </span>
-          <span className="rounded-full border border-[var(--border)] bg-[var(--surface-muted)] px-3 py-1 text-sm text-[var(--text-muted)]">
-            Story type: {form.storyType.replace("_", "/")}
-          </span>
-        </div>
-
         <PublicFormExperience form={form} />
       </section>
     </PublicStoriesFrame>

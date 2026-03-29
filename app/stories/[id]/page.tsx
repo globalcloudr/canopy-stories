@@ -3,32 +3,13 @@ import { notFound } from "next/navigation";
 import { Badge, BodyText, Button, Card, CardTitle, Eyebrow, PageTitle, SectionTitle } from "@canopy/ui";
 import { StoriesShell } from "@/app/_components/stories-shell";
 import { getStoryDetailSnapshot } from "@/lib/stories-data";
-import { formatRelativeDate } from "@/lib/stories-domain";
+import { formatRelativeDate, pipelineStageLabel, storyTypeLabel, contentStatusLabel } from "@/lib/stories-domain";
 
 type StoryDetailPageProps = {
   params: Promise<{
     id: string;
   }>;
 };
-
-function stageLabel(stage: string) {
-  switch (stage) {
-    case "form_sent":
-      return "Form sent";
-    case "submitted":
-      return "Submitted";
-    case "ai_processing":
-      return "AI processing";
-    case "asset_generation":
-      return "Generating assets";
-    case "packaging":
-      return "Packaging";
-    case "delivered":
-      return "Delivered";
-    default:
-      return stage;
-  }
-}
 
 function stageTone(stage: string) {
   if (stage === "delivered") {
@@ -75,9 +56,9 @@ export default async function StoryDetailPage({ params }: StoryDetailPageProps) 
       headerMeta={`Created ${formatRelativeDate(snapshot.story.createdAt)}`}
     >
       <section className="flex flex-wrap items-center gap-3">
-        <Badge variant={stageTone(snapshot.story.currentStage)}>{stageLabel(snapshot.story.currentStage)}</Badge>
-        <Badge variant="outline">{snapshot.story.storyType.replace(/_/g, "/")}</Badge>
-        {snapshot.storyPackage ? <Badge variant="outline">Package {snapshot.storyPackage.status}</Badge> : null}
+        <Badge variant={stageTone(snapshot.story.currentStage)}>{pipelineStageLabel(snapshot.story.currentStage)}</Badge>
+        <Badge variant="outline">{storyTypeLabel(snapshot.story.storyType)}</Badge>
+        {snapshot.storyPackage ? <Badge variant="outline">{contentStatusLabel(snapshot.storyPackage.status) || snapshot.storyPackage.status}</Badge> : null}
       </section>
 
       <section className="grid gap-4 md:grid-cols-3">
@@ -98,55 +79,56 @@ export default async function StoryDetailPage({ params }: StoryDetailPageProps) 
       <section className="grid gap-4 lg:grid-cols-[1.4fr_1fr]">
         <Card padding="md" className="sm:p-7">
           <Eyebrow>Submission</Eyebrow>
-          <PageTitle className="mt-3 text-[2rem]">Source material</PageTitle>
-          <div className="mt-5 space-y-3 text-[15px] text-[var(--foreground)]">
-            <div>Name: {snapshot.submission?.submitterName || snapshot.story.subjectName || "N/A"}</div>
-            <div>Email: {snapshot.submission?.submitterEmail || "Not provided"}</div>
-            <div>Workspace: {snapshot.workspaceSlug}</div>
-            <div>Photos: {photoCount}</div>
-          </div>
-          {snapshot.story.sourceData ? (
-            <div className="mt-6 rounded-2xl border border-[var(--border)] bg-[var(--surface-muted)] p-5 text-sm text-[var(--foreground)]">
-              <pre className="whitespace-pre-wrap break-words font-mono text-[13px] leading-6">
-                {JSON.stringify(snapshot.story.sourceData, null, 2)}
-              </pre>
+          <PageTitle className="mt-3 text-[2rem]">About {snapshot.story.subjectName || "this subject"}</PageTitle>
+          <div className="mt-5 space-y-4">
+            <div className="grid grid-cols-[120px_1fr] gap-2 text-[15px]">
+              <span className="text-[var(--text-muted)]">Name</span>
+              <span>{snapshot.submission?.submitterName || snapshot.story.subjectName || "—"}</span>
+              <span className="text-[var(--text-muted)]">Email</span>
+              <span>{snapshot.submission?.submitterEmail || "Not provided"}</span>
+              {photoCount > 0 ? (
+                <>
+                  <span className="text-[var(--text-muted)]">Photos</span>
+                  <span>{photoCount} submitted</span>
+                </>
+              ) : null}
             </div>
-          ) : null}
+          </div>
         </Card>
 
         <Card padding="md" className="sm:p-7">
           <Eyebrow>Package</Eyebrow>
-          <PageTitle className="mt-3 text-[2rem]">Delivery status</PageTitle>
+          <PageTitle className="mt-3 text-[2rem]">Content delivery</PageTitle>
           {snapshot.storyPackage ? (
-            <div className="mt-5 space-y-3 text-[15px] text-[var(--foreground)]">
-              <div>Name: {snapshot.storyPackage.name}</div>
-              <div>Status: {snapshot.storyPackage.status}</div>
-              <div>Downloads: {snapshot.storyPackage.downloadCount}</div>
-              {snapshot.storyPackage.shareableLink ? (
-                <div>
-                  Shareable link: <span className="text-[var(--text-muted)]">{snapshot.storyPackage.shareableLink}</span>
-                </div>
-              ) : null}
-              <div className="pt-2">
+            <div className="mt-5 space-y-4">
+              <div className="grid grid-cols-[120px_1fr] gap-2 text-[15px]">
+                <span className="text-[var(--text-muted)]">Package</span>
+                <span>{snapshot.storyPackage.name}</span>
+                <span className="text-[var(--text-muted)]">Status</span>
+                <span>{snapshot.storyPackage.status === "ready" ? "Ready to download" : snapshot.storyPackage.status === "delivered" ? "Delivered" : "Preparing…"}</span>
+                <span className="text-[var(--text-muted)]">Downloads</span>
+                <span>{snapshot.storyPackage.downloadCount}</span>
+              </div>
+              <div className="pt-1">
                 <Link href={`/package/${snapshot.storyPackage.id}`}>
                   <Button variant="secondary" size="sm">Open Package</Button>
                 </Link>
               </div>
             </div>
           ) : (
-            <BodyText muted className="mt-5">No package has been created for this story yet.</BodyText>
+            <BodyText muted className="mt-5">Content is being prepared. It will appear here once ready.</BodyText>
           )}
         </Card>
       </section>
 
       <section className="space-y-4">
         <div>
-          <Eyebrow>Generated content</Eyebrow>
-          <PageTitle className="mt-3 text-[2rem]">Content outputs</PageTitle>
+          <Eyebrow>Content</Eyebrow>
+          <PageTitle className="mt-3 text-[2rem]">Ready to publish</PageTitle>
         </div>
         {snapshot.contents.length === 0 ? (
           <Card padding="md" className="sm:p-8">
-            <BodyText muted>No content generated yet.</BodyText>
+            <BodyText muted>Content is being written. Check back shortly.</BodyText>
           </Card>
         ) : (
           <div className="grid gap-4 lg:grid-cols-2">
@@ -159,7 +141,7 @@ export default async function StoryDetailPage({ params }: StoryDetailPageProps) 
                       {content.channel} · {content.contentType}
                     </BodyText>
                   </div>
-                  <Badge variant="outline">{content.status}</Badge>
+                  <Badge variant="outline">{contentStatusLabel(content.status)}</Badge>
                 </div>
                 <div className="mt-5 rounded-2xl border border-[var(--border)] bg-[var(--surface-muted)] p-5 text-sm leading-7 text-[var(--foreground)] whitespace-pre-wrap break-words">
                   {content.body}
@@ -172,12 +154,12 @@ export default async function StoryDetailPage({ params }: StoryDetailPageProps) 
 
       <section className="space-y-4">
         <div>
-          <Eyebrow>Generated assets</Eyebrow>
-          <PageTitle className="mt-3 text-[2rem]">Assets and media</PageTitle>
+          <Eyebrow>Media</Eyebrow>
+          <PageTitle className="mt-3 text-[2rem]">Graphics and video</PageTitle>
         </div>
         {snapshot.assets.length === 0 ? (
           <Card padding="md" className="sm:p-8">
-            <BodyText muted>No assets generated yet.</BodyText>
+            <BodyText muted>Graphics and video are being created. They'll appear here when ready.</BodyText>
           </Card>
         ) : (
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
@@ -193,19 +175,18 @@ export default async function StoryDetailPage({ params }: StoryDetailPageProps) 
                   <Badge variant="outline">{asset.status}</Badge>
                 </div>
                 <div className="mt-5 space-y-2 text-sm text-[var(--text-muted)]">
-                  {asset.dimensions ? <div>Size: {asset.dimensions}</div> : null}
-                  {asset.fileUrl ? <div className="break-all">URL: {asset.fileUrl}</div> : null}
+                  {asset.dimensions ? <div>{asset.dimensions}</div> : null}
+                  {asset.fileUrl ? (
+                    <a href={asset.fileUrl} target="_blank" rel="noopener noreferrer" className="block truncate text-[var(--foreground)] underline underline-offset-2">
+                      Download
+                    </a>
+                  ) : null}
                 </div>
               </Card>
             ))}
           </div>
         )}
 
-        {videoCount > 0 ? (
-          <BodyText muted>
-            Video outputs are now part of the automation pipeline. If a real provider key is not configured, the story still records a placeholder video asset so the pipeline remains visible.
-          </BodyText>
-        ) : null}
       </section>
     </StoriesShell>
   );

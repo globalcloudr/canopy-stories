@@ -463,3 +463,46 @@ export function formatRelativeDate(value: string) {
     year: "numeric",
   });
 }
+
+export function pipelineStageLabel(stage: string): string {
+  switch (stage) {
+    case "form_sent": return "Waiting for response";
+    case "submitted": return "Story received";
+    case "ai_processing": return "Writing content…";
+    case "asset_generation": return "Creating graphics…";
+    case "packaging": return "Preparing delivery";
+    case "delivered": return "Ready to use";
+    default: return stage;
+  }
+}
+
+export function storyTypeLabel(type: string): string {
+  switch (type) {
+    case "ESL": return "ESL";
+    case "HSD_GED": return "HSD / GED";
+    case "CTE": return "CTE";
+    case "EMPLOYER": return "Employer";
+    case "STAFF": return "Staff";
+    case "PARTNER": return "Partner";
+    case "OVERVIEW": return "Overview";
+    default: return type;
+  }
+}
+
+export function contentStatusLabel(status: string): string {
+  switch (status) {
+    case "draft": return "Draft";
+    case "ready": return "Ready to use";
+    case "approved": return "Approved";
+    default: return status;
+  }
+}
+
+export function packageStatusLabel(status: string): string {
+  switch (status) {
+    case "preparing": return "Preparing…";
+    case "ready": return "Ready to download";
+    case "delivered": return "Delivered";
+    default: return status;
+  }
+}
