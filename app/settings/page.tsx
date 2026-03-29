@@ -1,3 +1,4 @@
+export const dynamic = "force-dynamic";
 import type { ReactNode } from "react";
 import { BodyText, Button, Card, CardTitle, Eyebrow, PageTitle } from "@canopy/ui";
 import { StoriesShell } from "@/app/_components/stories-shell";

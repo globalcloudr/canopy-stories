@@ -1,3 +1,4 @@
+export const dynamic = "force-dynamic";
 import { Badge, BodyText, Card, CardTitle, Eyebrow, SectionTitle } from "@canopy/ui";
 import { StoriesShell } from "@/app/_components/stories-shell";
 import { listSubmissionItems } from "@/lib/stories-data";

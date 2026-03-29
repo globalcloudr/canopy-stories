@@ -209,7 +209,7 @@ export function StoriesShell({
           .from("profiles")
           .select("is_super_admin,platform_role")
           .eq("user_id", user.id)
-          .single();
+          .single() as { data: { is_super_admin?: boolean; platform_role?: string } | null };
 
         const isOperator =
           profileData?.is_super_admin === true ||
@@ -230,7 +230,7 @@ export function StoriesShell({
           const { data: memberships } = await supabase
             .from("memberships")
             .select("org_id")
-            .eq("user_id", user.id);
+            .eq("user_id", user.id) as { data: { org_id: string }[] | null };
           const ids = [...new Set((memberships ?? []).map((m) => m.org_id).filter(Boolean))] as string[];
           if (ids.length > 0) {
             const { data } = await supabase
