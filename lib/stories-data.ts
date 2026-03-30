@@ -302,6 +302,10 @@ async function requestJson<T>(
     throw new Error(`Stories Supabase request failed (${response.status}): ${text}`);
   }
 
+  if (response.status === 204 || response.headers.get("content-length") === "0") {
+    return undefined as T;
+  }
+
   return (await response.json()) as T;
 }
 
