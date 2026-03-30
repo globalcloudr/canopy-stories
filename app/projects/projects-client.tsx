@@ -412,7 +412,7 @@ export function ProjectsClient({ initial }: { initial: FlatProject[] }) {
 
       {/* Step 2 — Choose a template */}
       <Dialog open={step2Open} onOpenChange={(open) => { if (!open) { setStep2Open(false); setStep2Error(null); } }}>
-        <DialogContent className="sm:max-w-4xl">
+        <DialogContent className="w-[min(92vw,56rem)]">
           <DialogHeader>
             <DialogTitle>
               <span className="text-xs font-semibold uppercase tracking-widest text-[var(--text-muted)]">Step 2 of 3</span>
