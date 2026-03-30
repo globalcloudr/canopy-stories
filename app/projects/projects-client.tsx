@@ -59,7 +59,13 @@ export function ProjectsClient({ initial }: { initial: FlatProject[] }) {
   useEffect(() => {
     fetch("/api/organizations")
       .then((r) => r.json())
-      .then(setOrgs)
+      .then((data: Org[]) => {
+        setOrgs(data);
+        // Auto-select: prefer the shell's active org from localStorage, else the only org
+        const stored = (() => { try { return window.localStorage.getItem("cs_active_org_id_v1"); } catch { return null; } })();
+        const active = (stored && data.find((o) => o.id === stored)) ? stored : data.length === 1 ? data[0].id : "";
+        if (active) setForm((f) => ({ ...f, workspaceId: active }));
+      })
       .catch(() => {});
   }, []);
 
@@ -236,9 +242,9 @@ export function ProjectsClient({ initial }: { initial: FlatProject[] }) {
           </DialogHeader>
 
           <div className="space-y-4 py-3">
-            <div className="space-y-2">
-              <FieldLabel>Workspace (School / Organization)</FieldLabel>
-              {orgs.length > 0 ? (
+            {orgs.length > 1 && (
+              <div className="space-y-2">
+                <FieldLabel>Workspace (School / Organization)</FieldLabel>
                 <Select value={form.workspaceId} onValueChange={(v) => setForm({ ...form, workspaceId: v })}>
                   <SelectTrigger>
                     <SelectValue placeholder="Select a workspace" />
@@ -251,14 +257,8 @@ export function ProjectsClient({ initial }: { initial: FlatProject[] }) {
                     ))}
                   </SelectContent>
                 </Select>
-              ) : (
-                <Input
-                  placeholder="Workspace ID"
-                  value={form.workspaceId}
-                  onChange={(e) => setForm({ ...form, workspaceId: e.target.value })}
-                />
-              )}
-            </div>
+              </div>
+            )}
 
             <div className="space-y-2">
               <FieldLabel>Project Name</FieldLabel>
