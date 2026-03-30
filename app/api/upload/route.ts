@@ -17,8 +17,9 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "No file provided." }, { status: 400 });
     }
 
+    const workspaceId = (formData.get("workspaceId") as string | null)?.trim() || "shared";
     const ext = file.name.split(".").pop()?.toLowerCase() ?? "jpg";
-    const path = `uploads/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+    const path = `${workspaceId}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
 
     const buffer = await file.arrayBuffer();
 

@@ -71,6 +71,7 @@ export function PublicFormExperience({ form }: PublicFormExperienceProps) {
     try {
       const fd = new FormData();
       fd.append("file", file);
+      fd.append("workspaceId", form.workspaceId);
       const res = await fetch("/api/upload", { method: "POST", body: fd });
       const payload = (await res.json()) as { url?: string; error?: string };
       if (!res.ok || !payload.url) throw new Error(payload.error ?? "Upload failed.");
