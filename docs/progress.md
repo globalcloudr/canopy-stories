@@ -4,6 +4,53 @@ Append new sessions at the top. Do not overwrite history.
 
 ---
 
+## 2026-03-29 — Per-workspace API key enforcement
+
+### What was done
+
+**AI pipeline now uses per-workspace API keys exclusively**
+- `stories-automation.ts` previously read OpenAI and video API keys from env vars at module level, completely ignoring per-workspace keys stored in `workspace_api_keys`
+- Removed module-level `openAiApiKey` constant
+- `buildStoryArtifacts` now fetches the workspace's own keys via `getWorkspaceApiKeys(workspaceId)` at runtime
+- `openAiApiKey` and `videoApiKey`/`videoApiProvider` threaded as explicit parameters through `generateTextContent`, `prepareVideoHighlights`, `generateVideoAsset`, and `requestOpenAi`
+- If a workspace has no key configured, AI steps return plain-text fallback content and video returns `[Video generation not configured]` — no silent fallback to env vars
+- Env var keys (`OPENAI_API_KEY`, `VIDEO_API_KEY`) are no longer used by any workspace pipeline run
+
+---
+
+## 2026-03-29 — Bug fixes, guided project creation wizard, and UX improvements
+
+### What was done
+
+**Bug fixes**
+- Fixed "Unexpected end of JSON input" error when deleting a project — Supabase DELETE returns `204 No Content`; `requestJson()` now skips `.json()` for empty responses
+- Fixed workspace selector appearing for school users in the Create Project dialog — now fetches only the user's own orgs via Supabase client (same pattern as the shell); auto-selects the active workspace from localStorage; selector only shown for operators with multiple orgs
+- Fixed deleted projects persisting in Dashboard view after deletion — added `router.refresh()` after delete to invalidate Next.js router cache
+
+**Dashboard polish**
+- Replaced all placeholder grey squares and circles in stat cards, empty states, and recent project cards with meaningful inline SVG icons (folder, envelope, arrow-cycle, check-circle, clock, bar-chart, sparkles, folder-open)
+- Removed "0 workspaces in the current Stories dataset" header meta — meaningless for school users
+
+**Guided project creation wizard (3 steps)**
+- Step 1: Create project (name, description, story goal, deadline) — unchanged fields, now transitions automatically to Step 2
+- Step 2: Template picker — all 7 templates shown as selectable cards (3-column grid, 56rem wide dialog) with name, story type badge, and description; picking a template pre-fills the form title; "Skip — I'll add a form later" option available
+- Step 3: Success screen — shows copyable shareable form link and a numbered "what happens next" guide; "Go to project" navigates to the new project
+
+**Form customization (post-creation)**
+- `updateFormById()` added to `lib/stories-data.ts` — PATCHes title, description, story type, and fields
+- `PATCH /api/forms/[id]` endpoint added
+- `FormBuilderDialog` extended with `editForm` prop — opens pre-populated with existing form data when editing; submit calls PATCH instead of POST; title and button label update to reflect edit mode
+- "Customize" button added to each form row in the project Forms tab — opens the full form builder with all templates and field editor pre-loaded with that form's current data
+
+**Photo upload scoping**
+- Upload path changed from `uploads/{timestamp}.jpg` to `{workspaceId}/{timestamp}.jpg` — isolates each school's photos within the `story-photos` bucket
+- `workspaceId` passed from `PublicFormExperience` to `/api/upload` via FormData
+
+### Storage setup required
+- Create `story-photos` bucket in Supabase Storage (set to Public) — no policies needed; service role key bypasses RLS
+
+---
+
 ## 2026-03-29 — UX improvements: polish pass, API keys, and 5 UX features
 
 ### What was done

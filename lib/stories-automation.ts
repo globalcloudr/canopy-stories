@@ -7,6 +7,7 @@ import type {
   StoryPackageStatus,
   StoryType,
 } from "@/lib/stories-schema";
+import { getWorkspaceApiKeys } from "@/lib/stories-data";
 
 type StoryAutomationInput = {
   workspaceId: string;
@@ -32,7 +33,6 @@ type VideoGenerationResult = {
 };
 
 const openAiBaseUrl = process.env.AI_INTEGRATIONS_OPENAI_BASE_URL || "https://api.openai.com/v1";
-const openAiApiKey = process.env.AI_INTEGRATIONS_OPENAI_API_KEY || process.env.OPENAI_API_KEY || "";
 const openAiModel = process.env.AI_INTEGRATIONS_OPENAI_MODEL || process.env.OPENAI_MODEL || "gpt-5";
 
 function getStoryBackground(sourceData: Record<string, unknown> | null) {
@@ -79,15 +79,15 @@ function toPromptFields(sourceData: Record<string, unknown> | null) {
   return rows.length > 0 ? rows.join("\n") : "No extra form fields provided.";
 }
 
-async function requestOpenAi(system: string, user: string, json = false) {
-  if (!openAiApiKey) {
+async function requestOpenAi(system: string, user: string, json = false, apiKey = "") {
+  if (!apiKey) {
     return null;
   }
 
   const response = await fetch(`${openAiBaseUrl.replace(/\/$/, "")}/chat/completions`, {
     method: "POST",
     headers: {
-      Authorization: `Bearer ${openAiApiKey}`,
+      Authorization: `Bearer ${apiKey}`,
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
@@ -117,7 +117,7 @@ async function requestOpenAi(system: string, user: string, json = false) {
   return result.choices?.[0]?.message?.content?.trim() ?? null;
 }
 
-async function generateTextContent(input: StoryAutomationInput) {
+async function generateTextContent(input: StoryAutomationInput, openAiApiKey: string) {
   const subjectName = input.subjectName || "Student";
   const background = getStoryBackground(input.sourceData);
   const detailBlock = toPromptFields(input.sourceData);
@@ -142,20 +142,23 @@ async function generateTextContent(input: StoryAutomationInput) {
     const [blogPost, socialJson, newsletter, pressRelease] = await Promise.all([
       requestOpenAi(
         "You write compelling adult-education success stories in markdown.",
-        `Write a blog feature for this story.\n\nTitle: ${input.title}\nSubject: ${subjectName}\nType: ${input.storyType}\nBackground: ${background}\n\nForm details:\n${detailBlock}`
+        `Write a blog feature for this story.\n\nTitle: ${input.title}\nSubject: ${subjectName}\nType: ${input.storyType}\nBackground: ${background}\n\nForm details:\n${detailBlock}`,
+        false, openAiApiKey
       ),
       requestOpenAi(
         "You generate concise social copy for adult education marketing. Return valid JSON.",
         `Return JSON with keys facebook, instagram, twitter, linkedin for this story.\n\nTitle: ${input.title}\nSubject: ${subjectName}\nType: ${input.storyType}\nBackground: ${background}\n\nForm details:\n${detailBlock}`,
-        true
+        true, openAiApiKey
       ),
       requestOpenAi(
         "You write newsletter copy for adult education programs.",
-        `Write a newsletter section for this story.\n\nTitle: ${input.title}\nSubject: ${subjectName}\nType: ${input.storyType}\nBackground: ${background}\n\nForm details:\n${detailBlock}`
+        `Write a newsletter section for this story.\n\nTitle: ${input.title}\nSubject: ${subjectName}\nType: ${input.storyType}\nBackground: ${background}\n\nForm details:\n${detailBlock}`,
+        false, openAiApiKey
       ),
       requestOpenAi(
         "You write formal education press releases in markdown.",
-        `Write a short press release for this story.\n\nTitle: ${input.title}\nSubject: ${subjectName}\nType: ${input.storyType}\nBackground: ${background}\n\nForm details:\n${detailBlock}`
+        `Write a short press release for this story.\n\nTitle: ${input.title}\nSubject: ${subjectName}\nType: ${input.storyType}\nBackground: ${background}\n\nForm details:\n${detailBlock}`,
+        false, openAiApiKey
       ),
     ]);
 
@@ -185,7 +188,7 @@ async function generateTextContent(input: StoryAutomationInput) {
   }
 }
 
-async function prepareVideoHighlights(input: StoryAutomationInput) {
+async function prepareVideoHighlights(input: StoryAutomationInput, openAiApiKey: string) {
   const subjectName = input.subjectName || "Student";
   const background = getStoryBackground(input.sourceData);
   const fallback = [
@@ -202,7 +205,7 @@ async function prepareVideoHighlights(input: StoryAutomationInput) {
     const result = await requestOpenAi(
       "You prepare short on-screen video highlight lines. Return valid JSON.",
       `Return JSON with a 'highlights' array of 3 short lines for a vertical promo video.\n\nTitle: ${input.title}\nSubject: ${subjectName}\nType: ${input.storyType}\nBackground: ${background}\n\nForm details:\n${toPromptFields(input.sourceData)}`,
-      true
+      true, openAiApiKey
     );
 
     if (!result) {
@@ -217,9 +220,9 @@ async function prepareVideoHighlights(input: StoryAutomationInput) {
   }
 }
 
-async function generateVideoAsset(input: StoryAutomationInput, highlights: string[]): Promise<VideoGenerationResult> {
-  const apiKey = process.env.VIDEO_API_KEY;
-  const provider = process.env.VIDEO_API_PROVIDER || "json2video";
+async function generateVideoAsset(input: StoryAutomationInput, highlights: string[], videoApiKey: string, videoApiProvider: string): Promise<VideoGenerationResult> {
+  const apiKey = videoApiKey;
+  const provider = videoApiProvider || "json2video";
   const imageUrl = getPhotoUrls(input.sourceData)[0];
 
   if (!apiKey) {
@@ -342,9 +345,15 @@ function createContentRecord(
 
 export async function buildStoryArtifacts(input: StoryAutomationInput): Promise<GeneratedStoryArtifacts> {
   const subjectName = input.subjectName || "Student";
-  const textContent = await generateTextContent(input);
-  const highlights = await prepareVideoHighlights(input);
-  const video = await generateVideoAsset(input, highlights);
+
+  const workspaceKeys = await getWorkspaceApiKeys(input.workspaceId);
+  const openAiApiKey = workspaceKeys?.openaiApiKey ?? "";
+  const videoApiKey = workspaceKeys?.videoApiKey ?? "";
+  const videoApiProvider = workspaceKeys?.videoApiProvider ?? "json2video";
+
+  const textContent = await generateTextContent(input, openAiApiKey);
+  const highlights = await prepareVideoHighlights(input, openAiApiKey);
+  const video = await generateVideoAsset(input, highlights, videoApiKey, videoApiProvider);
   const photoUrls = getPhotoUrls(input.sourceData);
 
   const contents: Array<Omit<StoryContentRecord, "id" | "generatedAt">> = [

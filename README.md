@@ -10,8 +10,9 @@ AI-powered success story production product for the Canopy platform.
 ### Core Workflow
 
 - **Projects** — schools organize story production into projects with targets and deadlines
-- **Form builder** — create intake forms from predefined templates (ESL, CTE, Staff, Program Overview, Employer, Partner) or custom fields
-- **Public intake forms** — shareable links; subjects fill out forms with no login required; photo upload supported
+- **Guided project creation** — 3-step wizard: create project → pick intake form template → get shareable link with next-steps guide
+- **Form builder** — create intake forms from predefined templates (ESL, CTE, Staff, Program Overview, Employer, Partner) or custom fields; existing forms editable via Customize button on project Forms tab
+- **Public intake forms** — shareable links; subjects fill out forms with no login required; photo upload supported (stored per-workspace in `story-photos` Supabase bucket)
 - **Form response tracking** — per-form submission counts shown in project forms tab; expandable inline response list per form
 - **AI content generation** — on form submission, OpenAI generates: blog post, newsletter feature, social posts (Facebook, Instagram, LinkedIn, X), press release
 - **Video generation** — 15-second vertical short-form video via JSON2Video or Creatomate API
@@ -28,9 +29,11 @@ AI-powered success story production product for the Canopy platform.
 
 Each school workspace adds its own API keys in Settings:
 
-- **OpenAI API key** — powers all content generation
-- **Video generation API key** — supports JSON2Video and Creatomate
+- **OpenAI API key** — powers all content generation (required; pipeline produces plain-text fallback if not set)
+- **Video generation API key** — supports JSON2Video and Creatomate (optional; skipped if not set)
 - **Package ready notification email** — address that receives delivery notifications
+
+> Each workspace's pipeline runs exclusively with that workspace's own keys. No shared or system-level API keys are used.
 
 ### Platform Integration
 
