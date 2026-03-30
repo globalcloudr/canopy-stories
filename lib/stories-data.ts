@@ -1968,6 +1968,25 @@ export async function createFormFromBuilder(input: {
   return { id: row.id, shareableLink: `/forms/${row.public_slug}` };
 }
 
+export async function updateFormById(
+  formId: string,
+  input: { title: string; description?: string | null; storyType: string; fields: StoryFormField[] }
+): Promise<void> {
+  if (!isStoriesPersistenceEnabled()) {
+    throw new Error("Stories persistence is not configured.");
+  }
+  await requestJson(`/rest/v1/story_forms?id=eq.${formId}`, undefined, {
+    method: "PATCH",
+    prefer: "return=minimal",
+    body: {
+      title: input.title,
+      description: input.description ?? null,
+      story_type: input.storyType,
+      fields_json: input.fields,
+    },
+  });
+}
+
 export async function deleteFormById(formId: string): Promise<void> {
   if (!isStoriesPersistenceEnabled()) {
     throw new Error("Stories persistence is not configured.");

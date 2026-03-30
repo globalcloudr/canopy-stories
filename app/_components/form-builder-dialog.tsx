@@ -39,11 +39,19 @@ type Props = {
   onOpenChange: (open: boolean) => void;
   projectId: string;
   onCreated: () => void;
+  editForm?: {
+    id: string;
+    title: string;
+    description: string | null;
+    storyType: string;
+    fields: FormField[];
+  };
 };
 
 const STORY_TYPES = ["ESL", "HSD_GED", "CTE", "EMPLOYER", "STAFF", "PARTNER", "OVERVIEW"];
 
-export function FormBuilderDialog({ open, onOpenChange, projectId, onCreated }: Props) {
+export function FormBuilderDialog({ open, onOpenChange, projectId, onCreated, editForm }: Props) {
+  const isEditMode = !!editForm;
   const [selectedTemplate, setSelectedTemplate] = useState("");
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -54,6 +62,17 @@ export function FormBuilderDialog({ open, onOpenChange, projectId, onCreated }: 
   ]);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Populate fields when opening in edit mode
+  useEffect(() => {
+    if (open && editForm) {
+      setTitle(editForm.title);
+      setDescription(editForm.description ?? "");
+      setStoryType(editForm.storyType);
+      setFields(editForm.fields);
+      setSelectedTemplate("");
+    }
+  }, [open, editForm]);
 
   useEffect(() => {
     if (!selectedTemplate || selectedTemplate === "custom") {
@@ -118,18 +137,24 @@ export function FormBuilderDialog({ open, onOpenChange, projectId, onCreated }: 
     setError(null);
 
     try {
-      const res = await fetch("/api/forms", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ projectId, title, description: description || null, storyType, fields }),
-      });
+      const res = isEditMode
+        ? await fetch(`/api/forms/${editForm!.id}`, {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ title, description: description || null, storyType, fields }),
+          })
+        : await fetch("/api/forms", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ projectId, title, description: description || null, storyType, fields }),
+          });
       const payload = (await res.json()) as { error?: string };
-      if (!res.ok) throw new Error(payload.error ?? "Failed to create form.");
+      if (!res.ok) throw new Error(payload.error ?? (isEditMode ? "Failed to update form." : "Failed to create form."));
       resetForm();
       onOpenChange(false);
       onCreated();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to create form.");
+      setError(err instanceof Error ? err.message : (isEditMode ? "Failed to update form." : "Failed to create form."));
     } finally {
       setSubmitting(false);
     }
@@ -139,9 +164,11 @@ export function FormBuilderDialog({ open, onOpenChange, projectId, onCreated }: 
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Create Form Template</DialogTitle>
+          <DialogTitle>{isEditMode ? "Customize Form" : "Create Form Template"}</DialogTitle>
           <DialogDescription>
-            Choose a pre-built template or design a custom form for submissions.
+            {isEditMode
+              ? "Edit the form title, story type, and fields. Changes apply immediately."
+              : "Choose a pre-built template or design a custom form for submissions."}
           </DialogDescription>
         </DialogHeader>
 
@@ -296,7 +323,7 @@ export function FormBuilderDialog({ open, onOpenChange, projectId, onCreated }: 
             Cancel
           </Button>
           <Button variant="primary" onClick={handleSubmit} disabled={submitting}>
-            {submitting ? "Creating..." : "Create Form"}
+            {submitting ? (isEditMode ? "Saving..." : "Creating...") : (isEditMode ? "Save Changes" : "Create Form")}
           </Button>
         </DialogFooter>
       </DialogContent>

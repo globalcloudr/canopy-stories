@@ -14,11 +14,13 @@ import type { FlatProject, FlatForm, FormSubmissionItem } from "@/lib/stories-da
 function FormResponsesTab({
   forms,
   onCreateForm,
+  onCustomizeForm,
   onDeleteForm,
   typeColors,
 }: {
   forms: FlatForm[];
   onCreateForm: () => void;
+  onCustomizeForm: (form: FlatForm) => void;
   onDeleteForm: (id: string) => void;
   typeColors: Record<string, string>;
 }) {
@@ -97,6 +99,9 @@ function FormResponsesTab({
                     {expandedFormId === form.id ? "Hide responses" : "View responses"}
                   </Button>
                 )}
+                <Button variant="secondary" size="sm" onClick={() => onCustomizeForm(form)}>
+                  Customize
+                </Button>
                 <Button
                   variant="secondary"
                   size="sm"
@@ -241,6 +246,7 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<Tab>("overview");
   const [formBuilderOpen, setFormBuilderOpen] = useState(false);
+  const [editingForm, setEditingForm] = useState<FlatForm | null>(null);
 
   const load = useCallback(async () => {
     const [projRes, formsRes, storiesRes, pkgsRes, assetsRes] = await Promise.all([
@@ -440,7 +446,8 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
       {activeTab === "forms" && (
         <FormResponsesTab
           forms={forms}
-          onCreateForm={() => setFormBuilderOpen(true)}
+          onCreateForm={() => { setEditingForm(null); setFormBuilderOpen(true); }}
+          onCustomizeForm={(form) => { setEditingForm(form); setFormBuilderOpen(true); }}
           onDeleteForm={handleDeleteForm}
           typeColors={typeColors}
         />
@@ -582,9 +589,10 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
 
       <FormBuilderDialog
         open={formBuilderOpen}
-        onOpenChange={setFormBuilderOpen}
+        onOpenChange={(open) => { setFormBuilderOpen(open); if (!open) setEditingForm(null); }}
         projectId={id}
         onCreated={load}
+        editForm={editingForm ?? undefined}
       />
     </StoriesShell>
   );

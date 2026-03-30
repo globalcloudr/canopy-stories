@@ -411,7 +411,7 @@ export function ProjectsClient({ initial }: { initial: FlatProject[] }) {
 
       {/* Step 2 — Choose a template */}
       <Dialog open={step2Open} onOpenChange={(open) => { if (!open) { setStep2Open(false); setStep2Error(null); } }}>
-        <DialogContent className="sm:max-w-2xl">
+        <DialogContent className="sm:max-w-3xl">
           <DialogHeader>
             <DialogTitle>
               <span className="text-xs font-semibold uppercase tracking-widest text-[var(--text-muted)]">Step 2 of 3</span>
@@ -425,7 +425,7 @@ export function ProjectsClient({ initial }: { initial: FlatProject[] }) {
 
           <div className="space-y-5 py-2">
             {/* Template grid */}
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
               {referenceIntakeTemplates.map((t) => (
                 <button
                   key={t.id}
