@@ -173,6 +173,7 @@ export function ProjectsClient({ initial }: { initial: FlatProject[] }) {
         return;
       }
       await refreshProjects();
+      router.refresh();
     } catch {
       window.alert("Failed to delete project.");
     }
