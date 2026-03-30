@@ -1,7 +1,9 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase-client";
+import { referenceIntakeTemplates } from "@/lib/reference-form-templates";
 import Link from "next/link";
 import {
   BodyText,
@@ -27,6 +29,16 @@ import type { FlatProject } from "@/lib/stories-data";
 
 type Org = { id: string; name: string; slug: string };
 
+const templateTypeColors: Record<string, string> = {
+  ESL: "bg-blue-100 text-blue-800",
+  HSD_GED: "bg-green-100 text-green-800",
+  CTE: "bg-purple-100 text-purple-800",
+  EMPLOYER: "bg-orange-100 text-orange-800",
+  STAFF: "bg-pink-100 text-pink-800",
+  PARTNER: "bg-teal-100 text-teal-800",
+  OVERVIEW: "bg-gray-100 text-gray-800",
+};
+
 function statusClass(status: string) {
   if (status === "active") return "border-emerald-200 bg-emerald-50 text-emerald-700";
   if (status === "paused") return "border-amber-200 bg-amber-50 text-amber-700";
@@ -40,6 +52,7 @@ function formatDeadline(value: string | null) {
 }
 
 export function ProjectsClient({ initial }: { initial: FlatProject[] }) {
+  const router = useRouter();
   const [projects, setProjects] = useState<FlatProject[]>(initial);
   const [orgs, setOrgs] = useState<Org[]>([]);
   const [search, setSearch] = useState("");
@@ -47,6 +60,16 @@ export function ProjectsClient({ initial }: { initial: FlatProject[] }) {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Wizard state
+  const [wizardProjectId, setWizardProjectId] = useState<string | null>(null);
+  const [step2Open, setStep2Open] = useState(false);
+  const [selectedTemplateId, setSelectedTemplateId] = useState("");
+  const [formTitle, setFormTitle] = useState("");
+  const [step2Submitting, setStep2Submitting] = useState(false);
+  const [step2Error, setStep2Error] = useState<string | null>(null);
+  const [step3Open, setStep3Open] = useState(false);
+  const [wizardFormSlug, setWizardFormSlug] = useState<string | null>(null);
 
   const [form, setForm] = useState({
     workspaceId: "",
@@ -127,7 +150,11 @@ export function ProjectsClient({ initial }: { initial: FlatProject[] }) {
       const payload = (await res.json()) as { error?: string; id?: string };
       if (!res.ok) throw new Error(payload.error ?? "Failed to create project.");
       setDialogOpen(false);
-      setForm({ workspaceId: "", name: "", description: "", storyCountTarget: "", deadlineAt: "" });
+      setForm((f) => ({ workspaceId: f.workspaceId, name: "", description: "", storyCountTarget: "", deadlineAt: "" }));
+      setWizardProjectId(payload.id ?? null);
+      setSelectedTemplateId("");
+      setFormTitle("");
+      setStep2Open(true);
       await refreshProjects();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to create project.");
@@ -148,6 +175,37 @@ export function ProjectsClient({ initial }: { initial: FlatProject[] }) {
       await refreshProjects();
     } catch {
       window.alert("Failed to delete project.");
+    }
+  }
+
+  async function handleStep2Submit() {
+    if (!selectedTemplateId) { setStep2Error("Please select a template to continue."); return; }
+    if (!formTitle.trim()) { setStep2Error("Form title is required."); return; }
+    setStep2Submitting(true);
+    setStep2Error(null);
+    try {
+      const template = referenceIntakeTemplates.find((t) => t.id === selectedTemplateId);
+      if (!template) throw new Error("Template not found.");
+      const res = await fetch("/api/forms", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          projectId: wizardProjectId,
+          title: formTitle.trim(),
+          description: template.description,
+          storyType: template.storyType,
+          fields: template.fields,
+        }),
+      });
+      const payload = (await res.json()) as { error?: string; publicSlug?: string };
+      if (!res.ok) throw new Error(payload.error ?? "Failed to create form.");
+      setWizardFormSlug(payload.publicSlug ?? null);
+      setStep2Open(false);
+      setStep3Open(true);
+    } catch (err) {
+      setStep2Error(err instanceof Error ? err.message : "Failed to create form.");
+    } finally {
+      setStep2Submitting(false);
     }
   }
 
@@ -350,6 +408,144 @@ export function ProjectsClient({ initial }: { initial: FlatProject[] }) {
 
       {/* Floating create button trigger — used from parent */}
       <button id="open-create-project" className="hidden" onClick={() => setDialogOpen(true)} />
+
+      {/* Step 2 — Choose a template */}
+      <Dialog open={step2Open} onOpenChange={(open) => { if (!open) { setStep2Open(false); setStep2Error(null); } }}>
+        <DialogContent className="sm:max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>
+              <span className="text-xs font-semibold uppercase tracking-widest text-[var(--text-muted)]">Step 2 of 3</span>
+              <br />
+              Choose an intake form template
+            </DialogTitle>
+            <DialogDescription>
+              Pick the template that best fits your story type. All fields are pre-filled — you can customize them later from the project page.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-5 py-2">
+            {/* Template grid */}
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+              {referenceIntakeTemplates.map((t) => (
+                <button
+                  key={t.id}
+                  type="button"
+                  onClick={() => { setSelectedTemplateId(t.id); setFormTitle(t.name); setStep2Error(null); }}
+                  className={`w-full rounded-2xl border p-4 text-left transition ${
+                    selectedTemplateId === t.id
+                      ? "border-indigo-400 bg-indigo-50 ring-1 ring-indigo-400"
+                      : "border-[var(--border)] bg-white hover:border-slate-300 hover:bg-slate-50"
+                  }`}
+                >
+                  <div className="flex items-start justify-between gap-2">
+                    <span className="font-semibold text-[var(--foreground)]">{t.name}</span>
+                    <span className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider ${templateTypeColors[t.storyType] ?? "bg-gray-100 text-gray-700"}`}>
+                      {t.storyType.replace("_", "/")}
+                    </span>
+                  </div>
+                  <p className="mt-1.5 text-[13px] text-[var(--text-muted)]">{t.description}</p>
+                </button>
+              ))}
+            </div>
+
+            {/* Form title */}
+            {selectedTemplateId && (
+              <div className="space-y-2">
+                <FieldLabel>Form title</FieldLabel>
+                <Input
+                  value={formTitle}
+                  onChange={(e) => setFormTitle(e.target.value)}
+                  placeholder="e.g., ESL Student Success Form"
+                />
+              </div>
+            )}
+
+            {step2Error && (
+              <div className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
+                {step2Error}
+              </div>
+            )}
+          </div>
+
+          <DialogFooter className="items-center">
+            <button
+              type="button"
+              onClick={() => { setStep2Open(false); setStep2Error(null); }}
+              className="text-sm text-[var(--text-muted)] underline-offset-2 hover:underline"
+            >
+              Skip — I&apos;ll add a form later
+            </button>
+            <Button variant="primary" onClick={handleStep2Submit} disabled={step2Submitting || !selectedTemplateId}>
+              {step2Submitting ? "Creating form..." : "Create Form"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Step 3 — You're all set */}
+      <Dialog open={step3Open} onOpenChange={setStep3Open}>
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle>
+              <span className="text-xs font-semibold uppercase tracking-widest text-[var(--text-muted)]">Step 3 of 3</span>
+              <br />
+              Your project is ready
+            </DialogTitle>
+            <DialogDescription>
+              Here&apos;s your intake form link. Share it with students or subjects — no login required.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-5 py-2">
+            {/* Shareable link */}
+            {wizardFormSlug && (
+              <div className="space-y-2">
+                <FieldLabel>Shareable form link</FieldLabel>
+                <div className="flex items-center gap-2">
+                  <div className="flex-1 truncate rounded-xl border border-[var(--border)] bg-[var(--surface-muted)] px-3 py-2 text-sm font-mono text-[var(--foreground)]">
+                    {typeof window !== "undefined" ? `${window.location.origin}/forms/${wizardFormSlug}` : `/forms/${wizardFormSlug}`}
+                  </div>
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    onClick={() => navigator.clipboard.writeText(`${window.location.origin}/forms/${wizardFormSlug}`)}
+                  >
+                    Copy
+                  </Button>
+                </div>
+              </div>
+            )}
+
+            {/* Next steps */}
+            <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface-muted)] p-4">
+              <p className="mb-3 text-sm font-semibold text-[var(--foreground)]">What happens next</p>
+              <ol className="space-y-3">
+                {[
+                  { n: "1", text: "Share the form link with students, staff, or partners — they fill it out with no login required." },
+                  { n: "2", text: "When they submit, Canopy Stories automatically generates a blog post, social media content, newsletter feature, and press release." },
+                  { n: "3", text: "Review the generated content in your project, then download and share the final package." },
+                ].map((step) => (
+                  <li key={step.n} className="flex gap-3">
+                    <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-indigo-100 text-xs font-bold text-indigo-700">
+                      {step.n}
+                    </span>
+                    <span className="text-sm text-[var(--text-muted)]">{step.text}</span>
+                  </li>
+                ))}
+              </ol>
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button
+              variant="primary"
+              onClick={() => { setStep3Open(false); router.push(`/projects/${wizardProjectId}`); }}
+            >
+              Go to project
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </>
   );
 }
