@@ -6,12 +6,6 @@ import { StoriesShell } from "@/app/_components/stories-shell";
 import { getStoriesOverviewSnapshot } from "@/lib/stories-data";
 import { formatRelativeDate, pipelineStageLabel, storyTypeLabel } from "@/lib/stories-domain";
 
-type HomePageProps = {
-  searchParams?: Promise<{
-    workspace?: string;
-  }>;
-};
-
 function DashboardStatCard({
   title,
   value,
@@ -59,9 +53,7 @@ function stageClass(stage: string) {
   return "border-indigo-200 bg-indigo-50 text-indigo-700";
 }
 
-export default async function HomePage({ searchParams }: HomePageProps) {
-  const params = (await searchParams) ?? {};
-  const workspace = params.workspace?.trim() || null;
+export default async function HomePage() {
   const overview = await getStoriesOverviewSnapshot();
 
   return (
@@ -70,11 +62,7 @@ export default async function HomePage({ searchParams }: HomePageProps) {
       eyebrow="Dashboard"
       title="Dashboard"
       subtitle="Automated production pipeline for success story creation"
-      headerMeta={
-        workspace
-          ? `Workspace context received: ${workspace}`
-          : `${overview.workspaceCount} workspace${overview.workspaceCount === 1 ? "" : "s"} in the current Stories dataset`
-      }
+
       headerActions={
         <Button asChild variant="primary">
           <Link href="/projects">New Project</Link>
