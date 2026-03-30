@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { supabase } from "@/lib/supabase-client";
 import Link from "next/link";
 import {
   BodyText,
@@ -55,18 +56,48 @@ export function ProjectsClient({ initial }: { initial: FlatProject[] }) {
     deadlineAt: "",
   });
 
-  // Load organizations for the create dialog
+  // Load only the user's own orgs for the create dialog
   useEffect(() => {
-    fetch("/api/organizations")
-      .then((r) => r.json())
-      .then((data: Org[]) => {
-        setOrgs(data);
-        // Auto-select: prefer the shell's active org from localStorage, else the only org
+    async function loadOrgs() {
+      try {
+        const { data: userData } = await supabase.auth.getUser();
+        const user = userData.user;
+        if (!user) return;
+
+        const { data: profileData } = await supabase
+          .from("profiles")
+          .select("is_super_admin,platform_role")
+          .eq("user_id", user.id)
+          .single() as { data: { is_super_admin?: boolean; platform_role?: string } | null };
+
+        const isOperator =
+          profileData?.is_super_admin === true ||
+          profileData?.platform_role === "super_admin" ||
+          profileData?.platform_role === "platform_staff";
+
+        let loadedOrgs: Org[] = [];
+        if (isOperator) {
+          const { data } = await supabase.from("organizations").select("id,name,slug").order("name");
+          loadedOrgs = (data ?? []) as Org[];
+        } else {
+          const { data: memberships } = await supabase
+            .from("memberships")
+            .select("org_id")
+            .eq("user_id", user.id) as { data: { org_id: string }[] | null };
+          const ids = [...new Set((memberships ?? []).map((m) => m.org_id).filter(Boolean))];
+          if (ids.length > 0) {
+            const { data } = await supabase.from("organizations").select("id,name,slug").in("id", ids).order("name");
+            loadedOrgs = (data ?? []) as Org[];
+          }
+        }
+
+        setOrgs(loadedOrgs);
         const stored = (() => { try { return window.localStorage.getItem("cs_active_org_id_v1"); } catch { return null; } })();
-        const active = (stored && data.find((o) => o.id === stored)) ? stored : data.length === 1 ? data[0].id : "";
+        const active = (stored && loadedOrgs.find((o) => o.id === stored)) ? stored : loadedOrgs.length === 1 ? loadedOrgs[0].id : "";
         if (active) setForm((f) => ({ ...f, workspaceId: active }));
-      })
-      .catch(() => {});
+      } catch { /* silent */ }
+    }
+    void loadOrgs();
   }, []);
 
   async function refreshProjects() {
