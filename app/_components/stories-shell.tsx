@@ -5,12 +5,10 @@ import type { ReactNode } from "react";
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
 import {
-  Avatar,
-  AvatarFallback,
+  AppSurface,
   BodyText,
   Button,
   CanopyHeader,
-  Card,
   Eyebrow,
   PageTitle,
   cn,
@@ -284,7 +282,7 @@ export function StoriesShell({
     : [];
 
   return (
-    <main className="min-h-screen bg-[linear-gradient(180deg,#f6f8ff_0%,#eef3ff_55%,#f8fbff_100%)] md:h-screen md:overflow-hidden">
+    <main className="min-h-screen bg-[var(--app-shell-bg)] md:h-screen md:overflow-hidden">
 
       {/* ── Top bar ─────────────────────────────────────────────────────────── */}
       <CanopyHeader
@@ -309,7 +307,7 @@ export function StoriesShell({
       <div className="md:grid md:h-[calc(100vh-3.5rem)] md:grid-cols-[280px_minmax(0,1fr)]">
 
         {/* Sidebar */}
-        <aside className="hidden border-r border-[#dfe7f4] bg-transparent md:block">
+        <aside className="hidden border-r border-[var(--app-divider)] bg-transparent md:block">
           <div className="flex h-full flex-col">
 
             {/* Workspace lockup */}
@@ -346,9 +344,9 @@ export function StoriesShell({
         </aside>
 
         {/* Content */}
-        <div className="min-w-0 overflow-y-auto bg-[#fbfcff]">
+        <div className="min-w-0 overflow-y-auto bg-[var(--app-content-bg)]">
           <div className="mx-auto flex min-h-full w-full max-w-[1340px] flex-col gap-6 px-4 py-6 sm:px-6">
-            <Card padding="md" className="border border-[#dfe7f4] bg-transparent shadow-none sm:p-8">
+            <AppSurface padding="md" variant="clear" className="sm:p-8">
               <div className="flex flex-wrap items-start justify-between gap-5">
                 <div className="min-w-0">
                   <Eyebrow className="text-[#4f46e5]">{eyebrow}</Eyebrow>
@@ -360,7 +358,7 @@ export function StoriesShell({
               {headerMeta ? (
                 <div className="mt-5 text-sm text-[#7a8798]">{headerMeta}</div>
               ) : null}
-            </Card>
+            </AppSurface>
 
             {children}
           </div>
@@ -381,7 +379,7 @@ type PublicStoriesFrameProps = {
 
 export function PublicStoriesFrame({ eyebrow, title, subtitle, children }: PublicStoriesFrameProps) {
   return (
-    <main className="min-h-screen bg-[linear-gradient(180deg,#f6f8ff_0%,#eef3ff_55%,#f8fbff_100%)]">
+    <main className="min-h-screen bg-[var(--app-shell-bg)]">
       <div className="border-b border-[var(--border)] bg-white/95">
         <div className="mx-auto flex h-14 max-w-5xl items-center justify-between gap-3 px-4 sm:px-6">
           <div className="flex items-center gap-2">
@@ -399,11 +397,11 @@ export function PublicStoriesFrame({ eyebrow, title, subtitle, children }: Publi
         </div>
       </div>
       <div className="mx-auto flex w-full max-w-5xl flex-col gap-6 px-4 py-6 sm:px-6 sm:py-8">
-        <Card padding="md" className="border border-[#dfe7f4] bg-transparent shadow-none sm:p-8">
+        <AppSurface padding="md" variant="clear" className="sm:p-8">
           <Eyebrow className="text-[#4f46e5]">{eyebrow}</Eyebrow>
           <PageTitle className="mt-3 text-[#172033]">{title}</PageTitle>
           <BodyText muted className="mt-3 max-w-3xl text-[#617286] sm:text-[15px]">{subtitle}</BodyText>
-        </Card>
+        </AppSurface>
         {children}
       </div>
     </main>

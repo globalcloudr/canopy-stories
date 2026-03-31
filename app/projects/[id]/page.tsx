@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback, use } from "react";
 import Link from "next/link";
-import { BodyText, Button, Card, CardTitle } from "@canopy/ui";
+import { AppPill, BodyText, Button, Card, CardTitle } from "@canopy/ui";
 import { StoriesShell } from "@/app/_components/stories-shell";
 import { PipelineBoard } from "@/app/_components/pipeline-board";
 import { FormBuilderDialog } from "@/app/_components/form-builder-dialog";
@@ -426,9 +426,9 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
             >
               {tab.label}
               {tab.count !== undefined && (
-                      <span className="rounded-full border border-[#d7e3f3] bg-[#edf3fb] px-1.5 py-0.5 text-[11px] font-semibold">
-                  {tab.count}
-                </span>
+                      <AppPill size="sm" className="px-1.5 py-0.5">
+                        {tab.count}
+                      </AppPill>
               )}
             </button>
           ))}

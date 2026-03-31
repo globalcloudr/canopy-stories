@@ -1,7 +1,7 @@
 export const dynamic = "force-dynamic";
 import React from "react";
 import Link from "next/link";
-import { BodyText, Button, Card, CardTitle, SectionTitle } from "@canopy/ui";
+import { AppPill, BodyText, Button, Card, CardTitle, SectionTitle } from "@canopy/ui";
 import { StoriesShell } from "@/app/_components/stories-shell";
 import { getStoriesOverviewSnapshot } from "@/lib/stories-data";
 import { formatRelativeDate, pipelineStageLabel, storyTypeLabel } from "@/lib/stories-domain";
@@ -145,9 +145,9 @@ export default async function HomePage() {
                 <Card key={stage.stage} padding="sm" className="w-72 shrink-0 rounded-[20px] border border-[#dfe7f4] bg-transparent shadow-none">
                   <div className="flex items-center justify-between gap-2">
                     <CardTitle className="text-sm">{pipelineStageLabel(stage.stage)}</CardTitle>
-                    <span className="rounded-full border border-[#d7e3f3] bg-[#edf3fb] px-2.5 py-1 text-xs text-[var(--text-muted)]">
+                    <AppPill size="sm">
                       {stories.length}
-                    </span>
+                    </AppPill>
                   </div>
                   <div className="mt-4 space-y-3">
                     {stories.map((story) => (
