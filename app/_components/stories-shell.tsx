@@ -26,6 +26,12 @@ import { supabase } from "@/lib/supabase-client";
 
 type OrgOption = { id: string; name: string; slug: string };
 type LauncherProductKey = "photovault" | "stories_canopy" | "reach_canopy";
+type AppSessionPayload = {
+  user: { id: string; email: string; displayName: string };
+  isPlatformOperator: boolean;
+  workspaces: OrgOption[];
+  activeWorkspace: OrgOption | null;
+};
 
 type NavKey = "home" | "projects" | "stories" | "assets" | "settings" | "help";
 
@@ -130,11 +136,6 @@ function navClass(active: boolean) {
   );
 }
 
-// ─── Org localStorage helpers ─────────────────────────────────────────────────
-
-function readStoredOrgId() {
-  try { return window.localStorage.getItem(ACTIVE_ORG_KEY); } catch { return null; }
-}
 function writeStoredOrgId(id: string) {
   try { window.localStorage.setItem(ACTIVE_ORG_KEY, id); } catch { /* */ }
 }
@@ -180,11 +181,6 @@ export function StoriesShell({
   const orgInitials = activeOrg
     ? activeOrg.name.split(" ").map((p) => p[0] ?? "").join("").slice(0, 2).toUpperCase()
     : "W";
-
-  function setActiveOrgId(id: string) {
-    setActiveOrgIdState(id);
-    writeStoredOrgId(id);
-  }
 
   useEffect(() => {
     if (!activeOrgId) {
@@ -241,79 +237,77 @@ export function StoriesShell({
     async function load() {
       setLoadingSession(true);
       try {
-        // Handle token handoff from portal (tokens passed in URL hash)
-        if (typeof window !== "undefined") {
-          const hash = window.location.hash.startsWith("#") ? window.location.hash.slice(1) : "";
-          if (hash) {
-            const params = new URLSearchParams(hash);
-            const accessToken = params.get("access_token");
-            const refreshToken = params.get("refresh_token");
-            if (accessToken && refreshToken) {
-              await supabase.auth.setSession({ access_token: accessToken, refresh_token: refreshToken });
-              window.history.replaceState({}, "", window.location.pathname + window.location.search);
+        const launchCode = searchParams.get("launch")?.trim();
+        if (launchCode) {
+          const exchangeResponse = await fetch("/api/auth/exchange-handoff", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ code: launchCode }),
+          });
+
+          if (!exchangeResponse.ok) {
+            window.location.assign(PORTAL_URL);
+            return;
+          }
+
+          const exchangePayload = (await exchangeResponse.json()) as {
+            accessToken?: string;
+            refreshToken?: string;
+            workspaceSlug?: string | null;
+          };
+
+          if (!exchangePayload.accessToken || !exchangePayload.refreshToken) {
+            window.location.assign(PORTAL_URL);
+            return;
+          }
+
+          await supabase.auth.setSession({
+            access_token: exchangePayload.accessToken,
+            refresh_token: exchangePayload.refreshToken,
+          });
+
+          if (typeof window !== "undefined") {
+            const url = new URL(window.location.href);
+            url.searchParams.delete("launch");
+            if (exchangePayload.workspaceSlug) {
+              url.searchParams.set("workspace", exchangePayload.workspaceSlug);
             }
+            window.history.replaceState({}, "", `${url.pathname}${url.search}${url.hash}`);
           }
         }
 
-        const { data: userData } = await supabase.auth.getUser();
-        const user = userData.user;
-        if (!user || cancelled) { setLoadingSession(false); return; }
-
-        setUserEmail(user.email ?? "");
-        const full =
-          (typeof user.user_metadata?.full_name === "string" && user.user_metadata.full_name) ||
-          (typeof user.user_metadata?.name === "string" && user.user_metadata.name) || "";
-        setUserName(full);
-
-        // Check platform role
-        const { data: profileData } = await supabase
-          .from("profiles")
-          .select("is_super_admin,platform_role")
-          .eq("user_id", user.id)
-          .single() as { data: { is_super_admin?: boolean; platform_role?: string } | null };
-
-        const isOperator =
-          profileData?.is_super_admin === true ||
-          profileData?.platform_role === "super_admin" ||
-          profileData?.platform_role === "platform_staff";
-
-        if (!cancelled) setIsPlatformOperator(isOperator);
-
-        // Load workspaces
-        let loadedOrgs: OrgOption[] = [];
-        if (isOperator) {
-          const { data } = await supabase
-            .from("organizations")
-            .select("id,name,slug")
-            .order("name", { ascending: true });
-          loadedOrgs = (data ?? []) as OrgOption[];
-        } else {
-          const { data: memberships } = await supabase
-            .from("memberships")
-            .select("org_id")
-            .eq("user_id", user.id) as { data: { org_id: string }[] | null };
-          const ids = [...new Set((memberships ?? []).map((m) => m.org_id).filter(Boolean))] as string[];
-          if (ids.length > 0) {
-            const { data } = await supabase
-              .from("organizations")
-              .select("id,name,slug")
-              .in("id", ids)
-              .order("name", { ascending: true });
-            loadedOrgs = (data ?? []) as OrgOption[];
-          }
+        const { data: sessionData } = await supabase.auth.getSession();
+        const token = sessionData.session?.access_token;
+        if (!token) {
+          window.location.assign(PORTAL_URL);
+          return;
         }
 
-        if (cancelled) return;
-        setOrgs(loadedOrgs);
+        const requestedWorkspaceSlug = searchParams.get("workspace")?.trim() || "";
+        const sessionResponse = await fetch(
+          `/api/app-session${requestedWorkspaceSlug ? `?workspace=${encodeURIComponent(requestedWorkspaceSlug)}` : ""}`,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+            cache: "no-store",
+          }
+        );
 
-        // Resolve active org: URL param > localStorage > first org
-        const slugParam = searchParams.get("workspace");
-        const fromUrl = slugParam ? loadedOrgs.find((o) => o.slug === slugParam)?.id ?? null : null;
-        const stored = readStoredOrgId();
-        const hasStored = stored && loadedOrgs.some((o) => o.id === stored);
-        const resolved = fromUrl ?? (hasStored ? stored! : loadedOrgs[0]?.id ?? null);
-        setActiveOrgIdState(resolved);
-        if (resolved) writeStoredOrgId(resolved);
+        if (!sessionResponse.ok) {
+          window.location.assign(PORTAL_URL);
+          return;
+        }
+
+        const appSession = (await sessionResponse.json()) as AppSessionPayload;
+        if (cancelled) { setLoadingSession(false); return; }
+
+        setUserEmail(appSession.user.email);
+        setUserName(appSession.user.displayName);
+        setIsPlatformOperator(appSession.isPlatformOperator);
+        setOrgs(appSession.workspaces);
+        setActiveOrgIdState(appSession.activeWorkspace?.id ?? null);
+        if (appSession.activeWorkspace?.id) {
+          writeStoredOrgId(appSession.activeWorkspace.id);
+        }
       } catch {
         // session not available — show unauthenticated state
       } finally {
@@ -341,7 +335,7 @@ export function StoriesShell({
     ? orgs.map((org) => ({
         id: org.id,
         label: org.name,
-        onSelect: () => setActiveOrgId(org.id),
+        href: `${pathname}?workspace=${encodeURIComponent(org.slug)}`,
         active: org.id === activeOrgId,
       }))
     : [];
