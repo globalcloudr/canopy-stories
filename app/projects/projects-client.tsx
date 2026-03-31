@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase-client";
+import { apiFetch } from "@/lib/api-client";
 import { referenceIntakeTemplates } from "@/lib/reference-form-templates";
 import Link from "next/link";
 import {
@@ -125,7 +126,7 @@ export function ProjectsClient({ initial }: { initial: FlatProject[] }) {
 
   async function refreshProjects() {
     try {
-      const res = await fetch("/api/projects");
+      const res = await apiFetch("/api/projects");
       if (res.ok) setProjects(await res.json());
     } catch {}
   }
@@ -136,7 +137,7 @@ export function ProjectsClient({ initial }: { initial: FlatProject[] }) {
     setSubmitting(true);
     setError(null);
     try {
-      const res = await fetch("/api/projects", {
+      const res = await apiFetch("/api/projects", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -166,7 +167,7 @@ export function ProjectsClient({ initial }: { initial: FlatProject[] }) {
   async function handleDelete(project: FlatProject) {
     if (!window.confirm(`Delete "${project.name}"? This cannot be undone.`)) return;
     try {
-      const res = await fetch(`/api/projects/${project.id}`, { method: "DELETE" });
+      const res = await apiFetch(`/api/projects/${project.id}`, { method: "DELETE" });
       const payload = (await res.json()) as { error?: string };
       if (!res.ok) {
         window.alert(payload.error ?? "Failed to delete project.");
@@ -187,7 +188,7 @@ export function ProjectsClient({ initial }: { initial: FlatProject[] }) {
     try {
       const template = referenceIntakeTemplates.find((t) => t.id === selectedTemplateId);
       if (!template) throw new Error("Template not found.");
-      const res = await fetch("/api/forms", {
+      const res = await apiFetch("/api/forms", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

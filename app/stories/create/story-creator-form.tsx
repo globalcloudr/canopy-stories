@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { BodyText, Button, Card, CardTitle } from "@canopy/ui";
+import { apiFetch } from "@/lib/api-client";
 import type { LiveProjectOption } from "@/lib/stories-data";
 import { storyTypes } from "@/lib/stories-schema";
 
@@ -28,7 +29,7 @@ export function StoryCreatorForm({ projectOptions }: StoryCreatorFormProps) {
     setError(null);
 
     startTransition(async () => {
-      const response = await fetch("/api/stories/create", {
+      const response = await apiFetch("/api/stories/create", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

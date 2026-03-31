@@ -1,18 +1,29 @@
 import { NextResponse } from "next/server";
-import { listAssetsForStory, listAllAssetsFlat } from "@/lib/stories-data";
+import { getStoryById, listAssetsForStory, listAllAssetsFlat } from "@/lib/stories-data";
+import { getRequestAccess, requireWorkspaceAccess, toErrorResponse } from "@/lib/server-auth";
 
 export async function GET(request: Request) {
   try {
+    const access = await getRequestAccess(request);
     const { searchParams } = new URL(request.url);
     const storyId = searchParams.get("storyId");
-    const assets = storyId
-      ? await listAssetsForStory(storyId)
-      : await listAllAssetsFlat();
-    return NextResponse.json(assets);
-  } catch (error) {
+    if (storyId) {
+      const story = await getStoryById(storyId);
+      if (!story) {
+        return NextResponse.json({ error: "Story not found." }, { status: 404 });
+      }
+      await requireWorkspaceAccess(request, story.workspaceId);
+      return NextResponse.json(await listAssetsForStory(storyId));
+    }
+
+    const assets = await listAllAssetsFlat();
+    const allowedWorkspaceIds = access.isPlatformOperator
+      ? null
+      : new Set(access.memberships.map((membership) => membership.org_id));
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Failed to load assets." },
-      { status: 500 }
+      allowedWorkspaceIds ? assets.filter((asset) => allowedWorkspaceIds.has(asset.workspaceId)) : assets
     );
+  } catch (error) {
+    return toErrorResponse(error, "Failed to load assets.");
   }
 }

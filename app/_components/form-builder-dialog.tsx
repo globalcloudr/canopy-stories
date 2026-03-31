@@ -23,6 +23,7 @@ import {
   SelectValue,
   Textarea,
 } from "@canopy/ui";
+import { apiFetch } from "@/lib/api-client";
 import { referenceIntakeTemplates } from "@/lib/reference-form-templates";
 
 type FormField = {
@@ -138,12 +139,12 @@ export function FormBuilderDialog({ open, onOpenChange, projectId, onCreated, ed
 
     try {
       const res = isEditMode
-        ? await fetch(`/api/forms/${editForm!.id}`, {
+        ? await apiFetch(`/api/forms/${editForm!.id}`, {
             method: "PATCH",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ title, description: description || null, storyType, fields }),
           })
-        : await fetch("/api/forms", {
+        : await apiFetch("/api/forms", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ projectId, title, description: description || null, storyType, fields }),

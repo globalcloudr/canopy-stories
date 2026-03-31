@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
-import { createStoryManually } from "@/lib/stories-data";
+import { createStoryManually, getFlatProjectById } from "@/lib/stories-data";
 import { storyTypes } from "@/lib/stories-schema";
+import { requireWorkspaceAccess, toErrorResponse } from "@/lib/server-auth";
 
 export async function POST(request: Request) {
   try {
@@ -29,6 +30,11 @@ export async function POST(request: Request) {
     if (!body.storyType || !storyTypes.includes(body.storyType as (typeof storyTypes)[number])) {
       return NextResponse.json({ error: "Story type is invalid." }, { status: 400 });
     }
+    const project = await getFlatProjectById(body.projectId.trim());
+    if (!project) {
+      return NextResponse.json({ error: "Project not found." }, { status: 404 });
+    }
+    await requireWorkspaceAccess(request, project.workspaceId);
 
     const story = await createStoryManually({
       projectId: body.projectId.trim(),
@@ -45,9 +51,6 @@ export async function POST(request: Request) {
       storyId: story.id,
     });
   } catch (error) {
-    return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Story creation failed." },
-      { status: 400 }
-    );
+    return toErrorResponse(error, "Story creation failed.");
   }
 }

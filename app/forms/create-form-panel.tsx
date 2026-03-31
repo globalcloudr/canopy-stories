@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { Badge, BodyText, Button, Card, CardTitle, FieldLabel, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@canopy/ui";
+import { apiFetch } from "@/lib/api-client";
 import type { LiveProjectOption } from "@/lib/stories-data";
 import { referenceIntakeTemplates } from "@/lib/reference-form-templates";
 
@@ -36,7 +37,7 @@ export function CreateFormPanel({ projects }: CreateFormPanelProps) {
     setState({ type: "submitting" });
 
     try {
-      const response = await fetch("/api/forms/create-from-template", {
+      const response = await apiFetch("/api/forms/create-from-template", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

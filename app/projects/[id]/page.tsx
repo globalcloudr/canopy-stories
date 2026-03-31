@@ -6,6 +6,7 @@ import { AppPill, BodyText, Button, Card, CardTitle } from "@canopy/ui";
 import { StoriesShell } from "@/app/_components/stories-shell";
 import { PipelineBoard } from "@/app/_components/pipeline-board";
 import { FormBuilderDialog } from "@/app/_components/form-builder-dialog";
+import { apiFetch } from "@/lib/api-client";
 import { pipelineStageLabel } from "@/lib/stories-domain";
 import type { FlatProject, FlatForm, FormSubmissionItem } from "@/lib/stories-data";
 
@@ -37,7 +38,7 @@ function FormResponsesTab({
     if (responses[formId]) return; // already loaded
     setLoadingId(formId);
     try {
-      const res = await fetch(`/api/submissions?formId=${formId}`);
+      const res = await apiFetch(`/api/submissions?formId=${formId}`);
       if (res.ok) {
         const data = (await res.json()) as FormSubmissionItem[];
         setResponses((prev) => ({ ...prev, [formId]: data }));
@@ -250,19 +251,23 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
 
   const load = useCallback(async () => {
     const [projRes, formsRes, storiesRes, pkgsRes, assetsRes] = await Promise.all([
-      fetch(`/api/projects/${id}`),
-      fetch(`/api/forms?projectId=${id}`),
-      fetch(`/api/stories?projectId=${id}`),
-      fetch(`/api/packages?projectId=${id}`),
-      fetch(`/api/assets`),
+      apiFetch(`/api/projects/${id}`),
+      apiFetch(`/api/forms?projectId=${id}`),
+      apiFetch(`/api/stories?projectId=${id}`),
+      apiFetch(`/api/packages?projectId=${id}`),
+      apiFetch(`/api/assets`),
     ]);
     if (projRes.ok) setProject(await projRes.json());
     if (formsRes.ok) setForms(await formsRes.json());
-    if (storiesRes.ok) setStories(await storiesRes.json());
+    let fetchedStories: Story[] = [];
+    if (storiesRes.ok) {
+      fetchedStories = await storiesRes.json();
+      setStories(fetchedStories);
+    }
     if (pkgsRes.ok) setPackages(await pkgsRes.json());
     if (assetsRes.ok) {
       const all: Asset[] = await assetsRes.json();
-      const storyIds = new Set(stories.map((s) => s.id));
+      const storyIds = new Set(fetchedStories.map((s) => s.id));
       setAssets(all.filter((a) => storyIds.has(a.storyId)));
     }
     setLoading(false);
@@ -284,19 +289,19 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
 
   async function handleDeleteForm(formId: string) {
     if (!window.confirm("Delete this form? This cannot be undone.")) return;
-    await fetch(`/api/forms/${formId}`, { method: "DELETE" });
+    await apiFetch(`/api/forms/${formId}`, { method: "DELETE" });
     await load();
   }
 
   async function handleDeleteStory(storyId: string) {
     if (!window.confirm("Delete this story? This cannot be undone.")) return;
-    await fetch(`/api/stories/${storyId}`, { method: "DELETE" });
+    await apiFetch(`/api/stories/${storyId}`, { method: "DELETE" });
     await load();
   }
 
   async function handleDeletePackage(pkgId: string) {
     if (!window.confirm("Delete this package? This cannot be undone.")) return;
-    await fetch(`/api/packages/${pkgId}`, { method: "DELETE" });
+    await apiFetch(`/api/packages/${pkgId}`, { method: "DELETE" });
     await load();
   }
 

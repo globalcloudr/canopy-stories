@@ -1797,6 +1797,54 @@ export async function getFlatProjectById(projectId: string): Promise<FlatProject
   };
 }
 
+export async function getFlatFormById(formId: string): Promise<FlatForm | null> {
+  if (!isStoriesPersistenceEnabled()) {
+    const sample = samplePublishedForms.find((item) => item.id === formId);
+    if (!sample) return null;
+    return {
+      id: sample.id,
+      projectId: sample.projectId,
+      workspaceId: sample.workspaceId,
+      title: sample.title,
+      description: sample.description || null,
+      storyType: sample.storyType,
+      fields: sample.fields,
+      publicSlug: sample.id,
+      isActive: true,
+      shareableLink: sample.shareablePath,
+      createdAt: new Date().toISOString(),
+      submissionCount: 0,
+    };
+  }
+
+  const rows = await requestJsonOrEmpty<StoryFormRow[]>(
+    "/rest/v1/story_forms",
+    new URLSearchParams({
+      select: "id,workspace_id,project_id,title,description,story_type,fields_json,public_slug,is_active,created_at",
+      id: `eq.${formId}`,
+      limit: "1",
+    })
+  );
+
+  const row = rows[0];
+  if (!row) return null;
+
+  return {
+    id: row.id,
+    projectId: row.project_id,
+    workspaceId: row.workspace_id,
+    title: row.title,
+    description: row.description,
+    storyType: row.story_type,
+    fields: row.fields_json ?? [],
+    publicSlug: row.public_slug,
+    isActive: row.is_active,
+    shareableLink: `/forms/${row.public_slug}`,
+    createdAt: (row as StoryFormRow & { created_at?: string }).created_at ?? new Date().toISOString(),
+    submissionCount: 0,
+  };
+}
+
 export async function createProject(input: {
   workspaceId: string;
   name: string;
@@ -2076,6 +2124,23 @@ export async function listPackagesForProject(projectId: string): Promise<StoryPa
   return rows.map(toStoryPackageRecord);
 }
 
+export async function getPackageById(packageId: string): Promise<StoryPackageRecord | null> {
+  if (!isStoriesPersistenceEnabled()) {
+    return samplePackages.find((item) => item.id === packageId) ?? null;
+  }
+
+  const rows = await requestJsonOrEmpty<StoryPackageRow[]>(
+    "/rest/v1/story_packages",
+    new URLSearchParams({
+      select: "id,workspace_id,project_id,story_id,name,description,status,package_url,download_count,shareable_link,expires_at,created_at",
+      id: `eq.${packageId}`,
+      limit: "1",
+    })
+  );
+
+  return rows[0] ? toStoryPackageRecord(rows[0]) : null;
+}
+
 export async function deletePackageById(packageId: string): Promise<void> {
   if (!isStoriesPersistenceEnabled()) {
     throw new Error("Stories persistence is not configured.");
@@ -2102,6 +2167,23 @@ export async function listContentForStory(storyId: string): Promise<StoryContent
   );
 
   return rows.map(toStoryContentRecord);
+}
+
+export async function getContentById(contentId: string): Promise<StoryContentRecord | null> {
+  if (!isStoriesPersistenceEnabled()) {
+    return sampleContentArtifacts.find((item) => item.id === contentId) ?? null;
+  }
+
+  const rows = await requestJsonOrEmpty<StoryContentRow[]>(
+    "/rest/v1/story_content",
+    new URLSearchParams({
+      select: "id,workspace_id,story_id,channel,content_type,title,body,status,metadata_json,generated_at",
+      id: `eq.${contentId}`,
+      limit: "1",
+    })
+  );
+
+  return rows[0] ? toStoryContentRecord(rows[0]) : null;
 }
 
 export async function listAssetsForStory(storyId: string): Promise<StoryAssetRecord[]> {

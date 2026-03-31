@@ -5,6 +5,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { BodyText, Button, CardTitle, Input } from "@canopy/ui";
 import { StoriesShell } from "@/app/_components/stories-shell";
+import { apiFetch } from "@/lib/api-client";
 
 type Asset = {
   id: string;
@@ -28,7 +29,7 @@ export default function AssetsPage() {
   const [typeFilter, setTypeFilter] = useState("all");
 
   useEffect(() => {
-    fetch("/api/assets")
+    apiFetch("/api/assets")
       .then((r) => r.json())
       .then((data) => { setAssets(data); setLoading(false); })
       .catch(() => setLoading(false));

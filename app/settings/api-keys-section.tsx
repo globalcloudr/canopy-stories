@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { BodyText, Button, CardTitle, Input } from "@canopy/ui";
+import { apiFetch } from "@/lib/api-client";
 
 type KeyStatus = {
   hasOpenaiKey: boolean;
@@ -88,7 +89,7 @@ export function ApiKeysSection() {
 
   useEffect(() => {
     if (!workspaceId) return;
-    fetch(`/api/settings/api-keys?workspaceId=${workspaceId}`)
+    apiFetch(`/api/settings/api-keys?workspaceId=${workspaceId}`)
       .then((r) => r.json())
       .then((data) => {
         const s = data as KeyStatus;
@@ -112,7 +113,7 @@ export function ApiKeysSection() {
       if (videoKey.trim()) body.videoApiKey = videoKey.trim();
       body.notificationEmail = notificationEmail.trim();
 
-      const res = await fetch("/api/settings/api-keys", {
+      const res = await apiFetch("/api/settings/api-keys", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(body),

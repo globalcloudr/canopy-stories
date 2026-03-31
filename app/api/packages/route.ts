@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
-import { listPackagesForProject } from "@/lib/stories-data";
+import { getFlatProjectById, listPackagesForProject } from "@/lib/stories-data";
+import { requireWorkspaceAccess, toErrorResponse } from "@/lib/server-auth";
 
 export async function GET(request: Request) {
   try {
@@ -8,12 +9,14 @@ export async function GET(request: Request) {
     if (!projectId) {
       return NextResponse.json({ error: "projectId is required." }, { status: 400 });
     }
+    const project = await getFlatProjectById(projectId);
+    if (!project) {
+      return NextResponse.json({ error: "Project not found." }, { status: 404 });
+    }
+    await requireWorkspaceAccess(request, project.workspaceId);
     const packages = await listPackagesForProject(projectId);
     return NextResponse.json(packages);
   } catch (error) {
-    return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Failed to load packages." },
-      { status: 500 }
-    );
+    return toErrorResponse(error, "Failed to load packages.");
   }
 }

@@ -1,15 +1,19 @@
 import { NextResponse } from "next/server";
 import { listAllProjects, createProject } from "@/lib/stories-data";
+import { getRequestAccess, requireWorkspaceAccess, toErrorResponse } from "@/lib/server-auth";
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
+    const access = await getRequestAccess(request);
     const projects = await listAllProjects();
-    return NextResponse.json(projects);
-  } catch (error) {
+    const allowedWorkspaceIds = access.isPlatformOperator
+      ? null
+      : new Set(access.memberships.map((membership) => membership.org_id));
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Failed to load projects." },
-      { status: 500 }
+      allowedWorkspaceIds ? projects.filter((project) => allowedWorkspaceIds.has(project.workspaceId)) : projects
     );
+  } catch (error) {
+    return toErrorResponse(error, "Failed to load projects.");
   }
 }
 
@@ -30,6 +34,8 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Project name is required." }, { status: 400 });
     }
 
+    await requireWorkspaceAccess(request, body.workspaceId.trim());
+
     const project = await createProject({
       workspaceId: body.workspaceId.trim(),
       name: body.name.trim(),
@@ -40,9 +46,6 @@ export async function POST(request: Request) {
 
     return NextResponse.json(project, { status: 201 });
   } catch (error) {
-    return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Failed to create project." },
-      { status: 500 }
-    );
+    return toErrorResponse(error, "Failed to create project.");
   }
 }

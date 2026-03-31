@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { getWorkspaceApiKeys, upsertWorkspaceApiKeys } from "@/lib/stories-data";
+import { requireWorkspaceAdminAccess, toErrorResponse } from "@/lib/server-auth";
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
@@ -10,6 +11,7 @@ export async function GET(request: Request) {
   }
 
   try {
+    await requireWorkspaceAdminAccess(request, workspaceId);
     const keys = await getWorkspaceApiKeys(workspaceId);
     // Return masked key status — actual key values are never sent to the browser
     return NextResponse.json({
@@ -19,10 +21,7 @@ export async function GET(request: Request) {
       notificationEmail: keys?.notificationEmail ?? null,
     });
   } catch (error) {
-    return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Failed to load API key settings." },
-      { status: 500 }
-    );
+    return toErrorResponse(error, "Failed to load API key settings.");
   }
 }
 
@@ -39,6 +38,7 @@ export async function POST(request: Request) {
     if (!body.workspaceId?.trim()) {
       return NextResponse.json({ error: "workspaceId is required." }, { status: 400 });
     }
+    await requireWorkspaceAdminAccess(request, body.workspaceId.trim());
 
     await upsertWorkspaceApiKeys(body.workspaceId.trim(), {
       openaiApiKey: body.openaiApiKey,
@@ -49,9 +49,6 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ ok: true });
   } catch (error) {
-    return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Failed to save settings." },
-      { status: 500 }
-    );
+    return toErrorResponse(error, "Failed to save settings.");
   }
 }

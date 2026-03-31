@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
-import { updateContentStatus } from "@/lib/stories-data";
+import { getContentById, updateContentStatus } from "@/lib/stories-data";
+import { requireWorkspaceAccess, toErrorResponse } from "@/lib/server-auth";
 
 const VALID_STATUSES = ["draft", "ready", "approved"] as const;
 type ValidStatus = (typeof VALID_STATUSES)[number];
@@ -19,12 +20,14 @@ export async function PATCH(
       return NextResponse.json({ error: "status must be draft, ready, or approved." }, { status: 400 });
     }
 
+    const content = await getContentById(id);
+    if (!content) {
+      return NextResponse.json({ error: "Content not found." }, { status: 404 });
+    }
+    await requireWorkspaceAccess(request, content.workspaceId);
     await updateContentStatus(id, body.workspaceId.trim(), body.status as ValidStatus);
     return NextResponse.json({ ok: true });
   } catch (error) {
-    return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Failed to update content status." },
-      { status: 500 }
-    );
+    return toErrorResponse(error, "Failed to update content status.");
   }
 }

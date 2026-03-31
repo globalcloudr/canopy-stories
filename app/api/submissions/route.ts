@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
-import { listSubmissionsForForm } from "@/lib/stories-data";
+import { getFlatFormById, listSubmissionsForForm } from "@/lib/stories-data";
+import { requireWorkspaceAccess, toErrorResponse } from "@/lib/server-auth";
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
@@ -10,12 +11,14 @@ export async function GET(request: Request) {
   }
 
   try {
+    const form = await getFlatFormById(formId);
+    if (!form) {
+      return NextResponse.json({ error: "Form not found." }, { status: 404 });
+    }
+    await requireWorkspaceAccess(request, form.workspaceId);
     const items = await listSubmissionsForForm(formId);
     return NextResponse.json(items);
   } catch (error) {
-    return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Failed to load submissions." },
-      { status: 500 }
-    );
+    return toErrorResponse(error, "Failed to load submissions.");
   }
 }

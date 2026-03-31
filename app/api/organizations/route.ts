@@ -1,14 +1,11 @@
 import { NextResponse } from "next/server";
-import { listAllOrganizations } from "@/lib/stories-data";
+import { resolveAccessibleOrganizations, toErrorResponse } from "@/lib/server-auth";
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
-    const orgs = await listAllOrganizations();
+    const orgs = await resolveAccessibleOrganizations(request);
     return NextResponse.json(orgs);
   } catch (error) {
-    return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Failed to load organizations." },
-      { status: 500 }
-    );
+    return toErrorResponse(error, "Failed to load organizations.");
   }
 }

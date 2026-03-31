@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
-import { listFormsForProject, createFormFromBuilder } from "@/lib/stories-data";
+import { getFlatProjectById, listFormsForProject, createFormFromBuilder } from "@/lib/stories-data";
 import type { StoryFormField } from "@/lib/stories-schema";
+import { requireWorkspaceAccess, toErrorResponse } from "@/lib/server-auth";
 
 export async function GET(request: Request) {
   try {
@@ -9,13 +10,15 @@ export async function GET(request: Request) {
     if (!projectId) {
       return NextResponse.json({ error: "projectId is required." }, { status: 400 });
     }
+    const project = await getFlatProjectById(projectId);
+    if (!project) {
+      return NextResponse.json({ error: "Project not found." }, { status: 404 });
+    }
+    await requireWorkspaceAccess(request, project.workspaceId);
     const forms = await listFormsForProject(projectId);
     return NextResponse.json(forms);
   } catch (error) {
-    return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Failed to load forms." },
-      { status: 500 }
-    );
+    return toErrorResponse(error, "Failed to load forms.");
   }
 }
 
@@ -39,6 +42,11 @@ export async function POST(request: Request) {
     if (!body.storyType?.trim()) {
       return NextResponse.json({ error: "Story type is required." }, { status: 400 });
     }
+    const project = await getFlatProjectById(body.projectId.trim());
+    if (!project) {
+      return NextResponse.json({ error: "Project not found." }, { status: 404 });
+    }
+    await requireWorkspaceAccess(request, project.workspaceId);
 
     const form = await createFormFromBuilder({
       projectId: body.projectId.trim(),
@@ -51,9 +59,6 @@ export async function POST(request: Request) {
 
     return NextResponse.json(form, { status: 201 });
   } catch (error) {
-    return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Failed to create form." },
-      { status: 500 }
-    );
+    return toErrorResponse(error, "Failed to create form.");
   }
 }

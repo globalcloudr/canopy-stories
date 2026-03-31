@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { getFlatFormById } from "@/lib/stories-data";
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL ?? "";
 const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY ?? "";
@@ -12,12 +13,21 @@ export async function POST(request: Request) {
   try {
     const formData = await request.formData();
     const file = formData.get("file") as File | null;
+    const formId = (formData.get("formId") as string | null)?.trim() || "";
 
     if (!file) {
       return NextResponse.json({ error: "No file provided." }, { status: 400 });
     }
+    if (!formId) {
+      return NextResponse.json({ error: "formId is required." }, { status: 400 });
+    }
 
-    const workspaceId = (formData.get("workspaceId") as string | null)?.trim() || "shared";
+    const form = await getFlatFormById(formId);
+    if (!form) {
+      return NextResponse.json({ error: "Form not found." }, { status: 404 });
+    }
+
+    const workspaceId = form.workspaceId;
     const ext = file.name.split(".").pop()?.toLowerCase() ?? "jpg";
     const path = `${workspaceId}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
 

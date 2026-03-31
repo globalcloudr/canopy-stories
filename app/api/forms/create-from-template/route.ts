@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
-import { createFormFromReferenceTemplate } from "@/lib/stories-data";
+import { createFormFromReferenceTemplate, getFlatProjectById } from "@/lib/stories-data";
+import { requireWorkspaceAccess, toErrorResponse } from "@/lib/server-auth";
 
 export async function POST(request: Request) {
   try {
@@ -11,6 +12,11 @@ export async function POST(request: Request) {
     if (!body.projectId || !body.templateId) {
       return NextResponse.json({ error: "projectId and templateId are required." }, { status: 400 });
     }
+    const project = await getFlatProjectById(body.projectId);
+    if (!project) {
+      return NextResponse.json({ error: "Project not found." }, { status: 404 });
+    }
+    await requireWorkspaceAccess(request, project.workspaceId);
 
     const created = await createFormFromReferenceTemplate(body.projectId, body.templateId);
 
@@ -20,11 +26,6 @@ export async function POST(request: Request) {
       publicSlug: created.public_slug,
     });
   } catch (error) {
-    return NextResponse.json(
-      {
-        error: error instanceof Error ? error.message : "Could not create form.",
-      },
-      { status: 400 }
-    );
+    return toErrorResponse(error, "Could not create form.");
   }
 }

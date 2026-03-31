@@ -5,6 +5,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { BodyText, Button, Card, CardTitle, Input, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@canopy/ui";
 import { StoriesShell } from "@/app/_components/stories-shell";
+import { apiFetch } from "@/lib/api-client";
 import { pipelineStageLabel, storyTypeLabel } from "@/lib/stories-domain";
 
 type Story = {
@@ -41,7 +42,7 @@ export default function StoriesPage() {
   const [typeFilter, setTypeFilter] = useState("all");
 
   useEffect(() => {
-    fetch("/api/stories")
+    apiFetch("/api/stories")
       .then((r) => r.json())
       .then((data) => { setStories(data); setLoading(false); })
       .catch(() => setLoading(false));

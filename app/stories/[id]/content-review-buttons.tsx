@@ -2,8 +2,7 @@
 
 import { useState } from "react";
 import { Button } from "@canopy/ui";
-
-const ACTIVE_ORG_KEY = "cs_active_org_id_v1";
+import { apiFetch } from "@/lib/api-client";
 
 type ReviewStatus = "draft" | "ready" | "approved";
 
@@ -18,18 +17,12 @@ export function ContentReviewButtons({
   const [loading, setLoading] = useState(false);
 
   async function setContentStatus(next: ReviewStatus) {
-    let workspaceId: string | null = null;
-    try {
-      workspaceId = window.localStorage.getItem(ACTIVE_ORG_KEY);
-    } catch { /* */ }
-
-    if (!workspaceId) return;
     setLoading(true);
     try {
-      const res = await fetch(`/api/content/${contentId}`, {
+      const res = await apiFetch(`/api/content/${contentId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ status: next, workspaceId }),
+        body: JSON.stringify({ status: next }),
       });
       if (res.ok) setStatus(next);
     } finally {
