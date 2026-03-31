@@ -321,7 +321,7 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
       <StoriesShell activeNav="projects" eyebrow="Projects" title="Loading..." subtitle="">
         <div className="grid gap-4 md:grid-cols-4">
           {[1, 2, 3, 4].map((i) => (
-            <Card key={i} padding="sm" className="h-28 animate-pulse rounded-[24px] bg-[var(--surface-muted)]" />
+            <Card key={i} padding="sm" className="h-28 animate-pulse rounded-[24px] border border-[#dfe7f4] bg-[#f3f6fb]" />
           ))}
         </div>
       </StoriesShell>
@@ -331,7 +331,7 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
   if (!project) {
     return (
       <StoriesShell activeNav="projects" eyebrow="Projects" title="Not found" subtitle="">
-        <Card padding="md" className="py-12 text-center">
+        <Card padding="md" className="border border-[#dfe7f4] bg-transparent py-12 text-center shadow-none">
           <CardTitle>Project not found</CardTitle>
           <div className="mt-4">
             <Button asChild variant="primary">
@@ -426,7 +426,7 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
             >
               {tab.label}
               {tab.count !== undefined && (
-                <span className="rounded-full bg-[var(--surface-muted)] px-1.5 py-0.5 text-[11px] font-semibold">
+                      <span className="rounded-full border border-[#d7e3f3] bg-[#edf3fb] px-1.5 py-0.5 text-[11px] font-semibold">
                   {tab.count}
                 </span>
               )}

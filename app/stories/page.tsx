@@ -82,11 +82,11 @@ export default function StoriesPage() {
             placeholder="Search stories..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="pl-9"
+            className="border-[#dfe7f4] bg-transparent pl-9"
           />
         </div>
         <Select value={typeFilter} onValueChange={setTypeFilter}>
-          <SelectTrigger className="w-44">
+          <SelectTrigger className="w-44 border-[#dfe7f4] bg-transparent">
             <SelectValue>
               {typeFilter === "all" ? "All Types" : storyTypeLabel(typeFilter)}
             </SelectValue>
@@ -123,13 +123,13 @@ export default function StoriesPage() {
           </BodyText>
         </div>
       ) : (
-        <div className="divide-y divide-[var(--border)]">
+        <div className="rounded-[24px] border border-[#dfe7f4] bg-transparent shadow-none divide-y divide-[var(--border)]">
           {filtered.map((story) => (
-            <div key={story.id} className="flex flex-wrap items-center justify-between gap-3 py-4">
+            <div key={story.id} className="flex flex-wrap items-center justify-between gap-3 px-5 py-4">
               <div className="min-w-0">
                 <div className="flex flex-wrap items-center gap-2">
                   <span className="font-medium text-[var(--foreground)]">{story.title || "Untitled Story"}</span>
-                  <span className={`rounded-full px-2 py-0.5 text-[11px] font-semibold uppercase tracking-[0.06em] ${typeColors[story.storyType] ?? "bg-gray-100 text-gray-700"}`}>
+                  <span className={`rounded-full px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.06em] ${typeColors[story.storyType] ?? "bg-gray-100 text-gray-700"}`}>
                     {storyTypeLabel(story.storyType)}
                   </span>
                 </div>

@@ -238,11 +238,11 @@ export function ProjectsClient({ initial }: { initial: FlatProject[] }) {
             placeholder="Search by school or project name..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="pl-9"
+            className="border-[#dfe7f4] bg-transparent pl-9"
           />
         </div>
         <Select value={statusFilter} onValueChange={setStatusFilter}>
-          <SelectTrigger className="w-44">
+          <SelectTrigger className="w-44 border-[#dfe7f4] bg-transparent">
             <SelectValue>
               {statusFilter === "all" ? "All Status" : statusFilter.charAt(0).toUpperCase() + statusFilter.slice(1)}
             </SelectValue>
@@ -259,7 +259,7 @@ export function ProjectsClient({ initial }: { initial: FlatProject[] }) {
 
       {/* Project cards */}
       {filtered.length === 0 ? (
-        <Card padding="md" className="py-12 text-center sm:p-12">
+        <Card padding="md" className="border border-[#dfe7f4] bg-transparent py-12 text-center shadow-none sm:p-12">
           <CardTitle>
             {search || statusFilter !== "all" ? "No projects match your filters" : "No projects yet"}
           </CardTitle>
@@ -279,7 +279,7 @@ export function ProjectsClient({ initial }: { initial: FlatProject[] }) {
       ) : (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {filtered.map((project) => (
-            <Card key={project.id} padding="sm" className="flex flex-col rounded-[24px]">
+            <Card key={project.id} padding="sm" className="flex flex-col rounded-[24px] border border-[#dfe7f4] bg-transparent shadow-none transition hover:border-[#c8d7eb] hover:bg-white/65">
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
                   <BodyText muted className="text-[12px]">{project.workspaceName}</BodyText>

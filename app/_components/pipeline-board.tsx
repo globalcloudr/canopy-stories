@@ -55,13 +55,13 @@ export function PipelineBoard({ stories }: { stories: PipelineStory[] }) {
           <div key={stage.key} className="w-[260px] flex-shrink-0">
             <div className={`mb-2 flex items-center justify-between rounded-xl border px-3 py-2 ${headerClass}`}>
               <span className="text-[13px] font-semibold text-[var(--foreground)]">{pipelineStageLabel(stage.key)}</span>
-              <span className="rounded-full bg-white/80 px-2 py-0.5 text-[12px] font-semibold text-[var(--text-muted)]">
+              <span className="rounded-full border border-white/70 bg-white/80 px-2 py-0.5 text-[12px] font-semibold text-[var(--text-muted)]">
                 {items.length}
               </span>
             </div>
             <div className="space-y-2">
               {items.map((story) => (
-                <Card key={story.id} variant="soft" padding="sm" className="rounded-[16px]">
+                <Card key={story.id} variant="soft" padding="sm" className="rounded-[16px] border border-[#dfe7f4] bg-white/62 shadow-none">
                   <p className="line-clamp-2 text-[13px] font-semibold leading-snug text-[var(--foreground)]">
                     {story.title}
                   </p>
@@ -76,7 +76,7 @@ export function PipelineBoard({ stories }: { stories: PipelineStory[] }) {
                 </Card>
               ))}
               {items.length === 0 && (
-                <div className="rounded-xl border border-dashed border-[var(--border)] px-3 py-6 text-center">
+                <div className="rounded-xl border border-dashed border-[#dfe7f4] bg-transparent px-3 py-6 text-center">
                   <BodyText muted className="text-[12px]">No stories</BodyText>
                 </div>
               )}

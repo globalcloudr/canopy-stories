@@ -49,7 +49,7 @@ export function StoryCreatorForm({ projectOptions }: StoryCreatorFormProps) {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      <Card padding="md" className="sm:p-7">
+      <Card padding="md" className="border border-[#dfe7f4] bg-transparent shadow-none sm:p-7">
         <CardTitle className="text-lg">Source information</CardTitle>
         <div className="mt-5 grid gap-4 md:grid-cols-2">
           <label className="block">
@@ -57,7 +57,7 @@ export function StoryCreatorForm({ projectOptions }: StoryCreatorFormProps) {
             <select
               value={form.projectId}
               onChange={(event) => setForm((current) => ({ ...current, projectId: event.target.value }))}
-              className="mt-2 w-full rounded-xl border border-[var(--border)] bg-white px-4 py-3 text-[15px] outline-none"
+              className="mt-2 w-full rounded-xl border border-[#dfe7f4] bg-transparent px-4 py-3 text-[15px] outline-none"
               required
             >
               {projectOptions.map((option) => (
@@ -72,7 +72,7 @@ export function StoryCreatorForm({ projectOptions }: StoryCreatorFormProps) {
             <select
               value={form.storyType}
               onChange={(event) => setForm((current) => ({ ...current, storyType: event.target.value }))}
-              className="mt-2 w-full rounded-xl border border-[var(--border)] bg-white px-4 py-3 text-[15px] outline-none"
+              className="mt-2 w-full rounded-xl border border-[#dfe7f4] bg-transparent px-4 py-3 text-[15px] outline-none"
             >
               {storyTypes.map((type) => (
                 <option key={type} value={type}>
@@ -86,7 +86,7 @@ export function StoryCreatorForm({ projectOptions }: StoryCreatorFormProps) {
             <input
               value={form.title}
               onChange={(event) => setForm((current) => ({ ...current, title: event.target.value }))}
-              className="mt-2 w-full rounded-xl border border-[var(--border)] bg-white px-4 py-3 text-[15px] outline-none"
+              className="mt-2 w-full rounded-xl border border-[#dfe7f4] bg-transparent px-4 py-3 text-[15px] outline-none"
               placeholder="Maria finds confidence through Berkeley ESL"
               required
             />
@@ -96,7 +96,7 @@ export function StoryCreatorForm({ projectOptions }: StoryCreatorFormProps) {
             <input
               value={form.subjectName}
               onChange={(event) => setForm((current) => ({ ...current, subjectName: event.target.value }))}
-              className="mt-2 w-full rounded-xl border border-[var(--border)] bg-white px-4 py-3 text-[15px] outline-none"
+              className="mt-2 w-full rounded-xl border border-[#dfe7f4] bg-transparent px-4 py-3 text-[15px] outline-none"
               placeholder="Maria R."
             />
           </label>
@@ -105,7 +105,7 @@ export function StoryCreatorForm({ projectOptions }: StoryCreatorFormProps) {
             <textarea
               value={form.background}
               onChange={(event) => setForm((current) => ({ ...current, background: event.target.value }))}
-              className="mt-2 min-h-40 w-full rounded-xl border border-[var(--border)] bg-white px-4 py-3 text-[15px] outline-none"
+              className="mt-2 min-h-40 w-full rounded-xl border border-[#dfe7f4] bg-transparent px-4 py-3 text-[15px] outline-none"
               placeholder="Tell the core story, challenge, journey, and outcome."
               required
             />
@@ -115,7 +115,7 @@ export function StoryCreatorForm({ projectOptions }: StoryCreatorFormProps) {
             <textarea
               value={form.details}
               onChange={(event) => setForm((current) => ({ ...current, details: event.target.value }))}
-              className="mt-2 min-h-32 w-full rounded-xl border border-[var(--border)] bg-white px-4 py-3 text-[15px] outline-none"
+              className="mt-2 min-h-32 w-full rounded-xl border border-[#dfe7f4] bg-transparent px-4 py-3 text-[15px] outline-none"
               placeholder="Interview notes, editorial direction, quotes, or context."
             />
           </label>
@@ -123,7 +123,7 @@ export function StoryCreatorForm({ projectOptions }: StoryCreatorFormProps) {
       </Card>
 
       {error ? (
-        <Card padding="sm" className="border border-rose-200 bg-rose-50">
+        <Card padding="sm" className="border border-rose-200 bg-transparent shadow-none">
           <BodyText>{error}</BodyText>
         </Card>
       ) : null}

@@ -66,22 +66,22 @@ export default async function StoryDetailPage({ params }: StoryDetailPageProps) 
       </section>
 
       <section className="grid gap-4 md:grid-cols-3">
-        <Card padding="sm" className="rounded-[20px] border border-[var(--border)] bg-white">
+        <Card padding="sm" className="rounded-[20px] border border-[#dfe7f4] bg-transparent shadow-none">
           <CardTitle className="text-sm text-[var(--text-muted)]">Subject</CardTitle>
           <SectionTitle className="mt-4 text-3xl sm:text-3xl">{snapshot.story.subjectName || "N/A"}</SectionTitle>
         </Card>
-        <Card padding="sm" className="rounded-[20px] border border-[var(--border)] bg-white">
+        <Card padding="sm" className="rounded-[20px] border border-[#dfe7f4] bg-transparent shadow-none">
           <CardTitle className="text-sm text-[var(--text-muted)]">Content pieces</CardTitle>
           <SectionTitle className="mt-4 text-3xl sm:text-3xl">{snapshot.contents.length}</SectionTitle>
         </Card>
-        <Card padding="sm" className="rounded-[20px] border border-[var(--border)] bg-white">
+        <Card padding="sm" className="rounded-[20px] border border-[#dfe7f4] bg-transparent shadow-none">
           <CardTitle className="text-sm text-[var(--text-muted)]">Assets</CardTitle>
           <SectionTitle className="mt-4 text-3xl sm:text-3xl">{snapshot.assets.length}</SectionTitle>
         </Card>
       </section>
 
       <section className="grid gap-4 lg:grid-cols-[1.4fr_1fr]">
-        <Card padding="md" className="sm:p-7">
+        <Card padding="md" className="border border-[#dfe7f4] bg-transparent shadow-none sm:p-7">
           <Eyebrow>Submission</Eyebrow>
           <PageTitle className="mt-3 text-[2rem]">About {snapshot.story.subjectName || "this subject"}</PageTitle>
           <div className="mt-5 space-y-4">
@@ -100,7 +100,7 @@ export default async function StoryDetailPage({ params }: StoryDetailPageProps) 
           </div>
         </Card>
 
-        <Card padding="md" className="sm:p-7">
+        <Card padding="md" className="border border-[#dfe7f4] bg-transparent shadow-none sm:p-7">
           <Eyebrow>Package</Eyebrow>
           <PageTitle className="mt-3 text-[2rem]">Content delivery</PageTitle>
           {snapshot.storyPackage ? (
@@ -131,13 +131,13 @@ export default async function StoryDetailPage({ params }: StoryDetailPageProps) 
           <PageTitle className="mt-3 text-[2rem]">Ready to publish</PageTitle>
         </div>
         {snapshot.contents.length === 0 ? (
-          <Card padding="md" className="sm:p-8">
+          <Card padding="md" className="border border-[#dfe7f4] bg-transparent shadow-none sm:p-8">
             <BodyText muted>Content is being written. Check back shortly.</BodyText>
           </Card>
         ) : (
           <div className="grid gap-4 lg:grid-cols-2">
             {snapshot.contents.map((content) => (
-              <Card key={content.id} padding="md" className="sm:p-7">
+              <Card key={content.id} padding="md" className="border border-[#dfe7f4] bg-transparent shadow-none sm:p-7">
                 <div className="flex items-start justify-between gap-3">
                   <div>
                     <CardTitle className="text-lg">{content.title || content.contentType}</CardTitle>
@@ -145,9 +145,9 @@ export default async function StoryDetailPage({ params }: StoryDetailPageProps) 
                       {content.channel} · {content.contentType}
                     </BodyText>
                   </div>
-                  <Badge variant="outline">{contentStatusLabel(content.status)}</Badge>
+                  <Badge variant="outline" className="border-[#d7e3f3] bg-[#edf3fb]">{contentStatusLabel(content.status)}</Badge>
                 </div>
-                <div className="mt-5 rounded-2xl border border-[var(--border)] bg-[var(--surface-muted)] p-5 text-sm leading-7 text-[var(--foreground)] whitespace-pre-wrap break-words">
+                <div className="mt-5 rounded-2xl border border-[#e3eaf6] bg-white/62 p-5 text-sm leading-7 text-[var(--foreground)] whitespace-pre-wrap break-words">
                   {content.body}
                 </div>
                 <div className="mt-4 border-t border-[var(--border)] pt-4">
@@ -165,13 +165,13 @@ export default async function StoryDetailPage({ params }: StoryDetailPageProps) 
           <PageTitle className="mt-3 text-[2rem]">Graphics and video</PageTitle>
         </div>
         {snapshot.assets.length === 0 ? (
-          <Card padding="md" className="sm:p-8">
+          <Card padding="md" className="border border-[#dfe7f4] bg-transparent shadow-none sm:p-8">
             <BodyText muted>Graphics and video are being created. They'll appear here when ready.</BodyText>
           </Card>
         ) : (
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             {snapshot.assets.map((asset) => (
-              <Card key={asset.id} padding="md" className="sm:p-6">
+              <Card key={asset.id} padding="md" className="border border-[#dfe7f4] bg-transparent shadow-none sm:p-6">
                 <div className="flex items-start justify-between gap-3">
                   <div>
                     <CardTitle className="text-base">{asset.fileName}</CardTitle>

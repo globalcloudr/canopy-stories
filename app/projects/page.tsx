@@ -40,7 +40,7 @@ export default function ProjectsPage() {
       {loading ? (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {[1, 2, 3].map((i) => (
-            <Card key={i} padding="sm" className="h-48 animate-pulse rounded-[24px] bg-[var(--surface-muted)]" />
+            <Card key={i} padding="sm" className="h-48 animate-pulse rounded-[24px] border border-[#dfe7f4] bg-[#f3f6fb]" />
           ))}
         </div>
       ) : (

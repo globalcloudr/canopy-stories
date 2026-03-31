@@ -30,7 +30,7 @@ export default async function FormsPage() {
     >
       <CreateFormPanel projects={projects} />
 
-      <section className="rounded-[28px] border border-[var(--border)] bg-white p-6 shadow-[var(--shadow-sm)] sm:p-7">
+      <section className="rounded-[28px] border border-[#dfe7f4] bg-transparent p-6 shadow-none sm:p-7">
         <Eyebrow className="text-[#4f46e5]">Reference templates</Eyebrow>
         <SectionTitle className="mt-3">Promoted from the mature Stories app</SectionTitle>
         <BodyText muted className="mt-3">
@@ -39,7 +39,7 @@ export default async function FormsPage() {
         </BodyText>
         <div className="mt-5 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
           {referenceIntakeTemplates.map((template) => (
-            <Card key={template.id} variant="soft" padding="sm" className="rounded-[24px]">
+            <Card key={template.id} variant="soft" padding="sm" className="rounded-[24px] border border-[#dfe7f4] bg-transparent shadow-none">
               <div className="flex items-center justify-between gap-3">
                 <CardTitle className="text-base">{template.name}</CardTitle>
                 <Badge variant="outline" className="text-[11px] uppercase tracking-[0.08em]">
@@ -47,7 +47,7 @@ export default async function FormsPage() {
                 </Badge>
               </div>
               <BodyText muted className="mt-2">{template.description}</BodyText>
-              <div className="mt-4 rounded-[20px] border border-[var(--border)] bg-white px-4 py-3 text-sm text-[var(--text-muted)]">
+              <div className="mt-4 rounded-[20px] border border-[#d7e3f3] bg-[#edf3fb] px-4 py-3 text-sm text-[var(--text-muted)]">
                 {template.fields.length} fields
               </div>
             </Card>
@@ -55,12 +55,12 @@ export default async function FormsPage() {
         </div>
       </section>
 
-      <section className="rounded-[28px] border border-[var(--border)] bg-white p-6 shadow-[var(--shadow-sm)] sm:p-7">
+      <section className="rounded-[28px] border border-[#dfe7f4] bg-transparent p-6 shadow-none sm:p-7">
         <Eyebrow className="text-[#4f46e5]">Published intake</Eyebrow>
         <SectionTitle className="mt-3">Active public forms</SectionTitle>
         <div className="mt-5 space-y-4">
           {forms.map((form) => (
-            <Card key={form.id} variant="soft" padding="sm" className="rounded-[24px]">
+            <Card key={form.id} variant="soft" padding="sm" className="rounded-[24px] border border-[#dfe7f4] bg-transparent shadow-none">
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div>
                   <CardTitle className="text-lg">{form.title}</CardTitle>
@@ -77,14 +77,14 @@ export default async function FormsPage() {
                 <Button asChild variant="primary">
                   <Link href={form.shareablePath}>Open public form</Link>
                 </Button>
-                <code className="inline-flex h-11 items-center rounded-xl border border-[var(--border)] bg-white px-4 text-sm text-[var(--text-muted)]">
+                <code className="inline-flex h-11 items-center rounded-xl border border-[#d7e3f3] bg-[#edf3fb] px-4 text-sm text-[var(--text-muted)]">
                   {form.shareablePath}
                 </code>
               </div>
             </Card>
           ))}
           {forms.length === 0 ? (
-            <Card padding="md" className="sm:p-7">
+            <Card padding="md" className="border border-[#dfe7f4] bg-transparent shadow-none sm:p-7">
               <CardTitle>No forms yet</CardTitle>
               <BodyText muted className="mt-2">
                 Run the Stories SQL contract and create the first form records to make this page fully data-backed.

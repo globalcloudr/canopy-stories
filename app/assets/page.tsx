@@ -78,7 +78,7 @@ export default function AssetsPage() {
             placeholder="Search assets..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="pl-9"
+            className="border-[#dfe7f4] bg-transparent pl-9"
           />
         </div>
         <div className="flex items-center gap-1">
@@ -90,7 +90,7 @@ export default function AssetsPage() {
               className={`rounded-full border px-3 py-1.5 text-[12px] font-medium transition-colors ${
                 typeFilter === type
                   ? "border-[var(--foreground)] bg-[var(--foreground)] text-white"
-                  : "border-[var(--border)] bg-white text-[var(--text-muted)] hover:border-slate-300 hover:text-[var(--foreground)]"
+                  : "border-[#d7e3f3] bg-[#edf3fb] text-[var(--text-muted)] hover:border-[#c8d7eb] hover:text-[var(--foreground)]"
               }`}
             >
               {type === "all" ? "All" : type.charAt(0).toUpperCase() + type.slice(1) + "s"}
@@ -121,9 +121,9 @@ export default function AssetsPage() {
           </BodyText>
         </div>
       ) : (
-        <div className="divide-y divide-[var(--border)]">
+        <div className="rounded-[24px] border border-[#dfe7f4] bg-transparent shadow-none divide-y divide-[var(--border)]">
           {filtered.map((asset) => (
-            <div key={asset.id} className="flex flex-wrap items-center justify-between gap-3 py-4">
+            <div key={asset.id} className="flex flex-wrap items-center justify-between gap-3 px-5 py-4">
               <div className="min-w-0">
                 <div className="flex items-center gap-2">
                   <span className="font-medium text-[var(--foreground)]">

@@ -46,7 +46,7 @@ function MaskedKeyField({
                 className="font-mono text-[13px]"
               />
             ) : (
-              <span className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[12px] font-medium ${isSet ? "border-emerald-200 bg-emerald-50 text-emerald-700" : "border-[var(--border)] bg-[var(--surface-muted)] text-[var(--text-muted)]"}`}>
+              <span className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[12px] font-medium ${isSet ? "border-emerald-200 bg-emerald-50 text-emerald-700" : "border-[#d7e3f3] bg-[#edf3fb] text-[var(--text-muted)]"}`}>
                 <span className={`h-1.5 w-1.5 rounded-full ${isSet ? "bg-emerald-500" : "bg-slate-400"}`} />
                 {isSet ? "Key saved" : "Not configured"}
               </span>

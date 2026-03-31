@@ -31,9 +31,9 @@ export default async function SubmissionsPage() {
           </BodyText>
         </div>
       ) : (
-        <div className="divide-y divide-[var(--border)]">
+        <div className="rounded-[24px] border border-[#dfe7f4] bg-transparent shadow-none divide-y divide-[var(--border)]">
           {items.map((item) => (
-            <div key={item.submission.id} className="flex flex-wrap items-start justify-between gap-3 py-5">
+            <div key={item.submission.id} className="flex flex-wrap items-start justify-between gap-3 px-5 py-5">
               <div className="min-w-0">
                 <div className="flex flex-wrap items-center gap-2">
                   <span className="font-medium text-[var(--foreground)]">

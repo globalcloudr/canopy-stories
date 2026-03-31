@@ -18,11 +18,11 @@ function DashboardStatCard({
   icon?: React.ReactNode;
 }) {
   return (
-    <Card padding="sm" className="rounded-[20px] border border-[var(--border)] bg-white">
+    <Card padding="sm" className="rounded-[20px] border border-[#dfe7f4] bg-transparent shadow-none">
       <div className="flex items-start justify-between gap-3">
         <CardTitle className="text-sm font-medium text-[var(--text-muted)]">{title}</CardTitle>
         {icon && (
-          <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md border border-[var(--border)] bg-[var(--surface-muted)] text-[var(--text-muted)]" aria-hidden="true">
+          <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md border border-[#d7e3f3] bg-[#edf3fb] text-[var(--text-muted)]" aria-hidden="true">
             {icon}
           </div>
         )}
@@ -142,10 +142,10 @@ export default async function HomePage() {
               const stories = overview.pipelineStories.filter((story) => story.stage === stage.stage);
 
               return (
-                <Card key={stage.stage} padding="sm" className="w-72 shrink-0 rounded-[20px] border border-[var(--border)] bg-white">
+                <Card key={stage.stage} padding="sm" className="w-72 shrink-0 rounded-[20px] border border-[#dfe7f4] bg-transparent shadow-none">
                   <div className="flex items-center justify-between gap-2">
                     <CardTitle className="text-sm">{pipelineStageLabel(stage.stage)}</CardTitle>
-                    <span className="rounded-full border border-[var(--border)] bg-[var(--surface-muted)] px-2.5 py-1 text-xs text-[var(--text-muted)]">
+                    <span className="rounded-full border border-[#d7e3f3] bg-[#edf3fb] px-2.5 py-1 text-xs text-[var(--text-muted)]">
                       {stories.length}
                     </span>
                   </div>
@@ -155,7 +155,7 @@ export default async function HomePage() {
                         <Card
                           variant="soft"
                           padding="sm"
-                          className="rounded-[18px] border border-[var(--border)] bg-[var(--surface-muted)] transition hover:border-slate-300"
+                          className="rounded-[18px] border border-[#dfe7f4] bg-white/62 transition hover:border-[#c8d7eb] hover:bg-white/78"
                         >
                           <CardTitle className="text-sm">{story.title}</CardTitle>
                           <BodyText muted className="mt-2">{story.subject}</BodyText>
@@ -166,7 +166,7 @@ export default async function HomePage() {
                       </Link>
                     ))}
                     {stories.length === 0 ? (
-                      <div className="rounded-[18px] border border-dashed border-[var(--border)] bg-[var(--surface-muted)] px-4 py-8 text-center text-sm text-[var(--text-muted)]">
+                      <div className="rounded-[18px] border border-dashed border-[#dfe7f4] bg-transparent px-4 py-8 text-center text-sm text-[var(--text-muted)]">
                         No stories
                       </div>
                     ) : null}
@@ -176,8 +176,8 @@ export default async function HomePage() {
             })}
           </div>
         ) : (
-          <Card padding="md" className="rounded-[24px] border border-[var(--border)] bg-white text-center sm:p-12">
-            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full border border-[var(--border)] bg-[var(--surface-muted)] text-[var(--text-muted)]" aria-hidden="true">
+          <Card padding="md" className="rounded-[24px] border border-[#dfe7f4] bg-transparent text-center shadow-none sm:p-12">
+            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full border border-[#d7e3f3] bg-[#edf3fb] text-[var(--text-muted)]" aria-hidden="true">
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="h-6 w-6">
                 <path d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 00-2.456 2.456zM16.894 20.567L16.5 21.75l-.394-1.183a2.25 2.25 0 00-1.423-1.423L13.5 18.75l1.183-.394a2.25 2.25 0 001.423-1.423l.394-1.183.394 1.183a2.25 2.25 0 001.423 1.423l1.183.394-1.183.394a2.25 2.25 0 00-1.423 1.423z" />
               </svg>
@@ -203,13 +203,13 @@ export default async function HomePage() {
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             {overview.recentProjects.map((project) => (
               <Link key={project.id} href={`/projects/${project.id}`} className="block">
-                <Card padding="md" className="rounded-[20px] border border-[var(--border)] bg-white transition hover:border-slate-300 sm:p-6">
+                <Card padding="md" className="rounded-[20px] border border-[#dfe7f4] bg-transparent shadow-none transition hover:border-[#c8d7eb] hover:bg-white/65 sm:p-6">
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0">
                       <BodyText muted className="text-sm">{project.workspaceName}</BodyText>
                       <CardTitle className="mt-2 text-xl">{project.name}</CardTitle>
                     </div>
-                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-[var(--border)] bg-[var(--surface-muted)] text-[var(--text-muted)]" aria-hidden="true">
+                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-[#d7e3f3] bg-[#edf3fb] text-[var(--text-muted)]" aria-hidden="true">
                       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
                         <path d="M3.75 9.776c.112-.017.227-.026.344-.026h15.812c.117 0 .232.009.344.026m-16.5 0a2.25 2.25 0 00-1.883 2.542l.857 6a2.25 2.25 0 002.227 1.932H19.05a2.25 2.25 0 002.227-1.932l.857-6a2.25 2.25 0 00-1.883-2.542m-16.5 0V6A2.25 2.25 0 016 3.75h3.879a1.5 1.5 0 011.06.44l2.122 2.12a1.5 1.5 0 001.06.44H18A2.25 2.25 0 0120.25 9v.776" />
                       </svg>
@@ -234,7 +234,7 @@ export default async function HomePage() {
             ))}
           </div>
         ) : (
-          <Card padding="md" className="rounded-[24px] border border-[var(--border)] bg-white text-center sm:p-10">
+          <Card padding="md" className="rounded-[24px] border border-[#dfe7f4] bg-transparent text-center shadow-none sm:p-10">
             <SectionTitle className="text-[1.8rem] sm:text-[1.8rem]">No projects yet</SectionTitle>
             <BodyText muted className="mt-3">Create your first project to start collecting and delivering success stories</BodyText>
             <Button asChild variant="primary" className="mt-6">

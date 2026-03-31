@@ -54,7 +54,7 @@ export default function HelpPage() {
 
         {/* How it works */}
         <Section title="How Canopy Stories works">
-          <Card padding="md" className="sm:p-8">
+          <Card padding="md" className="border border-[#dfe7f4] bg-transparent shadow-none sm:p-8">
             <BodyText className="mb-6 text-[15px]">
               Canopy Stories automates the production of success stories — from collecting submissions to
               delivering a ready-to-publish package of blog posts, social captions, press releases, and
@@ -73,7 +73,7 @@ export default function HelpPage() {
 
         {/* Getting started */}
         <Section title="Getting started">
-          <Card padding="md" className="sm:p-8">
+          <Card padding="md" className="border border-[#dfe7f4] bg-transparent shadow-none sm:p-8">
             <div className="space-y-6">
               <div>
                 <CardTitle className="text-base">1. Add your API keys</CardTitle>
@@ -122,7 +122,7 @@ export default function HelpPage() {
 
         {/* FAQs */}
         <Section title="Frequently asked questions">
-          <Card padding="md" className="sm:p-8">
+          <Card padding="md" className="border border-[#dfe7f4] bg-transparent shadow-none sm:p-8">
             <div className="divide-y divide-[var(--border)]">
               <Faq
                 question="Why isn't my story moving past 'Writing content'?"

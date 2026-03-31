@@ -36,12 +36,12 @@ export function StoriesLibrary({ items }: StoriesLibraryProps) {
           value={searchQuery}
           onChange={(event) => setSearchQuery(event.target.value)}
           placeholder="Search stories..."
-          className="flex-1 min-w-64 rounded-xl border border-[var(--border)] bg-white px-4 py-3 text-[15px] text-[var(--foreground)] outline-none"
+          className="flex-1 min-w-64 rounded-xl border border-[#dfe7f4] bg-transparent px-4 py-3 text-[15px] text-[var(--foreground)] outline-none"
         />
         <select
           value={typeFilter}
           onChange={(event) => setTypeFilter(event.target.value)}
-          className="w-48 rounded-xl border border-[var(--border)] bg-white px-4 py-3 text-[15px] text-[var(--foreground)] outline-none"
+          className="w-48 rounded-xl border border-[#dfe7f4] bg-transparent px-4 py-3 text-[15px] text-[var(--foreground)] outline-none"
         >
           <option value="all">All Types</option>
           <option value="esl">ESL</option>
@@ -52,18 +52,18 @@ export function StoriesLibrary({ items }: StoriesLibraryProps) {
           <option value="partner">Partner</option>
           <option value="overview">Overview</option>
         </select>
-        <div className="flex items-center gap-1 rounded-xl border border-[var(--border)] bg-white p-1">
+        <div className="flex items-center gap-1 rounded-xl border border-[#dfe7f4] bg-transparent p-1">
           <button
             type="button"
             onClick={() => setViewMode("grid")}
-            className={`h-8 rounded-md px-3 text-sm ${viewMode === "grid" ? "bg-[var(--surface-muted)]" : ""}`}
+            className={`h-8 rounded-md px-3 text-sm ${viewMode === "grid" ? "border border-[#d7e3f3] bg-[#edf3fb]" : ""}`}
           >
             Grid
           </button>
           <button
             type="button"
             onClick={() => setViewMode("list")}
-            className={`h-8 rounded-md px-3 text-sm ${viewMode === "list" ? "bg-[var(--surface-muted)]" : ""}`}
+            className={`h-8 rounded-md px-3 text-sm ${viewMode === "list" ? "border border-[#d7e3f3] bg-[#edf3fb]" : ""}`}
           >
             List
           </button>
@@ -71,7 +71,7 @@ export function StoriesLibrary({ items }: StoriesLibraryProps) {
       </section>
 
       {filteredItems.length === 0 ? (
-        <Card padding="md" className="sm:p-10">
+        <Card padding="md" className="border border-[#dfe7f4] bg-transparent shadow-none sm:p-10">
           <BodyText muted className="text-center">
             {searchQuery || typeFilter !== "all"
               ? "No stories found matching your filters."
@@ -84,7 +84,7 @@ export function StoriesLibrary({ items }: StoriesLibraryProps) {
             <Link key={item.story.id} href={`/stories/${item.story.id}`} className="block">
               <Card
                 padding="md"
-                className={`rounded-[20px] border border-[var(--border)] bg-white transition hover:border-slate-300 ${
+                className={`rounded-[20px] border border-[#dfe7f4] bg-transparent shadow-none transition hover:border-[#c8d7eb] hover:bg-white/65 ${
                   viewMode === "list" ? "sm:p-5" : "sm:p-6"
                 }`}
               >

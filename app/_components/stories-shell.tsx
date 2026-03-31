@@ -109,10 +109,10 @@ const navItems: Array<{ key: NavKey; href: string; label: string; icon: (p: { cl
 
 function navClass(active: boolean) {
   return cn(
-    "flex items-center gap-2.5 px-3 py-2.5 font-medium text-[15px] tracking-[-0.01em] rounded-xl transition",
+    "flex items-center gap-2.5 rounded-2xl px-3.5 py-3 font-medium text-[15px] tracking-[-0.01em] transition",
     active
-      ? "bg-[#f1f3f5] text-[var(--foreground)]"
-      : "text-[#2d2d2d] hover:bg-[#f7f7f8]"
+      ? "bg-white/82 text-[#172033] shadow-[0_10px_24px_rgba(35,74,144,0.08)]"
+      : "text-[#506176] hover:bg-white/48 hover:text-[#172033]"
   );
 }
 
@@ -274,20 +274,23 @@ export function StoriesShell({
   }
 
   const workspaceLabel = activeOrg?.name ?? (loadingSession ? "Loading..." : "Select workspace");
+  const workspaceLinks = isPlatformOperator
+    ? orgs.map((org) => ({
+        id: org.id,
+        label: org.name,
+        onSelect: () => setActiveOrgId(org.id),
+        active: org.id === activeOrgId,
+      }))
+    : [];
 
   return (
-    <main className="min-h-screen bg-[var(--background)] md:h-screen md:overflow-hidden">
+    <main className="min-h-screen bg-[linear-gradient(180deg,#f6f8ff_0%,#eef3ff_55%,#f8fbff_100%)] md:h-screen md:overflow-hidden">
 
       {/* ── Top bar ─────────────────────────────────────────────────────────── */}
       <CanopyHeader
         brandHref={PORTAL_URL}
         workspaceLabel={workspaceLabel}
-        workspaceLinks={orgs.map((org) => ({
-          id: org.id,
-          label: org.name,
-          onSelect: () => setActiveOrgId(org.id),
-          active: org.id === activeOrgId,
-        }))}
+        workspaceLinks={workspaceLinks}
         isPlatformOperator={isPlatformOperator}
         platformOverviewHref={PORTAL_URL}
         userInitials={loadingSession ? "…" : initials}
@@ -303,57 +306,59 @@ export function StoriesShell({
       />
 
       {/* ── Main layout ─────────────────────────────────────────────────────── */}
-      <div className="md:grid md:h-[calc(100vh-3.5rem)] md:grid-cols-[260px_minmax(0,1fr)]">
+      <div className="md:grid md:h-[calc(100vh-3.5rem)] md:grid-cols-[280px_minmax(0,1fr)]">
 
         {/* Sidebar */}
-        <aside className="hidden border-r border-[#e5e7eb] bg-white md:block">
+        <aside className="hidden border-r border-[#dfe7f4] bg-transparent md:block">
           <div className="flex h-full flex-col">
 
             {/* Workspace lockup */}
-            <section className="flex items-center gap-4 border-b border-[#e5e7eb] px-6 py-6">
-              <div className="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-[#2f76dd] text-[1.05rem] font-semibold tracking-[-0.02em] text-white">
+            <section className="mx-4 mt-4 flex items-center gap-4 rounded-[28px] bg-transparent px-6 py-6 shadow-none">
+              <div className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-[linear-gradient(135deg,#2f76dd_0%,#5c96ea_100%)] text-[1.05rem] font-semibold tracking-[-0.02em] text-white shadow-[0_10px_24px_rgba(47,118,221,0.28)]">
                 {loadingSession ? "…" : orgInitials}
               </div>
               <div className="min-w-0">
                 <p className="truncate text-[15px] font-semibold tracking-[-0.02em] text-[#202020]">
                   {activeOrg?.name ?? (loadingSession ? "Loading…" : "No workspace")}
                 </p>
-                <p className="mt-0.5 text-[13px] text-[#6b7280]">Canopy Stories</p>
+                <p className="mt-0.5 text-[13px] text-[#6f7e90]">Canopy Stories</p>
               </div>
             </section>
 
             {/* Nav */}
             <nav className="px-4 py-6">
-              <p className="mb-3 px-3 text-[12px] font-semibold uppercase tracking-[0.06em] text-[#9ca3af]">Navigation</p>
-              <div className="space-y-0.5">
-                {navItems.map((item) => {
-                  const Icon = item.icon;
-                  return (
-                    <Link key={item.key} href={item.href} className={navClass(activeNav === item.key)}>
-                      <Icon className="h-[18px] w-[18px]" />
-                      <span>{item.label}</span>
-                    </Link>
-                  );
-                })}
+              <div className="rounded-[28px] bg-transparent px-4 py-4 shadow-none">
+                <p className="mb-3 px-3 text-[11px] font-semibold uppercase tracking-[0.12em] text-[#8ea0b7]">Navigation</p>
+                <div className="space-y-1.5">
+                  {navItems.map((item) => {
+                    const Icon = item.icon;
+                    return (
+                      <Link key={item.key} href={item.href} className={navClass(activeNav === item.key)}>
+                        <Icon className="h-[18px] w-[18px]" />
+                        <span>{item.label}</span>
+                      </Link>
+                    );
+                  })}
+                </div>
               </div>
             </nav>
           </div>
         </aside>
 
         {/* Content */}
-        <div className="min-w-0 overflow-y-auto">
-          <div className="mx-auto flex min-h-full w-full max-w-7xl flex-col gap-6 px-4 py-6 sm:px-6">
-            <Card padding="md" className="sm:p-8">
+        <div className="min-w-0 overflow-y-auto bg-[#fbfcff]">
+          <div className="mx-auto flex min-h-full w-full max-w-[1340px] flex-col gap-6 px-4 py-6 sm:px-6">
+            <Card padding="md" className="border border-[#dfe7f4] bg-transparent shadow-none sm:p-8">
               <div className="flex flex-wrap items-start justify-between gap-5">
                 <div className="min-w-0">
                   <Eyebrow className="text-[#4f46e5]">{eyebrow}</Eyebrow>
-                  <PageTitle className="mt-3">{title}</PageTitle>
-                  <BodyText muted className="mt-3 max-w-3xl sm:text-[15px]">{subtitle}</BodyText>
+                  <PageTitle className="mt-3 text-[#172033]">{title}</PageTitle>
+                  <BodyText muted className="mt-3 max-w-3xl text-[#617286] sm:text-[15px]">{subtitle}</BodyText>
                 </div>
                 {headerActions ? <div className="flex flex-wrap gap-3">{headerActions}</div> : null}
               </div>
               {headerMeta ? (
-                <div className="mt-5 text-sm text-[var(--text-muted)]">{headerMeta}</div>
+                <div className="mt-5 text-sm text-[#7a8798]">{headerMeta}</div>
               ) : null}
             </Card>
 
@@ -376,7 +381,7 @@ type PublicStoriesFrameProps = {
 
 export function PublicStoriesFrame({ eyebrow, title, subtitle, children }: PublicStoriesFrameProps) {
   return (
-    <main className="min-h-screen bg-[var(--background)]">
+    <main className="min-h-screen bg-[linear-gradient(180deg,#f6f8ff_0%,#eef3ff_55%,#f8fbff_100%)]">
       <div className="border-b border-[var(--border)] bg-white/95">
         <div className="mx-auto flex h-14 max-w-5xl items-center justify-between gap-3 px-4 sm:px-6">
           <div className="flex items-center gap-2">
@@ -394,10 +399,10 @@ export function PublicStoriesFrame({ eyebrow, title, subtitle, children }: Publi
         </div>
       </div>
       <div className="mx-auto flex w-full max-w-5xl flex-col gap-6 px-4 py-6 sm:px-6 sm:py-8">
-        <Card padding="md" className="sm:p-8">
+        <Card padding="md" className="border border-[#dfe7f4] bg-transparent shadow-none sm:p-8">
           <Eyebrow className="text-[#4f46e5]">{eyebrow}</Eyebrow>
-          <PageTitle className="mt-3">{title}</PageTitle>
-          <BodyText muted className="mt-3 max-w-3xl sm:text-[15px]">{subtitle}</BodyText>
+          <PageTitle className="mt-3 text-[#172033]">{title}</PageTitle>
+          <BodyText muted className="mt-3 max-w-3xl text-[#617286] sm:text-[15px]">{subtitle}</BodyText>
         </Card>
         {children}
       </div>
