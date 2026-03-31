@@ -4,6 +4,25 @@ Append new sessions at the top. Do not overwrite history.
 
 ---
 
+## 2026-03-31 — Security hardening, launch exchange, and server-backed workspace context
+
+### What was done
+
+- Added shared Stories server auth so protected APIs validate the current user and workspace membership before using service-role access
+- Locked the main project, story, settings, and content-management routes behind authenticated workspace access
+- Updated client-side data writes to send the Supabase bearer token instead of relying on anonymous service-role routes
+- Public upload flow now derives workspace from the target form instead of trusting a caller-supplied `workspaceId`
+- Replaced Portal token-hash launch with a one-time handoff exchange
+- Added `/api/app-session` so Stories resolves active workspace and accessible workspaces from a server-backed session source instead of mixed client-side fallbacks
+
+### Verification
+
+- `npm run build` passed in:
+  - `canopy-stories`
+  - `canopy-platform/apps/portal`
+
+---
+
 ## 2026-03-29 — Per-workspace API key enforcement
 
 ### What was done
@@ -24,7 +43,7 @@ Append new sessions at the top. Do not overwrite history.
 
 **Bug fixes**
 - Fixed "Unexpected end of JSON input" error when deleting a project — Supabase DELETE returns `204 No Content`; `requestJson()` now skips `.json()` for empty responses
-- Fixed workspace selector appearing for school users in the Create Project dialog — now fetches only the user's own orgs via Supabase client (same pattern as the shell); auto-selects the active workspace from localStorage; selector only shown for operators with multiple orgs
+- Fixed workspace selector appearing for school users in the Create Project dialog — now fetches only the user's own orgs and auto-selects the active workspace; selector only shown for operators with multiple orgs
 - Fixed deleted projects persisting in Dashboard view after deletion — added `router.refresh()` after delete to invalidate Next.js router cache
 
 **Dashboard polish**
@@ -111,9 +130,9 @@ Replaced 8 old docs with a consistent 4-file framework (CLAUDE.md, README.md, do
 
 ---
 
-## Current Status (as of 2026-03-28)
+## Current Status (as of 2026-03-31)
 
-Canopy Stories is live at `https://canopy-stories.vercel.app` and in beta. The full MVP workflow is built: intake forms → AI content generation → video generation → package delivery. The product is connected to the shared Supabase project and launched from the Canopy portal.
+Canopy Stories is live at `https://canopy-stories.vercel.app` and in beta. The full MVP workflow is built: intake forms → AI content generation → video generation → package delivery. The product is connected to the shared Supabase project, launched from the Canopy portal through a one-time launch exchange, and now resolves workspace context from a server-backed app session endpoint.
 
 ## What Was Recently Completed
 
@@ -123,13 +142,13 @@ Canopy Stories is live at `https://canopy-stories.vercel.app` and in beta. The f
 - JSON2Video integration for 15-second video generation
 - Public intake form experience (no auth required for subjects)
 - Package assembly and delivery with shareable download links
-- Canopy portal launch integration (`/auth/launch/stories` token handoff)
+- Canopy portal launch integration hardened to a one-time handoff exchange
+- Server-authenticated workspace access enforced across the main Stories APIs
 - All predefined intake form templates implemented (ESL, CTE, Staff, Program Overview, Employer, Partner)
 
 ## Open Items
 
 ### High priority
-- **Production URL in portal** — `STORIES_APP_URL` in canopy-platform Vercel env needs to be set to `https://canopy-stories.vercel.app` (currently defaults to `localhost:3001`)
 - **Beta stabilization** — review error handling in the AI pipeline; `ai_processing` failures need clear recovery paths
 
 ### Medium priority
@@ -146,6 +165,7 @@ Canopy Stories is live at `https://canopy-stories.vercel.app` and in beta. The f
 
 - Product fully separate from `canopy-platform` — no product workflow code in the portal
 - All data scoped by `workspace_id` at the table level
+- Protected Stories APIs require authenticated server-side workspace access before using service-role data access
 - Public form submissions require no auth — the form link IS the access mechanism
 - `lib/stories-data.ts` is the only place Supabase is called — components don't write raw queries
 - `@canopy/ui` vendored into `vendor/` so the product can evolve independently of the platform package

@@ -60,7 +60,7 @@ This replaces a manual production workflow (interviews → writing → formattin
 - Pipeline status tracking
 - Asset library
 - Platform dashboard with pipeline overview
-- Canopy platform integration (workspace context, entitlements, launch handoff)
+- Canopy platform integration (workspace context, entitlements, launch exchange)
 
 ### Out of Scope (Not Yet Built)
 
@@ -81,8 +81,8 @@ This replaces a manual production workflow (interviews → writing → formattin
 ## Platform Integration
 
 - **Product key**: `stories_canopy`
-- **Launch**: Canopy portal → `/auth/launch/stories` → token handoff to Stories app
-- **Workspace context**: Passed from portal via URL hash and `?workspace=` param
+- **Launch**: Canopy portal → `/auth/launch/stories` → one-time launch code exchange in Stories
+- **Workspace context**: Resolved inside Stories from a server-backed app session endpoint, seeded by `?workspace=` from Portal
 - **Portal URL env var**: `NEXT_PUBLIC_PORTAL_URL`
 
 Cross-product integrations (planned, not yet built):

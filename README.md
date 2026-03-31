@@ -37,9 +37,10 @@ Each school workspace adds its own API keys in Settings:
 
 ### Platform Integration
 
-- Launched from Canopy portal via `/auth/launch/stories` token handoff
-- Workspace context received from Canopy — no separate login required once signed into Canopy
+- Launched from Canopy portal via `/auth/launch/stories` one-time handoff exchange
+- Workspace context resolved from a server-backed app session endpoint — no separate login required once signed into Canopy
 - Product key: `stories_canopy`
+- Main Stories APIs now enforce authenticated workspace access server-side
 
 ## What Is Not Done Yet
 
@@ -78,7 +79,7 @@ NEXT_PUBLIC_APP_URL=https://canopy-stories.vercel.app
 
 ## Database
 
-Shared Supabase project with canopy-platform and photovault.
+Shared Supabase project with canopy-platform, photovault, and canopy-reach.
 
 Product-owned tables: `story_projects`, `story_forms`, `story_submissions`, `story_records`, `story_content`, `story_assets`, `story_packages`, `workspace_api_keys`
 
