@@ -119,9 +119,9 @@ StoryAssetType: "image" | "graphic" | "video" | "document"
 **Launch flow**:
 1. User signs in through Canopy portal
 2. Portal checks `stories_canopy` entitlement for active workspace
-3. Portal sends user to `/auth/launch/stories` which passes tokens in URL hash
-4. Canopy Stories receives `access_token` + `refresh_token` with `type=canopy_handoff`
-5. Stories resolves workspace context, verifies session and membership
+3. Portal creates a short-lived single-use launch handoff and redirects to `/auth/launch/stories`
+4. Canopy Stories exchanges the handoff code through `/api/auth/exchange-handoff` before setting the Supabase session
+5. Stories resolves workspace context from `/api/app-session`, verifies session and membership, and applies `?workspace=<slug>` when present
 6. User lands on Stories dashboard in correct workspace context
 
 **Environment variable for portal URL**: `NEXT_PUBLIC_PORTAL_URL` (default: `https://usecanopy.school`)
