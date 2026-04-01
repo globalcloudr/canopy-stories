@@ -31,7 +31,7 @@ export default async function FormsPage() {
       <CreateFormPanel projects={projects} />
 
       <section className="rounded-[28px] border border-[#dfe7f4] bg-transparent p-6 shadow-none sm:p-7">
-        <Eyebrow className="text-[#4f46e5]">Reference templates</Eyebrow>
+        <Eyebrow className="text-[#2f76dd]">Reference templates</Eyebrow>
         <SectionTitle className="mt-3">Promoted from the mature Stories app</SectionTitle>
         <BodyText muted className="mt-3">
           These are the full template forms from the tested Replit app. They are product templates, not yet published
@@ -56,7 +56,7 @@ export default async function FormsPage() {
       </section>
 
       <section className="rounded-[28px] border border-[#dfe7f4] bg-transparent p-6 shadow-none sm:p-7">
-        <Eyebrow className="text-[#4f46e5]">Published intake</Eyebrow>
+        <Eyebrow className="text-[#2f76dd]">Published intake</Eyebrow>
         <SectionTitle className="mt-3">Active public forms</SectionTitle>
         <div className="mt-5 space-y-4">
           {forms.map((form) => (

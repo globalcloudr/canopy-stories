@@ -517,7 +517,7 @@ export function StoriesShell({
             <AppSurface padding="md" variant="clear" className="sm:p-8">
               <div className="flex flex-wrap items-start justify-between gap-5">
                 <div className="min-w-0">
-                  <Eyebrow className="text-[#4f46e5]">{eyebrow}</Eyebrow>
+                  <Eyebrow className="text-[#2f76dd]">{eyebrow}</Eyebrow>
                   <PageTitle className="mt-3 text-[#172033]">{title}</PageTitle>
                   <BodyText muted className="mt-3 max-w-3xl text-[#617286] sm:text-[15px]">{subtitle}</BodyText>
                 </div>
@@ -566,7 +566,7 @@ export function PublicStoriesFrame({ eyebrow, title, subtitle, children }: Publi
       </div>
       <div className="mx-auto flex w-full max-w-5xl flex-col gap-6 px-4 py-6 sm:px-6 sm:py-8">
         <AppSurface padding="md" variant="clear" className="sm:p-8">
-          <Eyebrow className="text-[#4f46e5]">{eyebrow}</Eyebrow>
+          <Eyebrow className="text-[#2f76dd]">{eyebrow}</Eyebrow>
           <PageTitle className="mt-3 text-[#172033]">{title}</PageTitle>
           <BodyText muted className="mt-3 max-w-3xl text-[#617286] sm:text-[15px]">{subtitle}</BodyText>
         </AppSurface>

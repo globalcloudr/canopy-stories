@@ -111,7 +111,7 @@ export function PublicFormExperience({ form }: PublicFormExperienceProps) {
         <div key={field.id} className="space-y-2">
           <FieldLabel>
             {field.label}
-            {requiredIds.has(field.id) ? <span className="ml-1 text-[#4f46e5]">*</span> : null}
+            {requiredIds.has(field.id) ? <span className="ml-1 text-[#2f76dd]">*</span> : null}
           </FieldLabel>
           {field.type === "textarea" ? (
             <Textarea
