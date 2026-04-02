@@ -348,32 +348,28 @@ export function StoriesShell({
         return;
       }
 
-      const response = await fetch(`${portalBase}/api/product-launch`, {
-        method: "POST",
-        credentials: "include",
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          productKey,
-          refreshToken,
-          workspaceSlug: activeOrg?.slug ?? null,
-        }),
-      });
+      const form = document.createElement("form");
+      form.method = "POST";
+      form.action = `${portalBase}/auth/product-launch`;
+      form.style.display = "none";
 
-      if (!response.ok) {
-        window.location.assign(PORTAL_URL);
-        return;
+      const fields = {
+        accessToken,
+        refreshToken,
+        productKey,
+        workspaceSlug: activeOrg?.slug ?? "",
+      };
+
+      for (const [name, value] of Object.entries(fields)) {
+        const input = document.createElement("input");
+        input.type = "hidden";
+        input.name = name;
+        input.value = value;
+        form.appendChild(input);
       }
 
-      const payload = (await response.json()) as { launchUrl?: string };
-      if (!payload.launchUrl) {
-        window.location.assign(PORTAL_URL);
-        return;
-      }
-
-      window.location.assign(payload.launchUrl);
+      document.body.appendChild(form);
+      form.submit();
     } finally {
       setLaunchingProductKey(null);
     }
@@ -395,26 +391,27 @@ export function StoriesShell({
         return;
       }
 
-      const response = await fetch(`${portalBase}/api/portal-return`, {
-        method: "POST",
-        credentials: "include",
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          refreshToken,
-          workspaceSlug: activeOrg?.slug ?? null,
-        }),
-      });
+      const form = document.createElement("form");
+      form.method = "POST";
+      form.action = `${portalBase}/auth/portal-return`;
+      form.style.display = "none";
 
-      if (!response.ok) {
-        window.location.assign(PORTAL_URL);
-        return;
+      const fields = {
+        accessToken,
+        refreshToken,
+        workspaceSlug: activeOrg?.slug ?? "",
+      };
+
+      for (const [name, value] of Object.entries(fields)) {
+        const input = document.createElement("input");
+        input.type = "hidden";
+        input.name = name;
+        input.value = value;
+        form.appendChild(input);
       }
 
-      const payload = (await response.json()) as { redirectUrl?: string };
-      window.location.assign(payload.redirectUrl ?? portalHomeHref);
+      document.body.appendChild(form);
+      form.submit();
     } finally {
       setReturningToPortal(false);
     }
