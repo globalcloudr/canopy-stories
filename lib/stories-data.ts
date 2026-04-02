@@ -1081,9 +1081,11 @@ export async function createSubmissionFromPublicForm(formId: string, payload: Pu
     throw new Error(`Missing required fields: ${missingFields.map((field) => field.label).join(", ")}`);
   }
 
+  const photoUrls = normalizeSubmissionPhotoUrls(form.workspaceId, payload.photoUrls ?? []);
+
   const storySourceData = {
     ...payload.data,
-    photoUrls: payload.photoUrls ?? [],
+    photoUrls,
     submitterName: payload.submitterName,
     submitterEmail: payload.submitterEmail,
   };
@@ -1101,7 +1103,7 @@ export async function createSubmissionFromPublicForm(formId: string, payload: Pu
         submitterName: payload.submitterName,
         submitterEmail: payload.submitterEmail,
         data: payload.data,
-        photoUrls: payload.photoUrls ?? [],
+        photoUrls,
         status: "submitted" as const,
         submittedAt: new Date().toISOString(),
       },
@@ -1136,7 +1138,7 @@ export async function createSubmissionFromPublicForm(formId: string, payload: Pu
         submitter_name: payload.submitterName,
         submitter_email: payload.submitterEmail,
         submission_data_json: payload.data,
-        photo_urls: payload.photoUrls ?? [],
+        photo_urls: photoUrls,
         status: "submitted",
       },
     }
