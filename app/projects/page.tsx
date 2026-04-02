@@ -5,7 +5,7 @@ import { useState, useEffect } from "react";
 import { BodyText, Button, Card, CardTitle } from "@canopy/ui";
 import { StoriesShell } from "@/app/_components/stories-shell";
 import { ProjectsClient } from "@/app/projects/projects-client";
-import { apiFetch } from "@/lib/api-client";
+import { apiFetchArray } from "@/lib/api-client";
 import type { FlatProject } from "@/lib/stories-data";
 
 export default function ProjectsPage() {
@@ -13,8 +13,7 @@ export default function ProjectsPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    apiFetch("/api/projects")
-      .then((r) => r.json())
+    apiFetchArray<FlatProject>("/api/projects")
       .then((data) => { setProjects(data); setLoading(false); })
       .catch(() => setLoading(false));
   }, []);
