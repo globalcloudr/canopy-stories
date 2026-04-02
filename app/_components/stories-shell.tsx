@@ -497,7 +497,7 @@ export function StoriesShell({
                   </button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="start" className="w-72 bg-white">
-                  <DropdownMenuLabel>{activeOrg?.name ?? "Workspace"}</DropdownMenuLabel>
+                  <DropdownMenuLabel className="text-[#94a3b8]">{activeOrg?.name ?? "Workspace"}</DropdownMenuLabel>
                   <DropdownMenuGroup>
                     {launcherItems.map((item) =>
                       item.current ? (
