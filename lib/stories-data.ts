@@ -1069,6 +1069,29 @@ function validateSubmissionFields(form: PublishedIntakeForm, payload: PublicSubm
   return missingFields;
 }
 
+function normalizeSubmissionPhotoUrls(workspaceId: string, photoUrls: string[]) {
+  const trimmed = photoUrls
+    .map((url) => url.trim())
+    .filter((url) => url.length > 0);
+
+  if (trimmed.length === 0) {
+    return [];
+  }
+
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL?.trim();
+  if (!supabaseUrl) {
+    throw new Error("Storage not configured for submission photos.");
+  }
+
+  const expectedPrefix = `${supabaseUrl}/storage/v1/object/public/story-photos/${workspaceId}/`;
+  const invalid = trimmed.find((url) => !url.startsWith(expectedPrefix));
+  if (invalid) {
+    throw new Error("Submission photos must be uploaded through the Canopy Stories form.");
+  }
+
+  return trimmed;
+}
+
 export async function createSubmissionFromPublicForm(formId: string, payload: PublicSubmissionInput) {
   const form = await getPublishedFormById(formId);
 
