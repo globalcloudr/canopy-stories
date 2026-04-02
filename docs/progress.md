@@ -4,6 +4,25 @@ Append new sessions at the top. Do not overwrite history.
 
 ---
 
+## 2026-04-02 — Private submission media and signed URL hardening
+
+### What was done
+
+- Replaced the public `story-photos` media model with private storage refs for new public-form uploads
+- `/api/upload` now enforces image MIME type and 10MB max size server-side, writes to a private bucket, and returns:
+  - a short-lived signed preview URL for the public form UI
+  - a durable `storage://story-photos/...` ref for persistence
+- Public submission creation now accepts only workspace-scoped storage refs for uploaded photos
+- Stories asset reads now sign private storage refs on demand for story detail, package, and asset-library surfaces
+- Added backward compatibility so older `story-photos` public URLs still resolve inside the app while the existing data set transitions
+- Content status updates were also hardened to use the content record's real workspace on the server instead of a caller-supplied workspace id
+
+### Verification
+
+- `npm run build` passed in `canopy-stories`
+
+---
+
 ## 2026-03-31 — Security hardening, launch exchange, and server-backed workspace context
 
 ### What was done
@@ -66,7 +85,8 @@ Append new sessions at the top. Do not overwrite history.
 - `workspaceId` passed from `PublicFormExperience` to `/api/upload` via FormData
 
 ### Storage setup required
-- Create `story-photos` bucket in Supabase Storage (set to Public) — no policies needed; service role key bypasses RLS
+- Create `story-photos` bucket in Supabase Storage
+- Current behavior expects the bucket to be private; the app will flip the bucket private on upload if it still exists as public
 
 ---
 

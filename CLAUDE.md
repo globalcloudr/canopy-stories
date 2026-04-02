@@ -81,7 +81,7 @@ canopy-stories/
 | `GET/POST /api/packages` | Package operations |
 | `GET /api/packages/[id]` | Package detail |
 | `GET /api/organizations` | Workspace context lookup |
-| `POST /api/upload` | File upload |
+| `POST /api/upload` | Public-form image upload — returns signed preview + private storage ref |
 
 ## Data Model (Supabase Tables — Product-Owned)
 
@@ -142,6 +142,7 @@ When a form is submitted:
    - Calls JSON2Video API for 15-second vertical video
    - Creates `story_content_items` and `story_assets` rows
    - Creates `story_packages` row with download bundle
+   - Submission photos persist as storage refs and are signed when the app reads them back
 
 ## Architecture Rules
 
@@ -165,6 +166,7 @@ When a form is submitted:
 - Use `lib/stories-data.ts` as the data access layer; do not write raw Supabase calls in components
 - Use `@canopy/ui` components (from `vendor/`) for shell and common UI
 - The public intake form (`/forms/[id]`) requires NO auth — subjects fill it out without logging in
+- Public-form photo uploads should persist private storage refs, not permanent public bucket URLs
 
 ## Environment Variables
 

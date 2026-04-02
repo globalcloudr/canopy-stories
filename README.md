@@ -12,7 +12,7 @@ AI-powered success story production product for the Canopy platform.
 - **Projects** — schools organize story production into projects with targets and deadlines
 - **Guided project creation** — 3-step wizard: create project → pick intake form template → get shareable link with next-steps guide
 - **Form builder** — create intake forms from predefined templates (ESL, CTE, Staff, Program Overview, Employer, Partner) or custom fields; existing forms editable via Customize button on project Forms tab
-- **Public intake forms** — shareable links; subjects fill out forms with no login required; photo upload supported (stored per-workspace in `story-photos` Supabase bucket)
+- **Public intake forms** — shareable links; subjects fill out forms with no login required; photo upload supported through private per-workspace `story-photos` storage paths with signed preview/download URLs
 - **Form response tracking** — per-form submission counts shown in project forms tab; expandable inline response list per form
 - **AI content generation** — on form submission, OpenAI generates: blog post, newsletter feature, social posts (Facebook, Instagram, LinkedIn, X), press release
 - **Video generation** — 15-second vertical short-form video via JSON2Video or Creatomate API
@@ -42,6 +42,7 @@ Each school workspace adds its own API keys in Settings:
 - Product key: `stories_canopy`
 - Main Stories APIs now enforce authenticated workspace access server-side
 - In-app product switching and Portal return route back through Portal handoff endpoints so cross-product navigation restores the correct workspace/session state
+- Submission photos now persist as private storage refs and are signed on read; older public bucket URLs are still supported during the transition
 
 ## What Is Not Done Yet
 
@@ -85,3 +86,10 @@ Shared Supabase project with canopy-platform, photovault, and canopy-reach.
 Product-owned tables: `story_projects`, `story_forms`, `story_submissions`, `story_records`, `story_content`, `story_assets`, `story_packages`, `workspace_api_keys`
 
 Migration SQL files are in `docs/sql/`.
+
+## Storage Notes
+
+- Public form uploads write into the `story-photos` bucket under `{workspaceId}/...`
+- New uploads are stored as private storage refs, not permanent public URLs
+- Stories signs asset URLs on read for story detail, package, and asset-library surfaces
+- Older `story-photos` public URLs remain readable in-app during the migration period
