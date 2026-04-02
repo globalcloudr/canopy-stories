@@ -1,8 +1,11 @@
 import { NextResponse } from "next/server";
 import { getFlatFormById } from "@/lib/stories-data";
+import {
+  ensurePrivateStoriesBucket,
+  signStoryStorageRef,
+  uploadStoryStorageObject,
+} from "@/lib/stories-storage";
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL ?? "";
-const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY ?? "";
 const BUCKET = "story-photos";
 const MAX_FILE_BYTES = 10 * 1024 * 1024;
 const ALLOWED_MIME_TYPES = new Set(["image/jpeg", "image/png", "image/webp"]);
@@ -19,10 +22,6 @@ function getExtensionForFile(file: File) {
 }
 
 export async function POST(request: Request) {
-  if (!supabaseUrl || !serviceRoleKey) {
-    return NextResponse.json({ error: "Storage not configured." }, { status: 500 });
-  }
-
   try {
     const formData = await request.formData();
     const file = formData.get("file");
@@ -49,29 +48,19 @@ export async function POST(request: Request) {
     const workspaceId = form.workspaceId;
     const ext = getExtensionForFile(file);
     const path = `${workspaceId}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
-
-    const buffer = await file.arrayBuffer();
-
-    const uploadRes = await fetch(
-      `${supabaseUrl}/storage/v1/object/${BUCKET}/${path}`,
-      {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${serviceRoleKey}`,
-          "Content-Type": file.type || "image/jpeg",
-          "x-upsert": "false",
-        },
-        body: buffer,
-      }
-    );
-
-    if (!uploadRes.ok) {
-      const err = await uploadRes.text();
-      return NextResponse.json({ error: `Upload failed: ${err}` }, { status: 500 });
-    }
-
-    const publicUrl = `${supabaseUrl}/storage/v1/object/public/${BUCKET}/${path}`;
-    return NextResponse.json({ url: publicUrl });
+    await ensurePrivateStoriesBucket(BUCKET, {
+      fileSizeLimit: `${MAX_FILE_BYTES}`,
+      allowedMimeTypes: [...ALLOWED_MIME_TYPES],
+    });
+    const photoRef = await uploadStoryStorageObject({
+      bucket: BUCKET,
+      path,
+      file,
+      contentType: file.type || "image/jpeg",
+      upsert: false,
+    });
+    const previewUrl = await signStoryStorageRef(photoRef, 60 * 30);
+    return NextResponse.json({ url: previewUrl, photoRef });
   } catch (error) {
     return NextResponse.json(
       { error: error instanceof Error ? error.message : "Upload failed." },

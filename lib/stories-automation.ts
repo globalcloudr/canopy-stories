@@ -8,6 +8,7 @@ import type {
   StoryType,
 } from "@/lib/stories-schema";
 import { getWorkspaceApiKeys } from "@/lib/stories-data";
+import { resolveStoryMediaUrl } from "@/lib/stories-storage";
 
 type StoryAutomationInput = {
   workspaceId: string;
@@ -223,12 +224,13 @@ async function prepareVideoHighlights(input: StoryAutomationInput, openAiApiKey:
 async function generateVideoAsset(input: StoryAutomationInput, highlights: string[], videoApiKey: string, videoApiProvider: string): Promise<VideoGenerationResult> {
   const apiKey = videoApiKey;
   const provider = videoApiProvider || "json2video";
-  const imageUrl = getPhotoUrls(input.sourceData)[0];
+  const photoRef = getPhotoUrls(input.sourceData)[0] ?? null;
+  const imageUrl = await resolveStoryMediaUrl(photoRef);
 
   if (!apiKey) {
     return {
       videoUrl: "[Video generation not configured]",
-      thumbnailUrl: imageUrl || "[Thumbnail not available]",
+      thumbnailUrl: photoRef || "[Thumbnail not available]",
       duration: 15,
       status: "queued",
     };
@@ -237,7 +239,7 @@ async function generateVideoAsset(input: StoryAutomationInput, highlights: strin
   if (provider !== "json2video") {
     return {
       videoUrl: `[${provider} video generation not implemented yet]`,
-      thumbnailUrl: imageUrl || "[Thumbnail not available]",
+      thumbnailUrl: photoRef || "[Thumbnail not available]",
       duration: 15,
       status: "queued",
     };
@@ -305,7 +307,7 @@ async function generateVideoAsset(input: StoryAutomationInput, highlights: strin
       (typeof result.url === "string" && result.url) ||
       "[Video URL unavailable]";
     const thumbnailUrl =
-      (typeof result.thumbnail_url === "string" && result.thumbnail_url) || imageUrl || "[Thumbnail not available]";
+      (typeof result.thumbnail_url === "string" && result.thumbnail_url) || photoRef || "[Thumbnail not available]";
 
     return {
       videoUrl,
@@ -316,7 +318,7 @@ async function generateVideoAsset(input: StoryAutomationInput, highlights: strin
   } catch {
     return {
       videoUrl: "[Video generation failed]",
-      thumbnailUrl: imageUrl || "[Thumbnail not available]",
+      thumbnailUrl: photoRef || "[Thumbnail not available]",
       duration: 15,
       status: "failed",
     };

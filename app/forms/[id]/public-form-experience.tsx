@@ -16,7 +16,7 @@ type SubmitState =
 
 export function PublicFormExperience({ form }: PublicFormExperienceProps) {
   const [formData, setFormData] = useState<Record<string, string>>({});
-  const [photoUrls, setPhotoUrls] = useState<string[]>([]);
+  const [photoRefs, setPhotoRefs] = useState<string[]>([]);
   const [uploadingFields, setUploadingFields] = useState<Record<string, boolean>>({});
   const [submitState, setSubmitState] = useState<SubmitState>({ type: "idle" });
 
@@ -42,7 +42,7 @@ export function PublicFormExperience({ form }: PublicFormExperienceProps) {
             acc[field.id] = formData[field.id] ?? "";
             return acc;
           }, {}),
-          photoUrls,
+          photoUrls: photoRefs,
         }),
       });
 
@@ -57,6 +57,7 @@ export function PublicFormExperience({ form }: PublicFormExperienceProps) {
         message: payload.message || "Your story information has been submitted.",
       });
       setFormData({});
+      setPhotoRefs([]);
     } catch (error) {
       setSubmitState({
         type: "error",
@@ -73,9 +74,9 @@ export function PublicFormExperience({ form }: PublicFormExperienceProps) {
       fd.append("file", file);
       fd.append("formId", form.id);
       const res = await fetch("/api/upload", { method: "POST", body: fd });
-      const payload = (await res.json()) as { url?: string; error?: string };
-      if (!res.ok || !payload.url) throw new Error(payload.error ?? "Upload failed.");
-      setPhotoUrls((prev) => [...prev, payload.url!]);
+      const payload = (await res.json()) as { url?: string; photoRef?: string; error?: string };
+      if (!res.ok || !payload.url || !payload.photoRef) throw new Error(payload.error ?? "Upload failed.");
+      setPhotoRefs((prev) => [...prev, payload.photoRef!]);
       setFormData((prev) => ({ ...prev, [fieldId]: payload.url! }));
     } catch (err) {
       setSubmitState({

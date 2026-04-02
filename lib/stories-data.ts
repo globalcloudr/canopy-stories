@@ -14,6 +14,7 @@ import {
 import type { PublishedIntakeForm, StorySubmission, StoryWorkflowSummary } from "@/lib/stories-domain";
 import { buildStoryArtifacts } from "@/lib/stories-automation";
 import { sendPackageReadyEmail } from "@/lib/stories-email";
+import { resolveStoryMediaUrl } from "@/lib/stories-storage";
 import type {
   StoryAssetStatus,
   StoryAssetType,
@@ -469,6 +470,13 @@ function toStoryAssetRecord(row: StoryAssetRow): StoryAssetRecord {
     status: row.status as StoryAssetStatus,
     metadata: row.metadata_json,
     createdAt: row.created_at,
+  };
+}
+
+async function toResolvedStoryAssetRecord(row: StoryAssetRow): Promise<StoryAssetRecord> {
+  return {
+    ...toStoryAssetRecord(row),
+    fileUrl: (await resolveStoryMediaUrl(row.file_url)) ?? row.file_url,
   };
 }
 
@@ -1078,12 +1086,7 @@ function normalizeSubmissionPhotoUrls(workspaceId: string, photoUrls: string[]) 
     return [];
   }
 
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL?.trim();
-  if (!supabaseUrl) {
-    throw new Error("Storage not configured for submission photos.");
-  }
-
-  const expectedPrefix = `${supabaseUrl}/storage/v1/object/public/story-photos/${workspaceId}/`;
+  const expectedPrefix = `storage://story-photos/${workspaceId}/`;
   const invalid = trimmed.find((url) => !url.startsWith(expectedPrefix));
   if (invalid) {
     throw new Error("Submission photos must be uploaded through the Canopy Stories form.");
@@ -1571,10 +1574,11 @@ export async function listAssetLibraryItems(): Promise<AssetLibraryItem[]> {
   ]);
 
   const storyTitleById = new Map(stories.map((story) => [story.id, story.title]));
+  const resolvedAssets = await Promise.all(assets.map(toResolvedStoryAssetRecord));
 
-  return assets.map<AssetLibraryItem>((asset) => ({
-    ...toStoryAssetRecord(asset),
-    storyTitle: storyTitleById.get(asset.story_id) ?? "Story",
+  return resolvedAssets.map<AssetLibraryItem>((asset) => ({
+    ...asset,
+    storyTitle: storyTitleById.get(asset.storyId) ?? "Story",
   }));
 }
 
@@ -1662,6 +1666,7 @@ export async function getStoryDetailSnapshot(storyId: string): Promise<StoryDeta
   const project = projects[0];
   const workspace = workspaces[0];
   const submissionRow = submissions[0] ?? null;
+  const resolvedAssets = await Promise.all(assets.map(toResolvedStoryAssetRecord));
 
   return {
     story: toStoryRecord(row),
@@ -1683,7 +1688,7 @@ export async function getStoryDetailSnapshot(storyId: string): Promise<StoryDeta
         }
       : null,
     contents: contents.map(toStoryContentRecord),
-    assets: assets.map(toStoryAssetRecord),
+    assets: resolvedAssets,
     storyPackage: packages[0] ? toStoryPackageRecord(packages[0]) : null,
   };
 }
@@ -2225,7 +2230,7 @@ export async function listAssetsForStory(storyId: string): Promise<StoryAssetRec
     })
   );
 
-  return rows.map(toStoryAssetRecord);
+  return Promise.all(rows.map(toResolvedStoryAssetRecord));
 }
 
 export async function listAllAssetsFlat(): Promise<Array<StoryAssetRecord & { storyTitle: string }>> {
@@ -2251,10 +2256,10 @@ export async function listAllAssetsFlat(): Promise<Array<StoryAssetRecord & { st
   ]);
 
   const storyTitleMap = new Map(storyRows.map((s) => [s.id, s.title]));
-
-  return assetRows.map((row) => ({
-    ...toStoryAssetRecord(row),
-    storyTitle: storyTitleMap.get(row.story_id) ?? "Story",
+  const resolvedAssets = await Promise.all(assetRows.map(toResolvedStoryAssetRecord));
+  return resolvedAssets.map((asset) => ({
+    ...asset,
+    storyTitle: storyTitleMap.get(asset.storyId) ?? "Story",
   }));
 }
 
@@ -2335,6 +2340,7 @@ export async function getPackageDetailSnapshot(packageId: string): Promise<Packa
   const project = projects[0];
   const workspace = workspaces[0];
   const story = storyRows[0] ? toStoryRecord(storyRows[0]) : null;
+  const resolvedAssets = await Promise.all(assets.map(toResolvedStoryAssetRecord));
 
   return {
     storyPackage: toStoryPackageRecord(packageRow),
@@ -2342,7 +2348,7 @@ export async function getPackageDetailSnapshot(packageId: string): Promise<Packa
     projectName: project?.name ?? "Project",
     workspaceName: workspace?.name ?? "Workspace",
     contents: contents.map(toStoryContentRecord),
-    assets: assets.map(toStoryAssetRecord),
+    assets: resolvedAssets,
   };
 }
 
