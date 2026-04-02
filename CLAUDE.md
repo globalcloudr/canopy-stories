@@ -124,6 +124,11 @@ StoryAssetType: "image" | "graphic" | "video" | "document"
 5. Stories resolves workspace context from `/api/app-session`, verifies session and membership, and applies `?workspace=<slug>` when present
 6. User lands on Stories dashboard in correct workspace context
 
+**Switcher flow**:
+- in-app product switching submits back to Portal through `POST /auth/product-launch`
+- returning to Portal submits through `POST /auth/portal-return`
+- Portal restores its own cookies and issues the next redirect using `303` semantics so the destination app receives a normal `GET`
+
 **Environment variable for portal URL**: `NEXT_PUBLIC_PORTAL_URL` (default: `https://usecanopy.school`)
 
 ## AI Pipeline

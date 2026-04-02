@@ -41,6 +41,7 @@ Each school workspace adds its own API keys in Settings:
 - Workspace context resolved from a server-backed app session endpoint — no separate login required once signed into Canopy
 - Product key: `stories_canopy`
 - Main Stories APIs now enforce authenticated workspace access server-side
+- In-app product switching and Portal return route back through Portal handoff endpoints so cross-product navigation restores the correct workspace/session state
 
 ## What Is Not Done Yet
 
