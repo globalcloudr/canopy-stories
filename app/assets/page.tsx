@@ -100,10 +100,10 @@ export default function AssetsPage() {
               key={type}
               type="button"
               onClick={() => setTypeFilter(type)}
-              className={`rounded-full border px-3 py-1.5 text-[12px] font-medium transition-colors ${
+              className={`rounded-full border px-3 py-1.5 text-[12px] font-medium transition-all duration-150 ease-out focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--foreground)] hover:-translate-y-px active:translate-y-0 active:scale-[0.985] ${
                 typeFilter === type
-                  ? "border-[var(--foreground)] bg-[var(--foreground)] text-white"
-                  : "border-[#d7e3f3] bg-[#edf3fb] text-[var(--text-muted)] hover:border-[#c8d7eb] hover:text-[var(--foreground)]"
+                  ? "border-[var(--foreground)] bg-[var(--foreground)] text-white shadow-[0_10px_20px_rgba(15,23,42,0.16)]"
+                  : "border-[#d7e3f3] bg-[#edf3fb] text-[var(--text-muted)] hover:border-[#c8d7eb] hover:bg-white hover:text-[var(--foreground)] hover:shadow-[0_8px_18px_rgba(148,163,184,0.16)]"
               }`}
             >
               {type === "all" ? "All" : type.charAt(0).toUpperCase() + type.slice(1) + "s"}

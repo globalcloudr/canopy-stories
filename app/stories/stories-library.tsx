@@ -60,14 +60,22 @@ export function StoriesLibrary({ items }: StoriesLibraryProps) {
           <button
             type="button"
             onClick={() => setViewMode("grid")}
-            className={`h-8 rounded-md px-3 text-sm ${viewMode === "grid" ? "border border-[#d7e3f3] bg-[#edf3fb]" : ""}`}
+            className={`h-8 rounded-md px-3 text-sm transition-all duration-150 ease-out focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--foreground)] hover:-translate-y-px active:translate-y-0 active:scale-[0.985] ${
+              viewMode === "grid"
+                ? "border border-[#d7e3f3] bg-[#edf3fb] shadow-[0_8px_18px_rgba(148,163,184,0.14)]"
+                : "text-[var(--text-muted)] hover:bg-white hover:text-[var(--foreground)]"
+            }`}
           >
             Grid
           </button>
           <button
             type="button"
             onClick={() => setViewMode("list")}
-            className={`h-8 rounded-md px-3 text-sm ${viewMode === "list" ? "border border-[#d7e3f3] bg-[#edf3fb]" : ""}`}
+            className={`h-8 rounded-md px-3 text-sm transition-all duration-150 ease-out focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--foreground)] hover:-translate-y-px active:translate-y-0 active:scale-[0.985] ${
+              viewMode === "list"
+                ? "border border-[#d7e3f3] bg-[#edf3fb] shadow-[0_8px_18px_rgba(148,163,184,0.14)]"
+                : "text-[var(--text-muted)] hover:bg-white hover:text-[var(--foreground)]"
+            }`}
           >
             List
           </button>
