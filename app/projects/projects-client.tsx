@@ -1,10 +1,11 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { supabase } from "@/lib/supabase-client";
 import { apiFetch } from "@/lib/api-client";
 import { useStoriesWorkspaceId } from "@/lib/workspace-client";
+import { buildWorkspaceHref } from "@/lib/workspace-href";
 import { referenceIntakeTemplates } from "@/lib/reference-form-templates";
 import Link from "next/link";
 import {
@@ -55,6 +56,8 @@ function formatDeadline(value: string | null) {
 
 export function ProjectsClient({ initial }: { initial: FlatProject[] }) {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const workspaceSlug = searchParams.get("workspace")?.trim() || null;
   const activeWorkspaceId = useStoriesWorkspaceId();
   const [projects, setProjects] = useState<FlatProject[]>(initial);
   const [orgs, setOrgs] = useState<Org[]>([]);
@@ -321,7 +324,7 @@ export function ProjectsClient({ initial }: { initial: FlatProject[] }) {
 
               <div className="mt-4 flex items-center gap-2">
                 <Button asChild variant="primary" size="sm" className="flex-1">
-                  <Link href={`/projects/${project.id}`}>Open project</Link>
+                  <Link href={buildWorkspaceHref(`/projects/${project.id}`, workspaceSlug)}>Open project</Link>
                 </Button>
                 <Button
                   variant="secondary"

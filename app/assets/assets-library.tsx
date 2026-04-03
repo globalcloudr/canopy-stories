@@ -2,14 +2,18 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { BodyText, Card, CardTitle } from "@canopy/ui";
 import type { AssetLibraryItem } from "@/lib/stories-data";
+import { buildWorkspaceHref } from "@/lib/workspace-href";
 
 type AssetsLibraryProps = {
   assets: AssetLibraryItem[];
 };
 
 export function AssetsLibrary({ assets }: AssetsLibraryProps) {
+  const searchParams = useSearchParams();
+  const workspaceSlug = searchParams.get("workspace")?.trim() || null;
   const [searchQuery, setSearchQuery] = useState("");
   const [filterType, setFilterType] = useState("all");
 
@@ -72,7 +76,7 @@ export function AssetsLibrary({ assets }: AssetsLibraryProps) {
                 <div>Status: {asset.status}</div>
               </div>
               <div className="mt-5 flex gap-2">
-                <Link href={`/stories/${asset.storyId}`} className="inline-flex rounded-xl border border-[var(--border)] px-4 py-2 text-sm">
+                <Link href={buildWorkspaceHref(`/stories/${asset.storyId}`, workspaceSlug)} className="inline-flex rounded-xl border border-[var(--border)] px-4 py-2 text-sm">
                   View Story
                 </Link>
                 {asset.fileUrl && !asset.fileUrl.startsWith("[") ? (

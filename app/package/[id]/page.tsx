@@ -4,15 +4,23 @@ import { Badge, BodyText, Button, Card, CardTitle, Eyebrow, PageTitle, SectionTi
 import { packageStatusLabel } from "@/lib/stories-domain";
 import { PublicStoriesFrame } from "@/app/_components/stories-shell";
 import { getPackageDetailSnapshot } from "@/lib/stories-data";
+import { buildWorkspaceHref } from "@/lib/workspace-href";
 
 type PublicPackagePageProps = {
   params: Promise<{
     id: string;
   }>;
+  searchParams?: Promise<{
+    workspace?: string | string[];
+  }>;
 };
 
-export default async function PublicPackagePage({ params }: PublicPackagePageProps) {
+export default async function PublicPackagePage({ params, searchParams }: PublicPackagePageProps) {
   const { id } = await params;
+  const resolvedSearchParams = searchParams ? await searchParams : undefined;
+  const workspaceSlug = typeof resolvedSearchParams?.workspace === "string"
+    ? resolvedSearchParams.workspace.trim() || null
+    : null;
   const snapshot = await getPackageDetailSnapshot(id);
 
   if (!snapshot) {
@@ -54,7 +62,7 @@ export default async function PublicPackagePage({ params }: PublicPackagePagePro
             <Button variant="secondary">Download All Content</Button>
           )}
           {snapshot.story ? (
-            <Link href={`/stories/${snapshot.story.id}`}>
+            <Link href={buildWorkspaceHref(`/stories/${snapshot.story.id}`, workspaceSlug)}>
               <Button variant="secondary">View Story</Button>
             </Link>
           ) : null}

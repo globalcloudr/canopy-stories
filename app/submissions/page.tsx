@@ -4,6 +4,7 @@ import { Badge, BodyText, Button, CardTitle } from "@canopy/ui";
 import { StoriesShell } from "@/app/_components/stories-shell";
 import { listSubmissionItems } from "@/lib/stories-data";
 import { formatRelativeDate, pipelineStageLabel, storyTypeLabel } from "@/lib/stories-domain";
+import { buildWorkspaceHref } from "@/lib/workspace-href";
 
 function submissionStatusVariant(status: string): "sky" | "emerald" | "outline" | "paused" {
   if (status === "reviewed") return "sky";
@@ -67,7 +68,7 @@ export default async function SubmissionsPage({
               </div>
               {item.story && (
                 <Button asChild variant="secondary" size="sm">
-                  <Link href={`/stories/${item.story.id}`}>Open Story</Link>
+                  <Link href={buildWorkspaceHref(`/stories/${item.story.id}`, workspaceSlug)}>Open Story</Link>
                 </Button>
               )}
             </div>

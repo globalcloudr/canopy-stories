@@ -6,10 +6,14 @@ import { getStoryDetailSnapshot } from "@/lib/stories-data";
 import { formatRelativeDate, pipelineStageLabel, storyTypeLabel, contentStatusLabel } from "@/lib/stories-domain";
 import { ContentReviewButtons } from "./content-review-buttons";
 import { StoryProgressBar } from "@/app/_components/story-progress-bar";
+import { buildWorkspaceHref } from "@/lib/workspace-href";
 
 type StoryDetailPageProps = {
   params: Promise<{
     id: string;
+  }>;
+  searchParams?: Promise<{
+    workspace?: string | string[];
   }>;
 };
 
@@ -23,8 +27,12 @@ function stageTone(stage: string) {
   return "outline" as const;
 }
 
-export default async function StoryDetailPage({ params }: StoryDetailPageProps) {
+export default async function StoryDetailPage({ params, searchParams }: StoryDetailPageProps) {
   const { id } = await params;
+  const resolvedSearchParams = searchParams ? await searchParams : undefined;
+  const workspaceSlug = typeof resolvedSearchParams?.workspace === "string"
+    ? resolvedSearchParams.workspace.trim() || null
+    : null;
   const snapshot = await getStoryDetailSnapshot(id);
 
   if (!snapshot) {
@@ -42,15 +50,15 @@ export default async function StoryDetailPage({ params }: StoryDetailPageProps) 
       subtitle={`${snapshot.projectName} · ${snapshot.workspaceName}`}
       headerActions={
         <>
-          <Link href="/stories">
+          <Link href={buildWorkspaceHref("/stories", workspaceSlug)}>
             <Button variant="secondary">Back to Stories</Button>
           </Link>
           {snapshot.storyPackage ? (
-            <Link href={`/package/${snapshot.storyPackage.id}`}>
+            <Link href={buildWorkspaceHref(`/package/${snapshot.storyPackage.id}`, workspaceSlug)}>
               <Button variant="primary">View Package</Button>
             </Link>
           ) : null}
-          <Link href="/projects">
+          <Link href={buildWorkspaceHref("/projects", workspaceSlug)}>
             <Button variant="secondary">View Projects</Button>
           </Link>
         </>
@@ -114,7 +122,7 @@ export default async function StoryDetailPage({ params }: StoryDetailPageProps) 
                 <span>{snapshot.storyPackage.downloadCount}</span>
               </div>
               <div className="pt-1">
-                <Link href={`/package/${snapshot.storyPackage.id}`}>
+                <Link href={buildWorkspaceHref(`/package/${snapshot.storyPackage.id}`, workspaceSlug)}>
                   <Button variant="secondary" size="sm">Open Package</Button>
                 </Link>
               </div>

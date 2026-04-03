@@ -5,6 +5,7 @@ import { AppPill, BodyText, Button, Card, CardTitle, SectionTitle } from "@canop
 import { StoriesShell } from "@/app/_components/stories-shell";
 import { getStoriesOverviewSnapshot } from "@/lib/stories-data";
 import { formatRelativeDate, pipelineStageLabel, storyTypeLabel } from "@/lib/stories-domain";
+import { buildWorkspaceHref } from "@/lib/workspace-href";
 
 function DashboardStatCard({
   title,
@@ -71,7 +72,7 @@ export default async function HomePage({
 
       headerActions={
         <Button asChild variant="primary">
-          <Link href="/projects">New Project</Link>
+          <Link href={buildWorkspaceHref("/projects", workspaceSlug)}>New Project</Link>
         </Button>
       }
     >
@@ -157,7 +158,7 @@ export default async function HomePage({
                   </div>
                   <div className="mt-4 space-y-3">
                     {stories.map((story) => (
-                      <Link key={story.id} href={`/stories/${story.id}`} className="block">
+                      <Link key={story.id} href={buildWorkspaceHref(`/stories/${story.id}`, workspaceSlug)} className="block">
                         <Card
                           variant="soft"
                           padding="sm"
@@ -191,7 +192,7 @@ export default async function HomePage({
             <SectionTitle className="mt-6 text-[1.9rem] sm:text-[1.9rem]">No stories in pipeline yet</SectionTitle>
             <BodyText muted className="mt-3">Create a project and collect your first response to see stories move through here</BodyText>
             <Button asChild variant="primary" className="mt-6">
-              <Link href="/projects">Get Started</Link>
+              <Link href={buildWorkspaceHref("/projects", workspaceSlug)}>Get Started</Link>
             </Button>
           </Card>
         )}
@@ -201,14 +202,14 @@ export default async function HomePage({
         <div className="mb-4 flex items-center justify-between gap-4">
           <SectionTitle className="text-[2rem] sm:text-[2rem]">Recent Projects</SectionTitle>
           <Button asChild variant="ghost" size="sm">
-            <Link href="/projects">View All</Link>
+            <Link href={buildWorkspaceHref("/projects", workspaceSlug)}>View All</Link>
           </Button>
         </div>
 
         {overview.recentProjects.length > 0 ? (
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             {overview.recentProjects.map((project) => (
-              <Link key={project.id} href={`/projects/${project.id}`} className="block">
+              <Link key={project.id} href={buildWorkspaceHref(`/projects/${project.id}`, workspaceSlug)} className="block">
                 <Card padding="md" className="rounded-[20px] border border-[#dfe7f4] bg-transparent shadow-none transition hover:border-[#c8d7eb] hover:bg-white/65 sm:p-6">
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0">
@@ -244,7 +245,7 @@ export default async function HomePage({
             <SectionTitle className="text-[1.8rem] sm:text-[1.8rem]">No projects yet</SectionTitle>
             <BodyText muted className="mt-3">Create your first project to start collecting and delivering success stories</BodyText>
             <Button asChild variant="primary" className="mt-6">
-              <Link href="/projects">Create Project</Link>
+              <Link href={buildWorkspaceHref("/projects", workspaceSlug)}>Create Project</Link>
             </Button>
           </Card>
         )}

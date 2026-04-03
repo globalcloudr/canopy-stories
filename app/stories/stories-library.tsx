@@ -2,9 +2,11 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { Badge, BodyText, Card, CardTitle } from "@canopy/ui";
 import type { StoryLibraryItem } from "@/lib/stories-data";
 import { formatRelativeDate } from "@/lib/stories-domain";
+import { buildWorkspaceHref } from "@/lib/workspace-href";
 
 type StoriesLibraryProps = {
   items: StoryLibraryItem[];
@@ -15,6 +17,8 @@ function storyStatusLabel(stage: string) {
 }
 
 export function StoriesLibrary({ items }: StoriesLibraryProps) {
+  const searchParams = useSearchParams();
+  const workspaceSlug = searchParams.get("workspace")?.trim() || null;
   const [searchQuery, setSearchQuery] = useState("");
   const [typeFilter, setTypeFilter] = useState("all");
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
@@ -81,7 +85,7 @@ export function StoriesLibrary({ items }: StoriesLibraryProps) {
       ) : (
         <section className={viewMode === "grid" ? "grid gap-4 md:grid-cols-2 lg:grid-cols-3" : "space-y-4"}>
           {filteredItems.map((item) => (
-            <Link key={item.story.id} href={`/stories/${item.story.id}`} className="block">
+            <Link key={item.story.id} href={buildWorkspaceHref(`/stories/${item.story.id}`, workspaceSlug)} className="block">
               <Card
                 padding="md"
                 className={`rounded-[20px] border border-[#dfe7f4] bg-transparent shadow-none transition hover:border-[#c8d7eb] hover:bg-white/65 ${

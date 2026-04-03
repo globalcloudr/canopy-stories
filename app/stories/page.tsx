@@ -3,11 +3,13 @@ export const dynamic = "force-dynamic";
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { BodyText, Button, Card, CardTitle, Input, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@canopy/ui";
 import { StoriesShell } from "@/app/_components/stories-shell";
 import { apiFetchArray } from "@/lib/api-client";
 import { pipelineStageLabel, storyTypeLabel } from "@/lib/stories-domain";
 import { useStoriesWorkspaceId } from "@/lib/workspace-client";
+import { buildWorkspaceHref } from "@/lib/workspace-href";
 
 type Story = {
   id: string;
@@ -37,6 +39,8 @@ function stageBadge(stage: string) {
 }
 
 export default function StoriesPage() {
+  const searchParams = useSearchParams();
+  const workspaceSlug = searchParams.get("workspace")?.trim() || null;
   const workspaceId = useStoriesWorkspaceId();
   const [stories, setStories] = useState<Story[]>([]);
   const [loading, setLoading] = useState(true);
@@ -151,7 +155,7 @@ export default function StoriesPage() {
                   {pipelineStageLabel(story.currentStage)}
                 </span>
                 <Button asChild variant="secondary" size="sm">
-                  <Link href={`/stories/${story.id}`}>Open</Link>
+                  <Link href={buildWorkspaceHref(`/stories/${story.id}`, workspaceSlug)}>Open</Link>
                 </Button>
               </div>
             </div>

@@ -2,12 +2,14 @@
 
 import { useState, useEffect, useCallback, use } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { AppPill, BodyText, Button, Card, CardTitle } from "@canopy/ui";
 import { StoriesShell } from "@/app/_components/stories-shell";
 import { PipelineBoard } from "@/app/_components/pipeline-board";
 import { FormBuilderDialog } from "@/app/_components/form-builder-dialog";
 import { apiFetch } from "@/lib/api-client";
 import { pipelineStageLabel } from "@/lib/stories-domain";
+import { buildWorkspaceHref } from "@/lib/workspace-href";
 import type { FlatProject, FlatForm, FormSubmissionItem } from "@/lib/stories-data";
 
 // ─── Form responses tab ──────────────────────────────────────────────────────
@@ -18,12 +20,14 @@ function FormResponsesTab({
   onCustomizeForm,
   onDeleteForm,
   typeColors,
+  workspaceSlug,
 }: {
   forms: FlatForm[];
   onCreateForm: () => void;
   onCustomizeForm: (form: FlatForm) => void;
   onDeleteForm: (id: string) => void;
   typeColors: Record<string, string>;
+  workspaceSlug: string | null;
 }) {
   const [expandedFormId, setExpandedFormId] = useState<string | null>(null);
   const [responses, setResponses] = useState<Record<string, FormSubmissionItem[]>>({});
@@ -157,7 +161,7 @@ function FormResponsesTab({
                         </div>
                         {r.storyId && (
                           <Button asChild variant="secondary" size="sm">
-                            <Link href={`/stories/${r.storyId}`}>Open Story</Link>
+                            <Link href={buildWorkspaceHref(`/stories/${r.storyId}`, workspaceSlug)}>Open Story</Link>
                           </Button>
                         )}
                       </div>
@@ -238,6 +242,8 @@ const typeColors: Record<string, string> = {
 
 export default function ProjectDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
+  const searchParams = useSearchParams();
+  const workspaceSlug = searchParams.get("workspace")?.trim() || null;
 
   const [project, setProject] = useState<FlatProject | null>(null);
   const [forms, setForms] = useState<FlatForm[]>([]);
@@ -340,7 +346,7 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
           <CardTitle>Project not found</CardTitle>
           <div className="mt-4">
             <Button asChild variant="primary">
-              <Link href="/projects">Back to projects</Link>
+              <Link href={buildWorkspaceHref("/projects", workspaceSlug)}>Back to projects</Link>
             </Button>
           </div>
         </Card>
@@ -358,7 +364,7 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
       headerActions={
         <>
           <Button asChild variant="secondary">
-            <Link href="/projects">← Projects</Link>
+            <Link href={buildWorkspaceHref("/projects", workspaceSlug)}>← Projects</Link>
           </Button>
           <Button variant="primary" onClick={() => setFormBuilderOpen(true)}>
             + Add Form
@@ -455,6 +461,7 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
           onCustomizeForm={(form) => { setEditingForm(form); setFormBuilderOpen(true); }}
           onDeleteForm={handleDeleteForm}
           typeColors={typeColors}
+          workspaceSlug={workspaceSlug}
         />
       )}
 
@@ -488,7 +495,7 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
                       {story.currentStage.replace(/_/g, " ")}
                     </span>
                     <Button asChild variant="primary" size="sm">
-                      <Link href={`/stories/${story.id}`}>Open</Link>
+                      <Link href={buildWorkspaceHref(`/stories/${story.id}`, workspaceSlug)}>Open</Link>
                     </Button>
                     <Button
                       variant="secondary"

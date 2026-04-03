@@ -3,10 +3,12 @@ export const dynamic = "force-dynamic";
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { BodyText, Button, CardTitle, Input } from "@canopy/ui";
 import { StoriesShell } from "@/app/_components/stories-shell";
 import { apiFetchArray } from "@/lib/api-client";
 import { useStoriesWorkspaceId } from "@/lib/workspace-client";
+import { buildWorkspaceHref } from "@/lib/workspace-href";
 
 type Asset = {
   id: string;
@@ -24,6 +26,8 @@ type Asset = {
 const assetTypeFilters = ["all", "video", "image", "graphic", "document"] as const;
 
 export default function AssetsPage() {
+  const searchParams = useSearchParams();
+  const workspaceSlug = searchParams.get("workspace")?.trim() || null;
   const workspaceId = useStoriesWorkspaceId();
   const [assets, setAssets] = useState<Asset[]>([]);
   const [loading, setLoading] = useState(true);
@@ -151,7 +155,7 @@ export default function AssetsPage() {
                   {asset.status}
                 </span>
                 <Button asChild variant="secondary" size="sm">
-                  <Link href={`/stories/${asset.storyId}`}>Story</Link>
+                  <Link href={buildWorkspaceHref(`/stories/${asset.storyId}`, workspaceSlug)}>Story</Link>
                 </Button>
                 {asset.fileUrl && !asset.fileUrl.startsWith("[") && (
                   <Button asChild variant="primary" size="sm">

@@ -5,6 +5,7 @@ import { StoriesShell } from "@/app/_components/stories-shell";
 import { listLiveProjectOptions, listPublishedForms } from "@/lib/stories-data";
 import { referenceIntakeTemplates } from "@/lib/reference-form-templates";
 import { CreateFormPanel } from "@/app/forms/create-form-panel";
+import { buildWorkspaceHref } from "@/lib/workspace-href";
 
 export default async function FormsPage({
   searchParams,
@@ -29,10 +30,10 @@ export default async function FormsPage({
       headerActions={
         <>
           <Button asChild variant="secondary">
-            <Link href="/projects">Back to projects</Link>
+            <Link href={buildWorkspaceHref("/projects", workspaceSlug)}>Back to projects</Link>
           </Button>
           <Button asChild type="button" variant="primary">
-            <Link href="#create-form">Create form</Link>
+            <Link href={buildWorkspaceHref("#create-form", workspaceSlug)}>Create form</Link>
           </Button>
         </>
       }
