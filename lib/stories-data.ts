@@ -2182,6 +2182,22 @@ export async function getStoryById(storyId: string): Promise<StoryRecord | null>
   return rows[0] ? toStoryRecord(rows[0]) : null;
 }
 
+export async function rerunStoryAutomation(storyId: string): Promise<void> {
+  if (!isStoriesPersistenceEnabled()) {
+    throw new Error("Stories persistence is not configured.");
+  }
+
+  const story = await getStoryById(storyId);
+  if (!story) throw new Error("Story not found.");
+
+  // Clear existing generated content, assets, and package before re-running
+  await requestJson(`/rest/v1/story_content?story_id=eq.${storyId}`, undefined, { method: "DELETE" });
+  await requestJson(`/rest/v1/story_assets?story_id=eq.${storyId}`, undefined, { method: "DELETE" });
+  await requestJson(`/rest/v1/story_packages?story_id=eq.${storyId}`, undefined, { method: "DELETE" });
+
+  await runStoryAutomation(story);
+}
+
 export async function deleteStoryById(storyId: string): Promise<void> {
   if (!isStoriesPersistenceEnabled()) {
     throw new Error("Stories persistence is not configured.");

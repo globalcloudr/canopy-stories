@@ -6,6 +6,7 @@ import { getStoryDetailSnapshot } from "@/lib/stories-data";
 import { formatRelativeDate, pipelineStageLabel, storyTypeLabel, contentStatusLabel } from "@/lib/stories-domain";
 import { ContentReviewButtons } from "./content-review-buttons";
 import { StoryProgressBar } from "@/app/_components/story-progress-bar";
+import { RegenerateButton } from "./regenerate-button";
 import { buildWorkspaceHref } from "@/lib/workspace-href";
 
 type StoryDetailPageProps = {
@@ -61,6 +62,7 @@ export default async function StoryDetailPage({ params, searchParams }: StoryDet
           <Link href={buildWorkspaceHref("/projects", workspaceSlug)}>
             <Button variant="secondary">View Projects</Button>
           </Link>
+          <RegenerateButton storyId={id} />
         </>
       }
       headerMeta={`Created ${formatRelativeDate(snapshot.story.createdAt)}`}

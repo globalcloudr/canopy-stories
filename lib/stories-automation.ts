@@ -232,7 +232,7 @@ async function pollCreatomateRender(
       });
       if (!res.ok) break;
       const render = (await res.json()) as CreatomateRender;
-      if (render.status === "done" || render.status === "failed") {
+      if (render.status === "succeeded" || render.status === "done" || render.status === "failed") {
         return render;
       }
     } catch {
@@ -301,7 +301,11 @@ async function generateVideoAsset(
       "Highlight 2": highlights[1] ?? "",
       "Highlight 3": highlights[2] ?? "",
     };
-    if (imageUrl) modifications.Photo = imageUrl;
+    // Only pass the photo if it's a plain public URL — Creatomate cannot access
+    // signed Supabase storage URLs (they require auth headers Creatomate won't send)
+    if (imageUrl && !imageUrl.includes("/object/sign/") && !imageUrl.includes("token=")) {
+      modifications.Photo = imageUrl;
+    }
 
     const render = await submitCreatomateRender(videoApiKey, videoTemplateId, modifications);
     if (!render) {
@@ -314,11 +318,11 @@ async function generateVideoAsset(
     }
 
     // Poll up to 15 seconds for fast-completing renders
-    const completed = render.status === "done" || render.status === "failed"
+    const completed = render.status === "succeeded" || render.status === "done" || render.status === "failed"
       ? render
       : await pollCreatomateRender(videoApiKey, render.id, 15000);
 
-    if (completed?.status === "done" && completed.url) {
+    if ((completed?.status === "succeeded" || completed?.status === "done") && completed.url) {
       return {
         videoUrl: completed.url,
         thumbnailUrl: completed.snapshot_url || imageUrl || "[Thumbnail not available]",
@@ -416,16 +420,18 @@ async function generateHighlightCard(
     Name: subjectName,
     Quote: highlights[0] ?? "",
   };
-  if (imageUrl) modifications.Photo = imageUrl;
+  if (imageUrl && !imageUrl.includes("/object/sign/") && !imageUrl.includes("token=")) {
+    modifications.Photo = imageUrl;
+  }
 
   const render = await submitCreatomateRender(videoApiKey, imageTemplateId, modifications);
   if (!render) return { imageUrl: "[Highlight card generation failed]", status: "failed" };
 
-  const completed = render.status === "done" || render.status === "failed"
+  const completed = render.status === "succeeded" || render.status === "done" || render.status === "failed"
     ? render
     : await pollCreatomateRender(videoApiKey, render.id, 10000);
 
-  if (completed?.status === "done" && completed.url) {
+  if ((completed?.status === "succeeded" || completed?.status === "done") && completed.url) {
     return { imageUrl: completed.url, status: "ready" };
   }
 
