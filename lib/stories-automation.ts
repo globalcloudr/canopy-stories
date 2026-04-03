@@ -36,48 +36,96 @@ type VideoGenerationResult = {
 const openAiBaseUrl = process.env.AI_INTEGRATIONS_OPENAI_BASE_URL || "https://api.openai.com/v1";
 const openAiModel = process.env.AI_INTEGRATIONS_OPENAI_MODEL || process.env.OPENAI_MODEL || "gpt-5";
 
-function getStoryBackground(sourceData: Record<string, unknown> | null) {
-  if (!sourceData) {
-    return "";
-  }
+// ─── Field label mapping ───────────────────────────────────────────────────
+// Maps raw form field IDs to human-readable labels for prompt context.
+// Contact/media fields are excluded — they add noise without content value.
 
-  const preferredKeys = ["background", "story", "training", "impact", "goals", "career"];
-  for (const key of preferredKeys) {
-    const value = sourceData[key];
-    if (typeof value === "string" && value.trim().length > 0) {
-      return value.trim();
-    }
-  }
+const SKIP_FIELDS = new Set(["name", "email", "phone", "city", "photoApproval", "photoUpload", "photoUrls"]);
 
-  return Object.entries(sourceData)
-    .filter(([, value]) => typeof value === "string" && value.trim().length > 0)
-    .map(([key, value]) => `${key}: ${value}`)
-    .join("\n");
-}
+const FIELD_LABELS: Record<string, string> = {
+  // ESL
+  nativeLanguage: "Native Language",
+  educationLevel: "Education Level in Home Country",
+  background: "Personal Story",
+  challenges: "Challenges Overcome",
+  achievements: "Achievements & Progress",
+  goals: "Future Goals",
+  // HSD/GED
+  age: "Age",
+  whyNow: "Why Return to Education",
+  support: "How the Program Helped",
+  nextSteps: "Next Steps & Goals",
+  // CTE
+  program: "Career Field / Program",
+  training: "Training Experience",
+  handson: "Hands-On Experience",
+  career: "Career Plans",
+  advice: "Advice for Others",
+  // EMPLOYER
+  title: "Title / Position",
+  company: "Company",
+  organization: "Organization",
+  partnership: "Partnership with Institution",
+  quality: "Quality of Training",
+  graduates: "Experience with Graduates",
+  value: "Value to Business",
+  // STAFF
+  role: "Role & Responsibilities",
+  impact: "Student Impact",
+  rewarding: "Most Rewarding Aspects",
+  future: "Vision for the Future",
+  // PARTNER
+  partnershipType: "Type of Partnership",
+  sharedGoals: "Shared Goals",
+  communityImpact: "Community Impact",
+  success: "Success Stories",
+  // OVERVIEW
+  history: "Institution History",
+  currentPrograms: "Current Programs",
+  futurePlans: "Future Plans",
+};
 
 function getPhotoUrls(sourceData: Record<string, unknown> | null) {
-  if (!sourceData) {
-    return [] as string[];
-  }
-
+  if (!sourceData) return [] as string[];
   const value = sourceData.photoUrls;
-  if (!Array.isArray(value)) {
-    return [];
-  }
-
+  if (!Array.isArray(value)) return [];
   return value.filter((item): item is string => typeof item === "string" && item.length > 0);
 }
 
-function toPromptFields(sourceData: Record<string, unknown> | null) {
-  if (!sourceData) {
-    return "No extra form fields provided.";
-  }
+function buildFormContext(sourceData: Record<string, unknown> | null): string {
+  if (!sourceData) return "No form responses provided.";
 
   const rows = Object.entries(sourceData)
-    .filter(([key]) => key !== "photoUrls")
-    .map(([key, value]) => `${key}: ${typeof value === "string" ? value : JSON.stringify(value)}`);
+    .filter(([key, value]) => !SKIP_FIELDS.has(key) && typeof value === "string" && (value as string).trim().length > 0)
+    .map(([key, value]) => {
+      const label = FIELD_LABELS[key] ?? key.replace(/([A-Z])/g, " $1").trim();
+      return `${label}: ${(value as string).trim()}`;
+    });
 
-  return rows.length > 0 ? rows.join("\n") : "No extra form fields provided.";
+  return rows.length > 0 ? rows.join("\n") : "No additional form responses provided.";
+}
+
+// ─── Story-type system prompts ────────────────────────────────────────────────
+// Each prompt gives the AI clear context about who the subject is, what the
+// audience cares about, and what tone and emphasis to bring to adult education.
+
+function getStoryTypeContext(storyType: StoryType): string {
+  switch (storyType) {
+    case "ESL":
+      return `You are writing about an adult ESL (English as a Second Language) student at a community adult education program. These students are often immigrants or refugees who came to the US as adults and are learning English while navigating a new country, raising families, and pursuing careers. Their stories are about courage, resilience, and the profound impact that language access has on every part of life — from helping children with homework to advancing in a job, qualifying for citizenship, or simply being heard. The emotional core is transformation: a person who felt invisible or limited by language barriers finding voice, connection, and opportunity. Write with warmth and deep respect for the challenge of learning a language as an adult.`;
+    case "HSD_GED":
+      return `You are writing about an adult who earned their high school diploma or GED through an adult education program. These students left school years or decades ago — often because of family hardship, poverty, pregnancy, or circumstance — and made the decision as adults to come back and finish. Many are parents who want to model education for their children, workers who need a diploma to advance, or individuals who have carried the weight of not finishing for years. Their stories are about second chances, persistence in the face of self-doubt, and proving — to themselves above all — that it is never too late. Write with honesty about the barriers and deep pride in what they achieved.`;
+    case "CTE":
+      return `You are writing about a Career and Technical Education (CTE) student at an adult education program. These students are adults training for careers in fields like healthcare (medical assistant, phlebotomy, CNA), skilled trades (HVAC, welding, electrical), technology, or business. Many are career changers, displaced workers, or people entering the workforce for the first time. CTE programs give them hands-on, job-ready skills in months — not years — and the stories are about practical transformation: a person who found a career path, gained real skills, and can now support themselves and their family. Emphasize the concrete outcomes: certifications earned, jobs obtained, wages improved. Write with clarity and pride in skilled work.`;
+    case "EMPLOYER":
+      return `You are writing about an employer partner who hires graduates from or provides externship opportunities to an adult education program. These employers have seen firsthand the quality of the school's training and the dedication of its graduates. Their stories validate the program's real-world value — graduates who show up motivated, trained, and ready to contribute. The audience for this content is other employers considering a partnership and prospective students who want to know that the training leads to real jobs. Write in a professional but genuine tone that reflects a business relationship grounded in mutual benefit and community investment.`;
+    case "STAFF":
+      return `You are writing about a teacher, instructor, or staff member at an adult education program. Adult education staff often choose this field because they are deeply motivated by mission — they work with students who face real hardship and come to class anyway. The stories are about purpose, the small moments that make the work meaningful, and the long-term impact of education on individual lives and whole communities. Readers are prospective students, donors, and community partners who want to understand the human heart of the institution. Write with authenticity and mission-driven warmth.`;
+    case "PARTNER":
+      return `You are writing about a community organization or agency that partners with an adult education program. Partners might be workforce agencies, healthcare systems, libraries, nonprofits, or government programs. The story is about how the partnership serves students and the broader community — what each organization brings, what outcomes it creates, and why collaboration matters. The audience is other potential partners, funders, and policymakers. Write with clarity about the shared mission and the practical impact of working together.`;
+    case "OVERVIEW":
+      return `You are writing about an adult education institution — its history, programs, and community impact. The subject is typically an administrator or director who can speak to the institution's mission, what makes it distinctive, and where it is headed. The audience includes prospective students, community members, funders, and partners. Write with institutional pride and clarity, grounding the story in real programs and real outcomes rather than generic mission language.`;
+  }
 }
 
 async function requestOpenAi(system: string, user: string, json = false, apiKey = "") {
@@ -120,27 +168,30 @@ async function requestOpenAi(system: string, user: string, json = false, apiKey 
 
 async function generateTextContent(input: StoryAutomationInput, openAiApiKey: string) {
   const subjectName = input.subjectName || "Student";
-  const background = getStoryBackground(input.sourceData);
-  const detailBlock = toPromptFields(input.sourceData);
+  const storyContext = getStoryTypeContext(input.storyType);
+  const formContext = buildFormContext(input.sourceData);
+
+  const storyBlock = `Story title: ${input.title}\nSubject: ${subjectName}\n\nForm responses:\n${formContext}`;
+
   const [blogPost, socialJson, newsletter, pressRelease] = await Promise.all([
     requestOpenAi(
-      "You write compelling adult-education success stories in markdown.",
-      `Write a blog feature for this story.\n\nTitle: ${input.title}\nSubject: ${subjectName}\nType: ${input.storyType}\nBackground: ${background}\n\nForm details:\n${detailBlock}`,
+      `${storyContext}\n\nYou write compelling feature stories in markdown for adult education programs. Your blog posts are 600–900 words, told in narrative form with a clear arc: where the person started, the challenges they faced, how the program helped, and where they are now. Use a warm, human tone. Lead with a vivid opening that draws the reader in. Include at least one direct quote (you may compose a realistic quote from the form responses). End with a forward-looking sentence about their future. Do not use generic education clichés.`,
+      `Write a blog feature story for this submission.\n\n${storyBlock}`,
       false, openAiApiKey
     ),
     requestOpenAi(
-      "You generate concise social copy for adult education marketing. Return valid JSON.",
-      `Return JSON with keys facebook, instagram, twitter, linkedin for this story.\n\nTitle: ${input.title}\nSubject: ${subjectName}\nType: ${input.storyType}\nBackground: ${background}\n\nForm details:\n${detailBlock}`,
+      `${storyContext}\n\nYou write social media copy for adult education programs. Return valid JSON with keys: facebook, instagram, twitter, linkedin. Follow these guidelines for each platform:\n- facebook: 100–180 words. Warm, community tone. Tell a mini version of the story. End with a gentle call to action (e.g., "Learn more about our programs" or "Could this be your story too?").\n- instagram: 80–120 words of caption text followed by a line break and 8–12 relevant hashtags (e.g., #AdultEducation #ESL #NewBeginnings #CommunityCollege). Inspirational tone, visual and personal.\n- twitter: Under 260 characters. One punchy line capturing the heart of the story. May include 1–2 hashtags.\n- linkedin: 150–200 words. Professional tone focused on career outcomes, workforce development, or institutional impact. Appropriate for workforce partners, employers, and community stakeholders.`,
+      `Write social media copy for this story. Return only valid JSON.\n\n${storyBlock}`,
       true, openAiApiKey
     ),
     requestOpenAi(
-      "You write newsletter copy for adult education programs.",
-      `Write a newsletter section for this story.\n\nTitle: ${input.title}\nSubject: ${subjectName}\nType: ${input.storyType}\nBackground: ${background}\n\nForm details:\n${detailBlock}`,
+      `${storyContext}\n\nYou write newsletter features for adult education programs. Newsletter sections are 200–300 words, conversational and warm. They are written in third person and feel like a personal highlight from the school community. Include the subject's name, a key detail from their journey, and a sentence that invites readers to celebrate with the community. Do not use bullet points — write in flowing paragraphs.`,
+      `Write a newsletter feature for this story.\n\n${storyBlock}`,
       false, openAiApiKey
     ),
     requestOpenAi(
-      "You write formal education press releases in markdown.",
-      `Write a short press release for this story.\n\nTitle: ${input.title}\nSubject: ${subjectName}\nType: ${input.storyType}\nBackground: ${background}\n\nForm details:\n${detailBlock}`,
+      `${storyContext}\n\nYou write press releases for adult education programs in standard AP Style newswire format. Press releases are 300–400 words, written in third person. They open with a dateline and a strong news lead (who, what, where, when, why). Include one attributed quote from the subject or a program representative. Close with a standard boilerplate paragraph about the institution. Use formal language appropriate for media distribution.`,
+      `Write a press release for this story.\n\n${storyBlock}`,
       false, openAiApiKey
     ),
   ]);
@@ -184,20 +235,20 @@ async function generateTextContent(input: StoryAutomationInput, openAiApiKey: st
 
 async function prepareVideoHighlights(input: StoryAutomationInput, openAiApiKey: string) {
   const subjectName = input.subjectName || "Student";
-  const background = getStoryBackground(input.sourceData);
+  const formContext = buildFormContext(input.sourceData);
   const fallback = [
-    `${subjectName}'s story is now in production.`,
-    `${input.storyType.replace(/_/g, "/")} success stories help highlight real outcomes.`,
-    background || `${subjectName}'s submission is ready for review.`,
-  ].slice(0, 3);
+    `Meet ${subjectName}`,
+    `A story of courage and education`,
+    `Made possible by adult education`,
+  ];
 
   if (!openAiApiKey) {
     throw new Error("OpenAI API key is not configured for this workspace.");
   }
 
   const result = await requestOpenAi(
-    "You prepare short on-screen video highlight lines. Return valid JSON.",
-    `Return JSON with a 'highlights' array of 3 short lines for a vertical promo video.\n\nTitle: ${input.title}\nSubject: ${subjectName}\nType: ${input.storyType}\nBackground: ${background}\n\nForm details:\n${toPromptFields(input.sourceData)}`,
+    `You write on-screen text lines for short vertical promo videos for adult education programs. Return valid JSON with a 'highlights' array of exactly 3 strings following a three-line arc:\n- Line 1 (Setup): Who is this person or where did they start? 5–8 words. Personal and grounding.\n- Line 2 (Achievement): What did they accomplish or overcome? 5–8 words. Specific and proud.\n- Line 3 (Inspiration): Where are they headed, or what does this mean? 5–9 words. Forward-looking and hopeful.\n\nRules: Each line stands alone on screen. No punctuation at the end. No quotes. No full sentences — these are headline fragments. Must feel human, not like marketing copy.`,
+    `Write 3 video highlight lines for this story.\n\nSubject: ${subjectName}\nStory type: ${input.storyType}\n\nForm responses:\n${formContext}`,
     true, openAiApiKey
   );
 
@@ -207,7 +258,7 @@ async function prepareVideoHighlights(input: StoryAutomationInput, openAiApiKey:
 
   const parsed = JSON.parse(result) as { highlights?: string[] };
   const highlights = parsed.highlights?.filter((item) => typeof item === "string" && item.trim().length > 0) ?? [];
-  return highlights.length > 0 ? highlights.slice(0, 5) : fallback;
+  return highlights.length > 0 ? highlights.slice(0, 3) : fallback;
 }
 
 type CreatomateRender = {

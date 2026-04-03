@@ -7,6 +7,7 @@ import { formatRelativeDate, pipelineStageLabel, storyTypeLabel, contentStatusLa
 import { ContentReviewButtons } from "./content-review-buttons";
 import { StoryProgressBar } from "@/app/_components/story-progress-bar";
 import { RegenerateButton } from "./regenerate-button";
+import { MarkdownBody } from "@/app/_components/markdown-body";
 import { buildWorkspaceHref } from "@/lib/workspace-href";
 
 type StoryDetailPageProps = {
@@ -163,8 +164,8 @@ export default async function StoryDetailPage({ params, searchParams }: StoryDet
                   </div>
                   <Badge variant="outline" className="border-[#d7e3f3] bg-[#edf3fb]">{contentStatusLabel(content.status)}</Badge>
                 </div>
-                <div className="mt-5 rounded-2xl border border-[#e3eaf6] bg-white/62 p-5 text-sm leading-7 text-[var(--foreground)] whitespace-pre-wrap break-words">
-                  {content.body}
+                <div className="mt-5 rounded-2xl border border-[#e3eaf6] bg-white/62 p-5 text-sm">
+                  <MarkdownBody>{content.body}</MarkdownBody>
                 </div>
                 <div className="mt-4 border-t border-[var(--border)] pt-4">
                   <ContentReviewButtons contentId={content.id} currentStatus={content.status} />

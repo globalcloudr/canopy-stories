@@ -5,6 +5,7 @@ import { packageStatusLabel } from "@/lib/stories-domain";
 import { PublicStoriesFrame } from "@/app/_components/stories-shell";
 import { getPackageDetailSnapshot } from "@/lib/stories-data";
 import { buildWorkspaceHref } from "@/lib/workspace-href";
+import { MarkdownBody } from "@/app/_components/markdown-body";
 
 type PublicPackagePageProps = {
   params: Promise<{
@@ -90,8 +91,8 @@ export default async function PublicPackagePage({ params, searchParams }: Public
             <Card padding="md" className="sm:p-7">
               <Eyebrow>Blog</Eyebrow>
               <PageTitle className="mt-3 text-[2rem]">{blogContent.title || "Blog Post"}</PageTitle>
-              <div className="mt-5 whitespace-pre-wrap break-words text-[15px] leading-7 text-[var(--foreground)]">
-                {blogContent.body}
+              <div className="mt-5 text-[15px]">
+                <MarkdownBody>{blogContent.body}</MarkdownBody>
               </div>
             </Card>
           ) : null}
@@ -117,8 +118,8 @@ export default async function PublicPackagePage({ params, searchParams }: Public
             <Card padding="md" className="sm:p-7">
               <Eyebrow>Newsletter</Eyebrow>
               <PageTitle className="mt-3 text-[2rem]">{newsletterContent.title || "Newsletter Content"}</PageTitle>
-              <div className="mt-5 whitespace-pre-wrap break-words text-[15px] leading-7 text-[var(--foreground)]">
-                {newsletterContent.body}
+              <div className="mt-5 text-[15px]">
+                <MarkdownBody>{newsletterContent.body}</MarkdownBody>
               </div>
             </Card>
           ) : null}
@@ -127,8 +128,8 @@ export default async function PublicPackagePage({ params, searchParams }: Public
             <Card padding="md" className="sm:p-7">
               <Eyebrow>Press</Eyebrow>
               <PageTitle className="mt-3 text-[2rem]">{pressContent.title || "Press Release"}</PageTitle>
-              <div className="mt-5 whitespace-pre-wrap break-words text-[15px] leading-7 text-[var(--foreground)]">
-                {pressContent.body}
+              <div className="mt-5 text-[15px]">
+                <MarkdownBody>{pressContent.body}</MarkdownBody>
               </div>
             </Card>
           ) : null}

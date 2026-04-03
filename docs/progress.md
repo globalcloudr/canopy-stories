@@ -4,6 +4,44 @@ Append new sessions at the top. Do not overwrite history.
 
 ---
 
+## 2026-04-03 — AI prompt quality improvement
+
+Rewrote the AI content generation prompts in `lib/stories-automation.ts` to produce publication-ready adult education content instead of generic outputs.
+
+### Per-story-type system context (`getStoryTypeContext`)
+Each of the 7 story types now gets a dedicated system prompt that explains who the subject is, what the audience cares about, and what tone and emphasis to bring:
+- **ESL** — immigrant/refugee learning English; language access as transformation; courage and connection
+- **HSD/GED** — adult returning to finish school; second chances; proving it's never too late
+- **CTE** — career training in healthcare, trades, or tech; practical outcomes; jobs and wages
+- **EMPLOYER** — employer partner validating program quality; business benefit and community investment
+- **STAFF** — instructor mission and student impact; purpose-driven work
+- **PARTNER** — community org collaboration; shared mission and practical outcomes
+- **OVERVIEW** — institutional history, programs, and impact; grounded in real outcomes
+
+### Per-channel format guidance
+Each content type now has explicit format rules in the prompt:
+- **Blog post**: 600–900 words, narrative arc, vivid opening, one direct quote, forward-looking close
+- **Newsletter**: 200–300 words, third person, conversational, flowing paragraphs (no bullets)
+- **Press release**: 300–400 words, AP Style, dateline, news lead, attributed quote, boilerplate close
+- **Facebook**: 100–180 words, community tone, mini story, call to action
+- **Instagram**: 80–120 words + 8–12 hashtags, inspirational
+- **Twitter/X**: Under 260 characters, one punchy line, 1–2 hashtags
+- **LinkedIn**: 150–200 words, professional, workforce/career-focused
+
+### Video highlights (`prepareVideoHighlights`)
+- Three-line arc: Setup → Achievement → Inspiration
+- 5–9 words per line, headline fragments (not full sentences)
+- Rules enforced: no punctuation, no quotes, must feel human not marketing
+
+### Form context (`buildFormContext`)
+- Replaced `toPromptFields` — skips contact/media fields (name, email, phone, photoApproval, photoUpload)
+- Maps raw field IDs to human-readable labels (e.g. `whyNow` → "Why Return to Education")
+
+### Verification
+- `npx tsc --noEmit` passed
+
+---
+
 ## 2026-04-02 — Creatomate video integration and highlight card
 
 Replaced json2video with Creatomate as the default video provider and added a highlight card image asset type.
