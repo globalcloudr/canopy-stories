@@ -228,7 +228,7 @@ async function pollCreatomateRender(
     await new Promise<void>((resolve) => setTimeout(resolve, interval));
     try {
       const res = await fetch(`https://api.creatomate.com/v1/renders/${renderId}`, {
-        headers: { Authorization: `ApiKey ${apiKey}` },
+        headers: { Authorization: `Bearer ${apiKey}` },
       });
       if (!res.ok) break;
       const render = (await res.json()) as CreatomateRender;
@@ -251,7 +251,7 @@ async function submitCreatomateRender(
     const res = await fetch("https://api.creatomate.com/v1/renders", {
       method: "POST",
       headers: {
-        Authorization: `ApiKey ${apiKey}`,
+        Authorization: `Bearer ${apiKey}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({ template_id: templateId, modifications }),
