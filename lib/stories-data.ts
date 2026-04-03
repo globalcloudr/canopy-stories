@@ -1435,6 +1435,7 @@ export async function listSubmissionItems(workspaceSlug?: string | null) {
       "/rest/v1/story_records",
       new URLSearchParams({
         select: "id,workspace_id,project_id,submission_id,title,story_type,subject_name,status,current_stage,source_data_json,error_message,created_at,updated_at",
+        ...(workspaceIdFilter ? { workspace_id: `eq.${workspaceIdFilter}` } : {}),
         order: "created_at.desc",
       })
     ),

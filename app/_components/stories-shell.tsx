@@ -335,6 +335,18 @@ export function StoriesShell({
         const appSession = (await sessionResponse.json()) as AppSessionPayload;
         if (cancelled) { setLoadingSession(false); return; }
 
+        // Platform operators (super admins) can access multiple workspaces, so we
+        // must always have a workspace slug in the URL to ensure server-side queries
+        // are correctly scoped. If the slug is missing, redirect to add it.
+        // School users only ever have one workspace and are protected by RLS, so
+        // we skip the redirect for them to avoid unnecessary redirects.
+        if (appSession.isPlatformOperator && !requestedWorkspaceSlug && appSession.activeWorkspace?.slug) {
+          const url = new URL(window.location.href);
+          url.searchParams.set("workspace", appSession.activeWorkspace.slug);
+          window.location.replace(url.toString());
+          return;
+        }
+
         setUserEmail(appSession.user.email);
         setUserName(appSession.user.displayName);
         setIsPlatformOperator(appSession.isPlatformOperator);
