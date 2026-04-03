@@ -15,7 +15,9 @@ AI-powered success story production product for the Canopy platform.
 - **Public intake forms** — shareable links; subjects fill out forms with no login required; photo upload supported through private per-workspace `story-photos` storage paths with signed preview/download URLs
 - **Form response tracking** — per-form submission counts shown in project forms tab; expandable inline response list per form
 - **AI content generation** — on form submission, OpenAI generates: blog post, newsletter feature, social posts (Facebook, Instagram, LinkedIn, X), press release
-- **Video generation** — 15-second vertical short-form video via JSON2Video or Creatomate API
+- **Video generation** — 15-second vertical short-form video via Creatomate (default); JSON2Video supported as legacy provider
+- **Highlight card** — 1:1 social share graphic generated alongside the video from a separate Creatomate image template
+- **Regenerate story** — staff can re-run the full AI pipeline on any existing story to replace all content and assets with a fresh generation
 - **Asset library** — generated images, graphics, and video stored and browsable
 - **Content review** — staff can approve or flag each AI-generated content piece before packaging
 - **Package delivery** — all content bundled into a downloadable package with shareable link
@@ -30,7 +32,10 @@ AI-powered success story production product for the Canopy platform.
 Each school workspace adds its own API keys in Settings:
 
 - **OpenAI API key** — powers all content generation (required; pipeline produces plain-text fallback if not set)
-- **Video generation API key** — supports JSON2Video and Creatomate (optional; skipped if not set)
+- **Video generation API key** — Creatomate API key (optional; skipped if not set)
+- **Video provider** — `creatomate` (default) or `json2video` (legacy)
+- **Video template ID** — Creatomate template ID for 15-second vertical story video (variables: Name, Highlight 1, Highlight 2, Highlight 3, Photo)
+- **Highlight card template ID** — Creatomate template ID for 1:1 social share card (variables: Name, Quote, Photo)
 - **Package ready notification email** — address that receives delivery notifications
 
 > Each workspace's pipeline runs exclusively with that workspace's own keys. No shared or system-level API keys are used.
@@ -79,7 +84,7 @@ STORIES_EMAIL_FROM=Canopy Stories <notifications@usecanopy.school>
 NEXT_PUBLIC_APP_URL=https://canopy-stories.vercel.app
 ```
 
-> **Note**: OpenAI and video API keys are now stored per-workspace in the database (Settings page), not in environment variables. The env-level `OPENAI_API_KEY` and `VIDEO_API_KEY` are only used as system-level fallbacks.
+> **Note**: OpenAI and video API keys are stored per-workspace in the `workspace_api_keys` table (Settings page), not in environment variables.
 
 ## Database
 

@@ -20,7 +20,8 @@ All three repos share one Supabase project.
 - **Styling**: Tailwind CSS v4
 - **Auth/DB**: Supabase (shared project with canopy-platform and photovault)
 - **AI**: OpenAI (content generation — blog, social, newsletter, press release)
-- **Video**: JSON2Video API (15-second short-form video generation)
+- **Video/graphics**: Creatomate API (default — 15-second vertical video + 1:1 highlight card); JSON2Video retained as legacy fallback
+- **Markdown rendering**: `react-markdown` (used in package and story detail pages)
 - **Design system**: `@canopy/ui` (vendored into `vendor/`)
 - **Deployment**: Vercel
 
@@ -76,6 +77,7 @@ canopy-stories/
 | `GET/POST /api/stories` | List / create stories |
 | `GET /api/stories/[id]` | Story detail |
 | `POST /api/stories/create` | Manual story creation |
+| `POST /api/stories/[id]/regenerate` | Clear and re-run the full automation pipeline for an existing story |
 | `GET/POST /api/content` | Content item operations |
 | `GET/POST /api/assets` | Asset operations |
 | `GET/POST /api/packages` | Package operations |
@@ -142,12 +144,19 @@ When a form is submitted:
 1. `story_submissions` row created
 2. `createStoryFromSubmission()` creates a `story_records` row
 3. `buildStoryArtifacts()` in `stories-automation.ts` runs the pipeline:
-   - Extracts story background from submission data
-   - Calls OpenAI to generate: blog post, newsletter feature, social posts (4 platforms), press release
-   - Calls JSON2Video API for 15-second vertical video
-   - Creates `story_content_items` and `story_assets` rows
+   - Builds form context using field label mapping (skips contact/media fields)
+   - Applies per-story-type system prompt from `getStoryTypeContext()` (7 types: ESL, HSD_GED, CTE, EMPLOYER, STAFF, PARTNER, OVERVIEW)
+   - Calls OpenAI to generate: blog post (600–900 words), newsletter feature, press release (AP style), social posts (Facebook, Instagram, Twitter/X, LinkedIn) — each with channel-specific format guidance
+   - Calls OpenAI to generate 3 video highlight lines (Setup → Achievement → Inspiration arc)
+   - Submits render to Creatomate API for 15-second vertical video and 1:1 highlight card image (in parallel)
+   - Polls Creatomate for up to 15s; stores render ID as placeholder if not yet complete
+   - Creates `story_content`, `story_assets` rows
    - Creates `story_packages` row with download bundle
    - Submission photos persist as storage refs and are signed when the app reads them back
+
+**Regeneration**: `rerunStoryAutomation()` in `stories-data.ts` deletes existing content, assets, and package then re-runs the full pipeline. Exposed via `POST /api/stories/[id]/regenerate` and a "Regenerate story" button on the story detail page.
+
+**Workspace scoping for platform operators**: `/api/app-session` always returns a workspace. The shell redirects super admins to `?workspace=<slug>` if the param is absent, ensuring all server-side data queries are scoped correctly.
 
 ## Architecture Rules
 
@@ -180,8 +189,12 @@ NEXT_PUBLIC_SUPABASE_URL=
 NEXT_PUBLIC_SUPABASE_ANON_KEY=
 SUPABASE_SERVICE_ROLE_KEY=
 DATABASE_URL=
-OPENAI_API_KEY=
-VIDEO_API_KEY=
-VIDEO_API_PROVIDER=json2video
 NEXT_PUBLIC_PORTAL_URL=https://usecanopy.school
+
+# Email notifications (optional — silent fallback if not set)
+RESEND_API_KEY=
+STORIES_EMAIL_FROM=Canopy Stories <notifications@usecanopy.school>
+NEXT_PUBLIC_APP_URL=https://canopy-stories.vercel.app
 ```
+
+> **Note**: OpenAI and video API keys are stored per-workspace in the `workspace_api_keys` table (Settings page), not in environment variables. The default video provider is Creatomate. JSON2Video is supported as a legacy provider.

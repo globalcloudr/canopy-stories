@@ -4,6 +4,35 @@ Append new sessions at the top. Do not overwrite history.
 
 ---
 
+## 2026-04-03 — Workspace scoping, data leak fix, regenerate story, markdown rendering
+
+### Super admin workspace redirect
+- `StoriesShell` now detects when a platform operator loads any page without `?workspace=` in the URL and immediately redirects to add it
+- Ensures all server-side data queries are scoped to the correct workspace from the first render
+- School users are excluded from the redirect (they only have one workspace; RLS protects them)
+
+### Data leak fix in `listSubmissionItems`
+- `story_records` query was missing a workspace filter — all story records from all workspaces were returned when no workspace slug was present
+- Added `workspace_id: eq.<workspaceIdFilter>` to the story_records query, matching the existing filter on submissions
+- A super admin landing without `?workspace=` could see stories from other schools in pipeline counts and dashboard stats
+
+### Regenerate story
+- New `rerunStoryAutomation()` in `lib/stories-data.ts` — deletes existing content, assets, and package then re-runs the full pipeline
+- New `POST /api/stories/[id]/regenerate` route — auth-gated, requires workspace access
+- `RegenerateButton` client component on the story detail page — shows inline confirmation before firing, refreshes page on completion
+- Allows staff to re-generate all AI content and video/card assets for any existing story
+
+### Markdown rendering
+- Added `react-markdown` dependency
+- New `MarkdownBody` component at `app/_components/markdown-body.tsx`
+- Blog posts, newsletter content, and press releases now render with proper headings, paragraphs, bold, lists, and blockquotes on both the package page and story detail page
+- Social posts remain plain text (no markdown formatting applied)
+
+### Verification
+- `npx tsc --noEmit` passed
+
+---
+
 ## 2026-04-03 — AI prompt quality improvement
 
 Rewrote the AI content generation prompts in `lib/stories-automation.ts` to produce publication-ready adult education content instead of generic outputs.
@@ -269,13 +298,15 @@ Canopy Stories is live at `https://canopy-stories.vercel.app` and in beta. The f
 
 - Full product rebuilt from the Replit reference implementation into a production Next.js app
 - Connected to shared Supabase project with workspace-scoped data model
-- AI pipeline (OpenAI) generating all content types on form submission
-- JSON2Video integration for 15-second video generation
+- AI pipeline (OpenAI) generating all content types on form submission with per-story-type system prompts and per-channel format guidance
+- Creatomate integration for 15-second vertical video and 1:1 highlight card image generation
 - Public intake form experience (no auth required for subjects)
 - Package assembly and delivery with shareable download links
 - Canopy portal launch integration hardened to a one-time handoff exchange
 - Server-authenticated workspace access enforced across the main Stories APIs
 - All predefined intake form templates implemented (ESL, CTE, Staff, Program Overview, Employer, Partner)
+- Regenerate story — staff can re-run full AI pipeline on any existing story
+- Markdown rendering for blog posts, press releases, and newsletter content in package and story detail views
 
 ## Open Items
 
@@ -284,7 +315,7 @@ Canopy Stories is live at `https://canopy-stories.vercel.app` and in beta. The f
 
 ### Medium priority
 - **Automated email delivery of form links** — currently staff copies and pastes the link manually; auto-send to subject is a planned improvement
-- **Branded video** — video generation uses plain branding; school logo and colors integration is planned
+- **Branded video** — Creatomate templates use plain branding; school logo and colors can be added to templates per workspace
 
 ### Low priority / future
 - Cross-product push to Canopy Community and Canopy Reach
