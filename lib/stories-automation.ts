@@ -297,9 +297,9 @@ async function generateVideoAsset(
 
     const modifications: Record<string, string> = {
       Name: subjectName,
-      "Highlight-1": highlights[0] ?? "",
-      "Highlight-2": highlights[1] ?? "",
-      "Highlight-3": highlights[2] ?? "",
+      "Highlight 1": highlights[0] ?? "",
+      "Highlight 2": highlights[1] ?? "",
+      "Highlight 3": highlights[2] ?? "",
     };
     if (imageUrl) modifications.Photo = imageUrl;
 

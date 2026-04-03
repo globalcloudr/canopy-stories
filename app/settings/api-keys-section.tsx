@@ -412,7 +412,7 @@ export function ApiKeysSection() {
           <div>
             <BodyText className="mb-1 text-[13px] font-medium">Video template ID</BodyText>
             <BodyText muted className="mb-1.5 text-[12px]">
-              15-second vertical story video (9:16). Variables: Name, Highlight-1, Highlight-2, Highlight-3, Photo.
+              15-second vertical story video (9:16). Variables: Name, Highlight 1, Highlight 2, Highlight 3, Photo.
             </BodyText>
             <Input
               type="text"
