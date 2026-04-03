@@ -29,10 +29,10 @@ export async function POST(request: Request) {
   try {
     const body = (await request.json()) as {
       workspaceId?: string;
-      openaiApiKey?: string;
-      videoApiKey?: string;
-      videoApiProvider?: string;
-      notificationEmail?: string;
+      openaiApiKey?: string | null;
+      videoApiKey?: string | null;
+      videoApiProvider?: string | null;
+      notificationEmail?: string | null;
     };
 
     if (!body.workspaceId?.trim()) {
