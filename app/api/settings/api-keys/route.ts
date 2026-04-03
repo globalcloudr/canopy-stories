@@ -17,7 +17,9 @@ export async function GET(request: Request) {
     return NextResponse.json({
       hasOpenaiKey: !!keys?.openaiApiKey,
       hasVideoKey: !!keys?.videoApiKey,
-      videoApiProvider: keys?.videoApiProvider ?? "json2video",
+      videoApiProvider: keys?.videoApiProvider ?? "creatomate",
+      videoTemplateId: keys?.videoTemplateId ?? null,
+      imageTemplateId: keys?.imageTemplateId ?? null,
       notificationEmail: keys?.notificationEmail ?? null,
     });
   } catch (error) {
@@ -32,6 +34,8 @@ export async function POST(request: Request) {
       openaiApiKey?: string | null;
       videoApiKey?: string | null;
       videoApiProvider?: string | null;
+      videoTemplateId?: string | null;
+      imageTemplateId?: string | null;
       notificationEmail?: string | null;
     };
 
@@ -44,6 +48,8 @@ export async function POST(request: Request) {
       openaiApiKey: body.openaiApiKey,
       videoApiKey: body.videoApiKey,
       videoApiProvider: body.videoApiProvider,
+      videoTemplateId: body.videoTemplateId,
+      imageTemplateId: body.imageTemplateId,
       notificationEmail: body.notificationEmail,
     });
 

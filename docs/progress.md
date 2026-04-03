@@ -4,6 +4,38 @@ Append new sessions at the top. Do not overwrite history.
 
 ---
 
+## 2026-04-02 — Creatomate video integration and highlight card
+
+Replaced json2video with Creatomate as the default video provider and added a highlight card image asset type.
+
+### Creatomate video (`generateVideoAsset`)
+- Submits a render to `POST https://api.creatomate.com/v1/renders` with the workspace's video template ID
+- Polls up to 15 seconds for fast-completing renders; if still rendering, stores the Creatomate render ID as a `[creatomate:<id>]` placeholder and marks the asset `queued`
+- Template variables: `Name`, `Highlight-1`, `Highlight-2`, `Highlight-3`, `Photo`
+- json2video kept as a named legacy fallback (`video_api_provider = 'json2video'`); new workspaces default to `creatomate`
+
+### Highlight card (`generateHighlightCard`)
+- New asset type: a 1080×1080 social share card generated from a separate Creatomate image template
+- Runs in parallel with video generation during `buildStoryArtifacts`
+- Template variables: `Name`, `Quote`, `Photo`
+- Appears in the story's asset library as a `graphic` asset alongside the video
+- Only generated when Creatomate is the active provider and an image template ID is configured
+
+### Settings UI
+- Added "Video provider settings" section to the API Keys settings page
+- Provider selector: Creatomate (default) or JSON2Video (legacy)
+- Template ID inputs for video template and highlight card template, with variable documentation
+- Saves independently from API key save/remove actions
+
+### Data layer
+- `WorkspaceApiKeys` type extended with `videoTemplateId` and `imageTemplateId`
+- `workspace_api_keys` table extended via SQL migration `cs-007`
+
+### Verification
+- `npx tsc --noEmit` passed
+
+---
+
 ## 2026-04-02 — Beta security hardening
 
 Pre-beta security review and hardening pass. Stories changes:

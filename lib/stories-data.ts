@@ -2416,6 +2416,8 @@ type WorkspaceApiKeyRow = {
   openai_api_key: string | null;
   video_api_key: string | null;
   video_api_provider: string | null;
+  video_template_id: string | null;
+  image_template_id: string | null;
   notification_email: string | null;
   updated_at: string;
 };
@@ -2424,6 +2426,8 @@ export type WorkspaceApiKeys = {
   openaiApiKey: string | null;
   videoApiKey: string | null;
   videoApiProvider: string | null;
+  videoTemplateId: string | null;
+  imageTemplateId: string | null;
   notificationEmail: string | null;
 };
 
@@ -2433,7 +2437,7 @@ export async function getWorkspaceApiKeys(workspaceId: string): Promise<Workspac
   const rows = await requestJsonOrEmpty<WorkspaceApiKeyRow[]>(
     "/rest/v1/workspace_api_keys",
     new URLSearchParams({
-      select: "id,workspace_id,openai_api_key,video_api_key,video_api_provider,notification_email,updated_at",
+      select: "id,workspace_id,openai_api_key,video_api_key,video_api_provider,video_template_id,image_template_id,notification_email,updated_at",
       workspace_id: `eq.${workspaceId}`,
       limit: "1",
     })
@@ -2444,6 +2448,8 @@ export async function getWorkspaceApiKeys(workspaceId: string): Promise<Workspac
     openaiApiKey: row.openai_api_key,
     videoApiKey: row.video_api_key,
     videoApiProvider: row.video_api_provider,
+    videoTemplateId: row.video_template_id,
+    imageTemplateId: row.image_template_id,
     notificationEmail: row.notification_email,
   };
 }
@@ -2462,6 +2468,8 @@ export async function upsertWorkspaceApiKeys(
   if (keys.openaiApiKey !== undefined) body.openai_api_key = keys.openaiApiKey || null;
   if (keys.videoApiKey !== undefined) body.video_api_key = keys.videoApiKey || null;
   if (keys.videoApiProvider !== undefined) body.video_api_provider = keys.videoApiProvider || null;
+  if (keys.videoTemplateId !== undefined) body.video_template_id = keys.videoTemplateId || null;
+  if (keys.imageTemplateId !== undefined) body.image_template_id = keys.imageTemplateId || null;
   if (keys.notificationEmail !== undefined) body.notification_email = keys.notificationEmail || null;
 
   const url = new URL("/rest/v1/workspace_api_keys", env.supabaseUrl);

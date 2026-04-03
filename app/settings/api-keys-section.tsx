@@ -9,6 +9,8 @@ type KeyStatus = {
   hasOpenaiKey: boolean;
   hasVideoKey: boolean;
   videoApiProvider: string;
+  videoTemplateId: string | null;
+  imageTemplateId: string | null;
   notificationEmail: string | null;
 };
 
@@ -125,11 +127,16 @@ export function ApiKeysSection() {
   const [status, setStatus] = useState<KeyStatus | null>(null);
   const [openaiKey, setOpenaiKey] = useState("");
   const [videoKey, setVideoKey] = useState("");
+  const [videoProvider, setVideoProvider] = useState("creatomate");
+  const [videoTemplateId, setVideoTemplateId] = useState("");
+  const [imageTemplateId, setImageTemplateId] = useState("");
   const [notificationEmail, setNotificationEmail] = useState("");
   const [savingKey, setSavingKey] = useState<"openai" | "video" | null>(null);
   const [savingEmail, setSavingEmail] = useState(false);
+  const [savingTemplates, setSavingTemplates] = useState(false);
   const [removingKey, setRemovingKey] = useState<"openai" | "video" | null>(null);
   const [saveMessage, setSaveMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
+  const [templateMessage, setTemplateMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
   const [keyFeedback, setKeyFeedback] = useState<
     Partial<Record<"openai" | "video", { type: "success" | "error"; text: string } | null>>
   >({});
@@ -145,10 +152,44 @@ export function ApiKeysSection() {
       .then((data) => {
         const s = data as KeyStatus;
         setStatus(s);
+        setVideoProvider(s.videoApiProvider ?? "creatomate");
+        setVideoTemplateId(s.videoTemplateId ?? "");
+        setImageTemplateId(s.imageTemplateId ?? "");
         setNotificationEmail(s.notificationEmail ?? "");
       })
       .catch(() => {});
   }, [workspaceId]);
+
+  async function handleSaveTemplates() {
+    if (!workspaceId) return;
+    setSavingTemplates(true);
+    setTemplateMessage(null);
+    try {
+      const res = await apiFetch("/api/settings/api-keys", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          workspaceId,
+          videoApiProvider: videoProvider,
+          videoTemplateId: videoTemplateId.trim() || null,
+          imageTemplateId: imageTemplateId.trim() || null,
+        }),
+      });
+      const payload = (await res.json()) as { ok?: boolean; error?: string };
+      if (!res.ok) throw new Error(payload.error ?? "Save failed.");
+      setStatus((prev) => prev ? {
+        ...prev,
+        videoApiProvider: videoProvider,
+        videoTemplateId: videoTemplateId.trim() || null,
+        imageTemplateId: imageTemplateId.trim() || null,
+      } : prev);
+      setTemplateMessage({ type: "success", text: "Video settings saved." });
+    } catch (err) {
+      setTemplateMessage({ type: "error", text: err instanceof Error ? err.message : "Save failed." });
+    } finally {
+      setSavingTemplates(false);
+    }
+  }
 
   async function handleSaveNotificationEmail() {
     if (!workspaceId) return;
@@ -172,7 +213,9 @@ export function ApiKeysSection() {
       setStatus((prev) => ({
         hasOpenaiKey: prev?.hasOpenaiKey ?? false,
         hasVideoKey: prev?.hasVideoKey ?? false,
-        videoApiProvider: prev?.videoApiProvider ?? "json2video",
+        videoApiProvider: prev?.videoApiProvider ?? "creatomate",
+        videoTemplateId: prev?.videoTemplateId ?? null,
+        imageTemplateId: prev?.imageTemplateId ?? null,
         notificationEmail: notificationEmail.trim() || null,
       }));
       setSaveMessage({ type: "success", text: "Notification email saved." });
@@ -216,7 +259,9 @@ export function ApiKeysSection() {
       setStatus((prev) => ({
         hasOpenaiKey: target === "openai" ? true : (prev?.hasOpenaiKey ?? false),
         hasVideoKey: target === "video" ? true : (prev?.hasVideoKey ?? false),
-        videoApiProvider: prev?.videoApiProvider ?? "json2video",
+        videoApiProvider: prev?.videoApiProvider ?? "creatomate",
+        videoTemplateId: prev?.videoTemplateId ?? null,
+        imageTemplateId: prev?.imageTemplateId ?? null,
         notificationEmail: prev?.notificationEmail ?? null,
       }));
       if (target === "openai") {
@@ -273,7 +318,9 @@ export function ApiKeysSection() {
       setStatus((prev) => ({
         hasOpenaiKey: target === "openai" ? false : (prev?.hasOpenaiKey ?? false),
         hasVideoKey: target === "video" ? false : (prev?.hasVideoKey ?? false),
-        videoApiProvider: prev?.videoApiProvider ?? "json2video",
+        videoApiProvider: prev?.videoApiProvider ?? "creatomate",
+        videoTemplateId: prev?.videoTemplateId ?? null,
+        imageTemplateId: prev?.imageTemplateId ?? null,
         notificationEmail: prev?.notificationEmail ?? null,
       }));
       if (target === "openai") {
@@ -344,6 +391,62 @@ export function ApiKeysSection() {
         removing={removingKey === "video"}
         feedback={keyFeedback.video ?? null}
       />
+
+      <div className="py-4">
+        <CardTitle className="text-base">Video provider settings</CardTitle>
+        <BodyText muted className="mt-1 text-[13px]">
+          Configure your Creatomate templates. Create templates in your Creatomate dashboard, then paste the template IDs here.
+        </BodyText>
+        <div className="mt-3 space-y-3">
+          <div>
+            <BodyText className="mb-1 text-[13px] font-medium">Provider</BodyText>
+            <select
+              value={videoProvider}
+              onChange={(e) => setVideoProvider(e.target.value)}
+              className="rounded-md border border-[var(--border)] bg-white px-3 py-1.5 text-[13px] text-[var(--text)] focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="creatomate">Creatomate</option>
+              <option value="json2video">JSON2Video (legacy)</option>
+            </select>
+          </div>
+          <div>
+            <BodyText className="mb-1 text-[13px] font-medium">Video template ID</BodyText>
+            <BodyText muted className="mb-1.5 text-[12px]">
+              15-second vertical story video (9:16). Variables: Name, Highlight-1, Highlight-2, Highlight-3, Photo.
+            </BodyText>
+            <Input
+              type="text"
+              placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+              value={videoTemplateId}
+              onChange={(e) => setVideoTemplateId(e.target.value)}
+              className="max-w-sm font-mono text-[13px]"
+            />
+          </div>
+          <div>
+            <BodyText className="mb-1 text-[13px] font-medium">Highlight card template ID</BodyText>
+            <BodyText muted className="mb-1.5 text-[12px]">
+              1:1 social share card. Variables: Name, Quote, Photo.
+            </BodyText>
+            <Input
+              type="text"
+              placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+              value={imageTemplateId}
+              onChange={(e) => setImageTemplateId(e.target.value)}
+              className="max-w-sm font-mono text-[13px]"
+            />
+          </div>
+        </div>
+        <div className="mt-3 flex items-center gap-3">
+          <Button variant="primary" size="sm" onClick={handleSaveTemplates} disabled={savingTemplates}>
+            {savingTemplates ? "Saving…" : "Save video settings"}
+          </Button>
+          {templateMessage ? (
+            <BodyText className={`text-[12px] ${templateMessage.type === "success" ? "text-emerald-700" : "text-rose-600"}`}>
+              {templateMessage.text}
+            </BodyText>
+          ) : null}
+        </div>
+      </div>
 
       <div className="flex items-center justify-between gap-4 py-4">
         {saveMessage ? (

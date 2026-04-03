@@ -210,13 +210,73 @@ async function prepareVideoHighlights(input: StoryAutomationInput, openAiApiKey:
   return highlights.length > 0 ? highlights.slice(0, 5) : fallback;
 }
 
-async function generateVideoAsset(input: StoryAutomationInput, highlights: string[], videoApiKey: string, videoApiProvider: string): Promise<VideoGenerationResult> {
-  const apiKey = videoApiKey;
-  const provider = videoApiProvider || "json2video";
+type CreatomateRender = {
+  id: string;
+  status: string;
+  url?: string;
+  snapshot_url?: string;
+};
+
+async function pollCreatomateRender(
+  apiKey: string,
+  renderId: string,
+  maxWaitMs: number
+): Promise<CreatomateRender | null> {
+  const interval = 3000;
+  const attempts = Math.ceil(maxWaitMs / interval);
+  for (let i = 0; i < attempts; i++) {
+    await new Promise<void>((resolve) => setTimeout(resolve, interval));
+    try {
+      const res = await fetch(`https://api.creatomate.com/v1/renders/${renderId}`, {
+        headers: { Authorization: `ApiKey ${apiKey}` },
+      });
+      if (!res.ok) break;
+      const render = (await res.json()) as CreatomateRender;
+      if (render.status === "done" || render.status === "failed") {
+        return render;
+      }
+    } catch {
+      break;
+    }
+  }
+  return null;
+}
+
+async function submitCreatomateRender(
+  apiKey: string,
+  templateId: string,
+  modifications: Record<string, string>
+): Promise<CreatomateRender | null> {
+  try {
+    const res = await fetch("https://api.creatomate.com/v1/renders", {
+      method: "POST",
+      headers: {
+        Authorization: `ApiKey ${apiKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ template_id: templateId, modifications }),
+    });
+    if (!res.ok) return null;
+    const renders = (await res.json()) as CreatomateRender[];
+    return renders[0] ?? null;
+  } catch {
+    return null;
+  }
+}
+
+async function generateVideoAsset(
+  input: StoryAutomationInput,
+  highlights: string[],
+  videoApiKey: string,
+  videoApiProvider: string,
+  videoTemplateId: string
+): Promise<VideoGenerationResult> {
   const photoRef = getPhotoUrls(input.sourceData)[0] ?? null;
   const imageUrl = await resolveStoryMediaUrl(photoRef);
+  const subjectName = input.subjectName || "Student";
+  const provider = videoApiProvider || "creatomate";
 
-  if (!apiKey) {
+  if (!videoApiKey) {
     return {
       videoUrl: "[Video generation not configured]",
       thumbnailUrl: photoRef || "[Thumbnail not available]",
@@ -225,63 +285,26 @@ async function generateVideoAsset(input: StoryAutomationInput, highlights: strin
     };
   }
 
-  if (provider !== "json2video") {
-    return {
-      videoUrl: `[${provider} video generation not implemented yet]`,
-      thumbnailUrl: photoRef || "[Thumbnail not available]",
-      duration: 15,
-      status: "queued",
+  if (provider === "creatomate") {
+    if (!videoTemplateId) {
+      return {
+        videoUrl: "[Video template not configured — add a Creatomate video template ID in Settings]",
+        thumbnailUrl: photoRef || "[Thumbnail not available]",
+        duration: 15,
+        status: "queued",
+      };
+    }
+
+    const modifications: Record<string, string> = {
+      Name: subjectName,
+      "Highlight-1": highlights[0] ?? "",
+      "Highlight-2": highlights[1] ?? "",
+      "Highlight-3": highlights[2] ?? "",
     };
-  }
+    if (imageUrl) modifications.Photo = imageUrl;
 
-  try {
-    const scenes = highlights.map((highlight, index) => ({
-      "background-color": "#1e40af",
-      elements: [
-        ...(imageUrl && index === 0
-          ? [
-              {
-                type: "image",
-                src: imageUrl,
-                duration: 5,
-                start: 0,
-                width: 972,
-                height: 768,
-                top: 360,
-                left: 54,
-              },
-            ]
-          : []),
-        {
-          type: "text",
-          text: highlight,
-          duration: 5,
-          start: 0,
-          style: "003",
-          "font-size": 48,
-          color: "#ffffff",
-          "text-align": "center",
-          top: imageUrl && index === 0 ? 1360 : 900,
-          width: 918,
-          left: 81,
-        },
-      ],
-    }));
-
-    const response = await fetch("https://api.json2video.com/v2/movies", {
-      method: "POST",
-      headers: {
-        "x-api-key": apiKey,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        resolution: "instagram-story",
-        quality: "high",
-        scenes,
-      }),
-    });
-
-    if (!response.ok) {
+    const render = await submitCreatomateRender(videoApiKey, videoTemplateId, modifications);
+    if (!render) {
       return {
         videoUrl: "[Video generation failed]",
         thumbnailUrl: imageUrl || "[Thumbnail not available]",
@@ -290,28 +313,123 @@ async function generateVideoAsset(input: StoryAutomationInput, highlights: strin
       };
     }
 
-    const result = (await response.json()) as Record<string, unknown>;
-    const videoUrl =
-      (typeof result.movie_url === "string" && result.movie_url) ||
-      (typeof result.url === "string" && result.url) ||
-      "[Video URL unavailable]";
-    const thumbnailUrl =
-      (typeof result.thumbnail_url === "string" && result.thumbnail_url) || photoRef || "[Thumbnail not available]";
+    // Poll up to 15 seconds for fast-completing renders
+    const completed = render.status === "done" || render.status === "failed"
+      ? render
+      : await pollCreatomateRender(videoApiKey, render.id, 15000);
 
+    if (completed?.status === "done" && completed.url) {
+      return {
+        videoUrl: completed.url,
+        thumbnailUrl: completed.snapshot_url || imageUrl || "[Thumbnail not available]",
+        duration: 15,
+        status: "ready",
+      };
+    }
+
+    // Still rendering — store render ID so the asset can be resolved later
     return {
-      videoUrl,
-      thumbnailUrl,
+      videoUrl: `[creatomate:${render.id}]`,
+      thumbnailUrl: imageUrl || "[Thumbnail not available]",
       duration: 15,
-      status: videoUrl.startsWith("[") ? "failed" : "ready",
-    };
-  } catch {
-    return {
-      videoUrl: "[Video generation failed]",
-      thumbnailUrl: photoRef || "[Thumbnail not available]",
-      duration: 15,
-      status: "failed",
+      status: "queued",
     };
   }
+
+  // Legacy json2video fallback
+  if (provider === "json2video") {
+    try {
+      const scenes = highlights.map((highlight, index) => ({
+        "background-color": "#1e40af",
+        elements: [
+          ...(imageUrl && index === 0
+            ? [{ type: "image", src: imageUrl, duration: 5, start: 0, width: 972, height: 768, top: 360, left: 54 }]
+            : []),
+          {
+            type: "text",
+            text: highlight,
+            duration: 5,
+            start: 0,
+            style: "003",
+            "font-size": 48,
+            color: "#ffffff",
+            "text-align": "center",
+            top: imageUrl && index === 0 ? 1360 : 900,
+            width: 918,
+            left: 81,
+          },
+        ],
+      }));
+
+      const response = await fetch("https://api.json2video.com/v2/movies", {
+        method: "POST",
+        headers: { "x-api-key": videoApiKey, "Content-Type": "application/json" },
+        body: JSON.stringify({ resolution: "instagram-story", quality: "high", scenes }),
+      });
+
+      if (!response.ok) {
+        return { videoUrl: "[Video generation failed]", thumbnailUrl: imageUrl || "[Thumbnail not available]", duration: 15, status: "failed" };
+      }
+
+      const result = (await response.json()) as Record<string, unknown>;
+      const videoUrl =
+        (typeof result.movie_url === "string" && result.movie_url) ||
+        (typeof result.url === "string" && result.url) ||
+        "[Video URL unavailable]";
+      const thumbnailUrl =
+        (typeof result.thumbnail_url === "string" && result.thumbnail_url) || photoRef || "[Thumbnail not available]";
+      return { videoUrl, thumbnailUrl, duration: 15, status: videoUrl.startsWith("[") ? "failed" : "ready" };
+    } catch {
+      return { videoUrl: "[Video generation failed]", thumbnailUrl: photoRef || "[Thumbnail not available]", duration: 15, status: "failed" };
+    }
+  }
+
+  return {
+    videoUrl: `[${provider} video generation not supported]`,
+    thumbnailUrl: photoRef || "[Thumbnail not available]",
+    duration: 15,
+    status: "queued",
+  };
+}
+
+type HighlightCardResult = {
+  imageUrl: string;
+  status: "ready" | "queued" | "failed";
+};
+
+async function generateHighlightCard(
+  input: StoryAutomationInput,
+  highlights: string[],
+  videoApiKey: string,
+  videoApiProvider: string,
+  imageTemplateId: string
+): Promise<HighlightCardResult | null> {
+  if (!videoApiKey || (videoApiProvider || "creatomate") !== "creatomate" || !imageTemplateId) {
+    return null;
+  }
+
+  const photoRef = getPhotoUrls(input.sourceData)[0] ?? null;
+  const imageUrl = await resolveStoryMediaUrl(photoRef);
+  const subjectName = input.subjectName || "Student";
+
+  const modifications: Record<string, string> = {
+    Name: subjectName,
+    Quote: highlights[0] ?? "",
+  };
+  if (imageUrl) modifications.Photo = imageUrl;
+
+  const render = await submitCreatomateRender(videoApiKey, imageTemplateId, modifications);
+  if (!render) return { imageUrl: "[Highlight card generation failed]", status: "failed" };
+
+  const completed = render.status === "done" || render.status === "failed"
+    ? render
+    : await pollCreatomateRender(videoApiKey, render.id, 10000);
+
+  if (completed?.status === "done" && completed.url) {
+    return { imageUrl: completed.url, status: "ready" };
+  }
+
+  return { imageUrl: `[creatomate:${render.id}]`, status: "queued" };
 }
 
 function createContentRecord(
@@ -340,11 +458,16 @@ export async function buildStoryArtifacts(input: StoryAutomationInput): Promise<
   const workspaceKeys = await getWorkspaceApiKeys(input.workspaceId);
   const openAiApiKey = workspaceKeys?.openaiApiKey ?? "";
   const videoApiKey = workspaceKeys?.videoApiKey ?? "";
-  const videoApiProvider = workspaceKeys?.videoApiProvider ?? "json2video";
+  const videoApiProvider = workspaceKeys?.videoApiProvider ?? "creatomate";
+  const videoTemplateId = workspaceKeys?.videoTemplateId ?? "";
+  const imageTemplateId = workspaceKeys?.imageTemplateId ?? "";
 
   const textContent = await generateTextContent(input, openAiApiKey);
   const highlights = await prepareVideoHighlights(input, openAiApiKey);
-  const video = await generateVideoAsset(input, highlights, videoApiKey, videoApiProvider);
+  const [video, highlightCard] = await Promise.all([
+    generateVideoAsset(input, highlights, videoApiKey, videoApiProvider, videoTemplateId),
+    generateHighlightCard(input, highlights, videoApiKey, videoApiProvider, imageTemplateId),
+  ]);
   const photoUrls = getPhotoUrls(input.sourceData);
 
   const contents: Array<Omit<StoryContentRecord, "id" | "generatedAt">> = [
@@ -398,6 +521,21 @@ export async function buildStoryArtifacts(input: StoryAutomationInput): Promise<
       fileSize: null,
       status: video.status === "ready" ? "ready" : "queued",
       metadata: { generated: true },
+    });
+  }
+
+  if (highlightCard && !highlightCard.imageUrl.startsWith("[")) {
+    assets.push({
+      workspaceId: input.workspaceId,
+      storyId: input.storyId,
+      assetType: "graphic",
+      fileName: `${subjectName.toLowerCase().replace(/[^a-z0-9]+/g, "-") || "story"}-highlight-card.jpg`,
+      fileUrl: highlightCard.imageUrl,
+      platform: "social",
+      dimensions: "1080x1080",
+      fileSize: null,
+      status: highlightCard.status,
+      metadata: { generated: true, type: "highlight_card" },
     });
   }
 
