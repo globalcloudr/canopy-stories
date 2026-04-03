@@ -2465,6 +2465,7 @@ export async function upsertWorkspaceApiKeys(
   if (keys.notificationEmail !== undefined) body.notification_email = keys.notificationEmail || null;
 
   const url = new URL("/rest/v1/workspace_api_keys", env.supabaseUrl);
+  url.searchParams.set("on_conflict", "workspace_id");
   const res = await fetch(url.toString(), {
     method: "POST",
     headers: {
