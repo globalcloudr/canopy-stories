@@ -1,10 +1,12 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Badge, BodyText, Button, Card, CardTitle, FieldLabel, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@canopy/ui";
 import { apiFetch } from "@/lib/api-client";
 import type { LiveProjectOption } from "@/lib/stories-data";
 import { referenceIntakeTemplates } from "@/lib/reference-form-templates";
+import { buildWorkspaceHref } from "@/lib/workspace-href";
 
 type CreateFormPanelProps = {
   projects: LiveProjectOption[];
@@ -17,6 +19,9 @@ type CreateState =
   | { type: "error"; message: string };
 
 export function CreateFormPanel({ projects }: CreateFormPanelProps) {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const workspaceSlug = searchParams.get("workspace")?.trim() || null;
   const [projectId, setProjectId] = useState<string>("");
   const [templateId, setTemplateId] = useState<string>("");
   const [state, setState] = useState<CreateState>({ type: "idle" });
@@ -52,7 +57,8 @@ export function CreateFormPanel({ projects }: CreateFormPanelProps) {
       }
 
       setState({ type: "success", message: payload.message || "Form created from reference template." });
-      window.location.reload();
+      router.push(buildWorkspaceHref("/forms", workspaceSlug));
+      router.refresh();
     } catch (error) {
       setState({
         type: "error",

@@ -1,11 +1,12 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { BodyText, Button, Card, CardTitle } from "@canopy/ui";
 import { apiFetch } from "@/lib/api-client";
 import type { LiveProjectOption } from "@/lib/stories-data";
 import { storyTypes } from "@/lib/stories-schema";
+import { buildWorkspaceHref } from "@/lib/workspace-href";
 
 type StoryCreatorFormProps = {
   projectOptions: LiveProjectOption[];
@@ -13,6 +14,8 @@ type StoryCreatorFormProps = {
 
 export function StoryCreatorForm({ projectOptions }: StoryCreatorFormProps) {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const workspaceSlug = searchParams.get("workspace")?.trim() || null;
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const [form, setForm] = useState({
@@ -43,7 +46,7 @@ export function StoryCreatorForm({ projectOptions }: StoryCreatorFormProps) {
         return;
       }
 
-      router.push(`/stories/${payload.storyId}`);
+      router.push(buildWorkspaceHref(`/stories/${payload.storyId}`, workspaceSlug));
       router.refresh();
     });
   }
@@ -133,7 +136,7 @@ export function StoryCreatorForm({ projectOptions }: StoryCreatorFormProps) {
         <Button type="submit" variant="primary" disabled={isPending || projectOptions.length === 0}>
           {isPending ? "Creating story..." : "Create Story"}
         </Button>
-        <Button type="button" variant="secondary" onClick={() => router.push("/stories")}>
+        <Button type="button" variant="secondary" onClick={() => router.push(buildWorkspaceHref("/stories", workspaceSlug))}>
           Cancel
         </Button>
       </div>

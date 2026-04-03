@@ -559,7 +559,12 @@ export function ProjectsClient({ initial }: { initial: FlatProject[] }) {
           <DialogFooter>
             <Button
               variant="primary"
-              onClick={() => { setStep3Open(false); router.push(`/projects/${wizardProjectId}`); }}
+              onClick={() => {
+                setStep3Open(false);
+                if (wizardProjectId) {
+                  router.push(buildWorkspaceHref(`/projects/${wizardProjectId}`, workspaceSlug));
+                }
+              }}
             >
               Go to project
             </Button>
