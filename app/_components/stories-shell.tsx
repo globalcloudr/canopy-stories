@@ -164,6 +164,15 @@ function navClass(active: boolean) {
   );
 }
 
+function withWorkspaceContext(path: string, workspaceSlug?: string | null, isPlatformOperator = false) {
+  if (!isPlatformOperator || !workspaceSlug) {
+    return path;
+  }
+
+  const params = new URLSearchParams({ workspace: workspaceSlug });
+  return `${path}?${params.toString()}`;
+}
+
 // ─── Main shell ───────────────────────────────────────────────────────────────
 
 export function StoriesShell({
@@ -457,7 +466,7 @@ export function StoriesShell({
       ? [{ key: "reach_canopy", label: "Canopy Reach", productKey: "reach_canopy" as const }]
       : []),
     ...(launcherProductKeys.includes("stories_canopy")
-      ? [{ key: "stories_canopy", label: "Canopy Stories", href: "/", current: true }]
+      ? [{ key: "stories_canopy", label: "Canopy Stories", href: withWorkspaceContext("/", activeOrg?.slug, isPlatformOperator), current: true }]
       : []),
   ];
 
@@ -579,7 +588,11 @@ export function StoriesShell({
                   {navItems.map((item) => {
                     const Icon = item.icon;
                     return (
-                      <Link key={item.key} href={item.href} className={navClass(activeNav === item.key)}>
+                      <Link
+                        key={item.key}
+                        href={withWorkspaceContext(item.href, activeOrg?.slug, isPlatformOperator)}
+                        className={navClass(activeNav === item.key)}
+                      >
                         <Icon className="h-[18px] w-[18px]" />
                         <span>{item.label}</span>
                       </Link>
