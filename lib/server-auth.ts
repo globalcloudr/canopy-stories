@@ -218,8 +218,6 @@ export function toErrorResponse(err: unknown, fallbackMessage: string) {
     return NextResponse.json({ error: err.message }, { status: err.status });
   }
 
-  return NextResponse.json(
-    { error: err instanceof Error ? err.message : fallbackMessage },
-    { status: 500 }
-  );
+  console.error(err);
+  return NextResponse.json({ error: fallbackMessage }, { status: 500 });
 }
