@@ -19,6 +19,8 @@ function MaskedKeyField({
   value,
   onChange,
   placeholder,
+  onRemove,
+  removing = false,
 }: {
   label: string;
   description: string;
@@ -26,6 +28,8 @@ function MaskedKeyField({
   value: string;
   onChange: (v: string) => void;
   placeholder: string;
+  onRemove: () => void;
+  removing?: boolean;
 }) {
   const [editing, setEditing] = useState(false);
 
@@ -54,16 +58,23 @@ function MaskedKeyField({
           </div>
         </div>
         <div className="shrink-0 pt-1">
-          <Button
-            variant="secondary"
-            size="sm"
-            onClick={() => {
-              if (editing) onChange("");
-              setEditing(!editing);
-            }}
-          >
-            {editing ? "Cancel" : isSet ? "Replace" : "Add key"}
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={() => {
+                if (editing) onChange("");
+                setEditing(!editing);
+              }}
+            >
+              {editing ? "Cancel" : isSet ? "Replace" : "Add key"}
+            </Button>
+            {isSet && !editing ? (
+              <Button variant="secondary" size="sm" onClick={onRemove} disabled={removing}>
+                {removing ? "Removing…" : "Remove"}
+              </Button>
+            ) : null}
+          </div>
         </div>
       </div>
     </div>
@@ -77,6 +88,7 @@ export function ApiKeysSection() {
   const [videoKey, setVideoKey] = useState("");
   const [notificationEmail, setNotificationEmail] = useState("");
   const [saving, setSaving] = useState(false);
+  const [removingKey, setRemovingKey] = useState<"openai" | "video" | null>(null);
   const [saveMessage, setSaveMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
 
   useEffect(() => {
@@ -133,6 +145,51 @@ export function ApiKeysSection() {
     }
   }
 
+  async function handleRemoveKey(target: "openai" | "video") {
+    if (!workspaceId) return;
+
+    setRemovingKey(target);
+    setSaveMessage(null);
+    try {
+      const body: {
+        workspaceId: string;
+        openaiApiKey?: null;
+        videoApiKey?: null;
+      } = { workspaceId };
+
+      if (target === "openai") {
+        body.openaiApiKey = null;
+      } else {
+        body.videoApiKey = null;
+      }
+
+      const res = await apiFetch("/api/settings/api-keys", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+      const payload = (await res.json()) as { ok?: boolean; error?: string };
+      if (!res.ok) throw new Error(payload.error ?? "Remove failed.");
+
+      setStatus((prev) => ({
+        hasOpenaiKey: target === "openai" ? false : (prev?.hasOpenaiKey ?? false),
+        hasVideoKey: target === "video" ? false : (prev?.hasVideoKey ?? false),
+        videoApiProvider: prev?.videoApiProvider ?? "json2video",
+        notificationEmail: prev?.notificationEmail ?? null,
+      }));
+      if (target === "openai") {
+        setOpenaiKey("");
+      } else {
+        setVideoKey("");
+      }
+      setSaveMessage({ type: "success", text: `${target === "openai" ? "OpenAI" : "Video"} API key removed.` });
+    } catch (err) {
+      setSaveMessage({ type: "error", text: err instanceof Error ? err.message : "Remove failed." });
+    } finally {
+      setRemovingKey(null);
+    }
+  }
+
   const hasChanges =
     openaiKey.trim().length > 0 ||
     videoKey.trim().length > 0 ||
@@ -163,6 +220,8 @@ export function ApiKeysSection() {
         value={openaiKey}
         onChange={setOpenaiKey}
         placeholder="sk-..."
+        onRemove={() => void handleRemoveKey("openai")}
+        removing={removingKey === "openai"}
       />
       <MaskedKeyField
         label="Video generation API key"
@@ -171,6 +230,8 @@ export function ApiKeysSection() {
         value={videoKey}
         onChange={setVideoKey}
         placeholder="Your video API key"
+        onRemove={() => void handleRemoveKey("video")}
+        removing={removingKey === "video"}
       />
 
       <div className="flex items-center justify-between gap-4 py-4">
