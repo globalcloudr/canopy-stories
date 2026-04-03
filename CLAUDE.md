@@ -127,6 +127,11 @@ StoryAssetType: "image" | "graphic" | "video" | "document"
 **Switcher flow**:
 - in-app product switching submits back to Portal through `POST /auth/product-launch`
 - returning to Portal submits through `POST /auth/portal-return`
+
+**Workspace behavior**:
+- `/api/app-session` should only return workspaces where `stories_canopy` is actually enabled
+- platform operators should keep `?workspace=<slug>` throughout in-app navigation
+- dashboard, projects, stories, forms, submissions, assets, and detail links should all preserve the selected workspace context
 - Portal restores its own cookies and issues the next redirect using `303` semantics so the destination app receives a normal `GET`
 
 **Environment variable for portal URL**: `NEXT_PUBLIC_PORTAL_URL` (default: `https://usecanopy.school`)

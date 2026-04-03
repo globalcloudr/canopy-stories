@@ -42,6 +42,8 @@ Each school workspace adds its own API keys in Settings:
 - Product key: `stories_canopy`
 - Main Stories APIs now enforce authenticated workspace access server-side
 - In-app product switching and Portal return route back through Portal handoff endpoints so cross-product navigation restores the correct workspace/session state
+- Stories now filters in-app workspace options to schools where `stories_canopy` is actually enabled
+- Internal Stories navigation preserves `?workspace=<slug>` for platform operators so dashboard, projects, stories, forms, submissions, assets, and detail pages stay in the selected school
 - Submission photos now persist as private storage refs and are signed on read; older public bucket URLs are still supported during the transition
 
 ## What Is Not Done Yet

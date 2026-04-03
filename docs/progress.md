@@ -4,6 +4,21 @@ Append new sessions at the top. Do not overwrite history.
 
 ---
 
+## 2026-04-02 — Workspace-context and entitlement-gating stabilization
+
+### What was done
+
+- Tightened Stories app-session resolution so platform operators only see workspaces where `stories_canopy` is actually enabled
+- Hardened launcher-product resolution to merge entitlement rows across `organization_id`, `org_id`, and `workspace_id` instead of stopping early on partial legacy data
+- Added shared workspace-aware link building so dashboard, projects, stories, forms, submissions, assets, and detail pages preserve `?workspace=<slug>` during in-app navigation
+- Fixed Super Admin flows where opening a story, moving between nav items, or creating follow-on records could silently fall back to the first workspace
+
+### Verification
+
+- `npm run build` passed in `canopy-stories`
+
+---
+
 ## 2026-04-02 — Private submission media and signed URL hardening
 
 ### What was done
