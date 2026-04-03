@@ -4,6 +4,32 @@ Append new sessions at the top. Do not overwrite history.
 
 ---
 
+## 2026-04-02 — Beta security hardening
+
+Pre-beta security review and hardening pass. Stories changes:
+
+### Auth guard on `/api/content`
+- Added authentication and workspace access check to the content listing endpoint
+- Previously unauthenticated callers could retrieve story content for any story ID
+- Now looks up the story's workspace and calls `requireWorkspaceAccess` before returning content
+- File: `app/api/content/route.ts`
+
+### Rate limiting on public form submission
+- Added IP-based rate limiting to `POST /api/forms/[id]/submit` (10 submissions per form per IP per hour)
+- IP is SHA-256 hashed before storage — raw IPs are never persisted
+- Backed by a new Supabase table: `form_submission_rate_limits`
+- Added SQL migration: `docs/sql/2026-04-02-cs-006-form-submission-rate-limits.sql`
+- Protects against bots driving up OpenAI/video API costs and spamming the submission pipeline
+
+### Error message sanitization
+- Fixed `toErrorResponse` in `lib/server-auth.ts` — non-auth errors now return the fallback message instead of `err.message`, and log the full error server-side
+- This covers all routes that use `toErrorResponse`
+
+### Verification
+- `npx tsc --noEmit` passed
+
+---
+
 ## 2026-04-02 — Workspace-context and entitlement-gating stabilization
 
 ### What was done
