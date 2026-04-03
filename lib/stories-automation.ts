@@ -82,7 +82,7 @@ function toPromptFields(sourceData: Record<string, unknown> | null) {
 
 async function requestOpenAi(system: string, user: string, json = false, apiKey = "") {
   if (!apiKey) {
-    return null;
+    throw new Error("OpenAI API key is not configured for this workspace.");
   }
 
   const response = await fetch(`${openAiBaseUrl.replace(/\/$/, "")}/chat/completions`, {
@@ -122,71 +122,64 @@ async function generateTextContent(input: StoryAutomationInput, openAiApiKey: st
   const subjectName = input.subjectName || "Student";
   const background = getStoryBackground(input.sourceData);
   const detailBlock = toPromptFields(input.sourceData);
+  const [blogPost, socialJson, newsletter, pressRelease] = await Promise.all([
+    requestOpenAi(
+      "You write compelling adult-education success stories in markdown.",
+      `Write a blog feature for this story.\n\nTitle: ${input.title}\nSubject: ${subjectName}\nType: ${input.storyType}\nBackground: ${background}\n\nForm details:\n${detailBlock}`,
+      false, openAiApiKey
+    ),
+    requestOpenAi(
+      "You generate concise social copy for adult education marketing. Return valid JSON.",
+      `Return JSON with keys facebook, instagram, twitter, linkedin for this story.\n\nTitle: ${input.title}\nSubject: ${subjectName}\nType: ${input.storyType}\nBackground: ${background}\n\nForm details:\n${detailBlock}`,
+      true, openAiApiKey
+    ),
+    requestOpenAi(
+      "You write newsletter copy for adult education programs.",
+      `Write a newsletter section for this story.\n\nTitle: ${input.title}\nSubject: ${subjectName}\nType: ${input.storyType}\nBackground: ${background}\n\nForm details:\n${detailBlock}`,
+      false, openAiApiKey
+    ),
+    requestOpenAi(
+      "You write formal education press releases in markdown.",
+      `Write a short press release for this story.\n\nTitle: ${input.title}\nSubject: ${subjectName}\nType: ${input.storyType}\nBackground: ${background}\n\nForm details:\n${detailBlock}`,
+      false, openAiApiKey
+    ),
+  ]);
 
-  const fallback = {
-    blogPost: `# ${input.title}\n\n${subjectName} shared a ${input.storyType.replace(/_/g, " ").toLowerCase()} story through Canopy Stories.\n\n${background || "This story submission is ready for editorial review."}\n\n## Highlights\n\n${detailBlock}`,
-    socialPosts: {
-      facebook: `${subjectName}'s story is now in production for ${input.storyType.replace(/_/g, "/")}.`,
-      instagram: `${subjectName}'s story is moving through the Canopy Stories pipeline. #AdultEducation #SuccessStory`,
-      twitter: `${subjectName}'s story is now in production. #AdultEducation #SuccessStory`,
-      linkedin: `${subjectName}'s success story has entered production in Canopy Stories.`,
-    },
-    newsletter: `${subjectName}'s story has entered the production pipeline. ${background || "Editors can now review and refine the generated draft."}`,
-    pressRelease: `${subjectName}'s story is being prepared as a formal success-story package for distribution.`,
-  };
-
-  if (!openAiApiKey) {
-    return fallback;
+  if (!blogPost?.trim() || !newsletter?.trim() || !pressRelease?.trim()) {
+    throw new Error("OpenAI returned empty content for one or more generated drafts.");
   }
 
+  if (!socialJson?.trim()) {
+    throw new Error("OpenAI returned empty social copy.");
+  }
+
+  let parsedSocial: Record<string, string>;
   try {
-    const [blogPost, socialJson, newsletter, pressRelease] = await Promise.all([
-      requestOpenAi(
-        "You write compelling adult-education success stories in markdown.",
-        `Write a blog feature for this story.\n\nTitle: ${input.title}\nSubject: ${subjectName}\nType: ${input.storyType}\nBackground: ${background}\n\nForm details:\n${detailBlock}`,
-        false, openAiApiKey
-      ),
-      requestOpenAi(
-        "You generate concise social copy for adult education marketing. Return valid JSON.",
-        `Return JSON with keys facebook, instagram, twitter, linkedin for this story.\n\nTitle: ${input.title}\nSubject: ${subjectName}\nType: ${input.storyType}\nBackground: ${background}\n\nForm details:\n${detailBlock}`,
-        true, openAiApiKey
-      ),
-      requestOpenAi(
-        "You write newsletter copy for adult education programs.",
-        `Write a newsletter section for this story.\n\nTitle: ${input.title}\nSubject: ${subjectName}\nType: ${input.storyType}\nBackground: ${background}\n\nForm details:\n${detailBlock}`,
-        false, openAiApiKey
-      ),
-      requestOpenAi(
-        "You write formal education press releases in markdown.",
-        `Write a short press release for this story.\n\nTitle: ${input.title}\nSubject: ${subjectName}\nType: ${input.storyType}\nBackground: ${background}\n\nForm details:\n${detailBlock}`,
-        false, openAiApiKey
-      ),
-    ]);
-
-    let socialPosts = fallback.socialPosts;
-    if (socialJson) {
-      try {
-        const parsed = JSON.parse(socialJson) as Record<string, string>;
-        socialPosts = {
-          facebook: parsed.facebook || fallback.socialPosts.facebook,
-          instagram: parsed.instagram || fallback.socialPosts.instagram,
-          twitter: parsed.twitter || fallback.socialPosts.twitter,
-          linkedin: parsed.linkedin || fallback.socialPosts.linkedin,
-        };
-      } catch {
-        socialPosts = fallback.socialPosts;
-      }
-    }
-
-    return {
-      blogPost: blogPost || fallback.blogPost,
-      socialPosts,
-      newsletter: newsletter || fallback.newsletter,
-      pressRelease: pressRelease || fallback.pressRelease,
-    };
+    parsedSocial = JSON.parse(socialJson) as Record<string, string>;
   } catch {
-    return fallback;
+    throw new Error("OpenAI returned invalid JSON for social copy.");
   }
+
+  const facebook = parsedSocial.facebook?.trim();
+  const instagram = parsedSocial.instagram?.trim();
+  const twitter = parsedSocial.twitter?.trim();
+  const linkedin = parsedSocial.linkedin?.trim();
+
+  if (!facebook || !instagram || !twitter || !linkedin) {
+    throw new Error("OpenAI returned incomplete social copy.");
+  }
+
+  return {
+    blogPost,
+    socialPosts: {
+      facebook,
+      instagram,
+      twitter,
+      linkedin,
+    },
+    newsletter,
+    pressRelease,
+  };
 }
 
 async function prepareVideoHighlights(input: StoryAutomationInput, openAiApiKey: string) {
@@ -199,26 +192,22 @@ async function prepareVideoHighlights(input: StoryAutomationInput, openAiApiKey:
   ].slice(0, 3);
 
   if (!openAiApiKey) {
-    return fallback;
+    throw new Error("OpenAI API key is not configured for this workspace.");
   }
 
-  try {
-    const result = await requestOpenAi(
-      "You prepare short on-screen video highlight lines. Return valid JSON.",
-      `Return JSON with a 'highlights' array of 3 short lines for a vertical promo video.\n\nTitle: ${input.title}\nSubject: ${subjectName}\nType: ${input.storyType}\nBackground: ${background}\n\nForm details:\n${toPromptFields(input.sourceData)}`,
-      true, openAiApiKey
-    );
+  const result = await requestOpenAi(
+    "You prepare short on-screen video highlight lines. Return valid JSON.",
+    `Return JSON with a 'highlights' array of 3 short lines for a vertical promo video.\n\nTitle: ${input.title}\nSubject: ${subjectName}\nType: ${input.storyType}\nBackground: ${background}\n\nForm details:\n${toPromptFields(input.sourceData)}`,
+    true, openAiApiKey
+  );
 
-    if (!result) {
-      return fallback;
-    }
-
-    const parsed = JSON.parse(result) as { highlights?: string[] };
-    const highlights = parsed.highlights?.filter((item) => typeof item === "string" && item.trim().length > 0) ?? [];
-    return highlights.length > 0 ? highlights.slice(0, 5) : fallback;
-  } catch {
-    return fallback;
+  if (!result) {
+    throw new Error("OpenAI returned empty video highlight content.");
   }
+
+  const parsed = JSON.parse(result) as { highlights?: string[] };
+  const highlights = parsed.highlights?.filter((item) => typeof item === "string" && item.trim().length > 0) ?? [];
+  return highlights.length > 0 ? highlights.slice(0, 5) : fallback;
 }
 
 async function generateVideoAsset(input: StoryAutomationInput, highlights: string[], videoApiKey: string, videoApiProvider: string): Promise<VideoGenerationResult> {

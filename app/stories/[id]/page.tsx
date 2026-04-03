@@ -71,6 +71,12 @@ export default async function StoryDetailPage({ params, searchParams }: StoryDet
           <Badge variant="outline">{storyTypeLabel(snapshot.story.storyType)}</Badge>
           {snapshot.storyPackage ? <Badge variant="outline">{contentStatusLabel(snapshot.storyPackage.status) || snapshot.storyPackage.status}</Badge> : null}
         </div>
+        {snapshot.story.errorMessage ? (
+          <Card padding="sm" className="border border-rose-200 bg-rose-50 shadow-none">
+            <CardTitle className="text-rose-700">Automation needs attention</CardTitle>
+            <BodyText className="mt-2 text-rose-700">{snapshot.story.errorMessage}</BodyText>
+          </Card>
+        ) : null}
       </section>
 
       <section className="grid gap-4 md:grid-cols-3">
