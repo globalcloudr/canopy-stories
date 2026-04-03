@@ -53,8 +53,14 @@ function stageClass(stage: string) {
   return "border-indigo-200 bg-indigo-50 text-indigo-700";
 }
 
-export default async function HomePage() {
-  const overview = await getStoriesOverviewSnapshot();
+export default async function HomePage({
+  searchParams,
+}: {
+  searchParams?: Promise<{ workspace?: string | string[] }>;
+}) {
+  const params = searchParams ? await searchParams : undefined;
+  const workspaceSlug = typeof params?.workspace === "string" ? params.workspace.trim() || null : null;
+  const overview = await getStoriesOverviewSnapshot(workspaceSlug);
 
   return (
     <StoriesShell

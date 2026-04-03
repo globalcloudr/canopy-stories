@@ -12,8 +12,14 @@ function submissionStatusVariant(status: string): "sky" | "emerald" | "outline" 
   return "emerald";
 }
 
-export default async function SubmissionsPage() {
-  const items = await listSubmissionItems();
+export default async function SubmissionsPage({
+  searchParams,
+}: {
+  searchParams?: Promise<{ workspace?: string | string[] }>;
+}) {
+  const params = searchParams ? await searchParams : undefined;
+  const workspaceSlug = typeof params?.workspace === "string" ? params.workspace.trim() || null : null;
+  const items = await listSubmissionItems(workspaceSlug);
 
   return (
     <StoriesShell

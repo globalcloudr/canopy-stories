@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase-client";
 import { apiFetch } from "@/lib/api-client";
+import { useStoriesWorkspaceId } from "@/lib/workspace-client";
 import { referenceIntakeTemplates } from "@/lib/reference-form-templates";
 import Link from "next/link";
 import {
@@ -54,6 +55,7 @@ function formatDeadline(value: string | null) {
 
 export function ProjectsClient({ initial }: { initial: FlatProject[] }) {
   const router = useRouter();
+  const activeWorkspaceId = useStoriesWorkspaceId();
   const [projects, setProjects] = useState<FlatProject[]>(initial);
   const [orgs, setOrgs] = useState<Org[]>([]);
   const [search, setSearch] = useState("");
@@ -79,6 +81,10 @@ export function ProjectsClient({ initial }: { initial: FlatProject[] }) {
     storyCountTarget: "",
     deadlineAt: "",
   });
+
+  useEffect(() => {
+    setProjects(initial);
+  }, [initial]);
 
   // Load only the user's own orgs for the create dialog
   useEffect(() => {
@@ -116,17 +122,26 @@ export function ProjectsClient({ initial }: { initial: FlatProject[] }) {
         }
 
         setOrgs(loadedOrgs);
-        const stored = (() => { try { return window.localStorage.getItem("cs_active_org_id_v1"); } catch { return null; } })();
+        const stored = activeWorkspaceId ?? (() => { try { return window.localStorage.getItem("cs_active_org_id_v1"); } catch { return null; } })();
         const active = (stored && loadedOrgs.find((o) => o.id === stored)) ? stored : loadedOrgs.length === 1 ? loadedOrgs[0].id : "";
         if (active) setForm((f) => ({ ...f, workspaceId: active }));
       } catch { /* silent */ }
     }
     void loadOrgs();
-  }, []);
+  }, [activeWorkspaceId]);
+
+  useEffect(() => {
+    if (activeWorkspaceId) {
+      setForm((current) => ({ ...current, workspaceId: activeWorkspaceId }));
+    }
+  }, [activeWorkspaceId]);
 
   async function refreshProjects() {
     try {
-      const res = await apiFetch("/api/projects");
+      const target = activeWorkspaceId
+        ? `/api/projects?workspaceId=${encodeURIComponent(activeWorkspaceId)}`
+        : "/api/projects";
+      const res = await apiFetch(target);
       if (res.ok) setProjects(await res.json());
     } catch {}
   }

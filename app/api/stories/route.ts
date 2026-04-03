@@ -7,6 +7,7 @@ export async function GET(request: Request) {
     const access = await getRequestAccess(request);
     const { searchParams } = new URL(request.url);
     const projectId = searchParams.get("projectId");
+    const workspaceId = searchParams.get("workspaceId")?.trim() || null;
     if (projectId) {
       const project = await getFlatProjectById(projectId);
       if (!project) {
@@ -16,12 +17,20 @@ export async function GET(request: Request) {
       return NextResponse.json(await listStoriesForProject(projectId));
     }
 
+    if (workspaceId) {
+      await requireWorkspaceAccess(request, workspaceId);
+    }
+
     const stories = await listAllStoriesFlat();
     const allowedWorkspaceIds = access.isPlatformOperator
       ? null
       : new Set(access.memberships.map((membership) => membership.org_id));
+    const visibleStories = allowedWorkspaceIds
+      ? stories.filter((story) => allowedWorkspaceIds.has(story.workspaceId))
+      : stories;
+
     return NextResponse.json(
-      allowedWorkspaceIds ? stories.filter((story) => allowedWorkspaceIds.has(story.workspaceId)) : stories
+      workspaceId ? visibleStories.filter((story) => story.workspaceId === workspaceId) : visibleStories
     );
   } catch (error) {
     return toErrorResponse(error, "Failed to load stories.");

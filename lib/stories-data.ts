@@ -631,10 +631,24 @@ async function runStoryAutomation(story: StoryRecord) {
   }
 }
 
-export async function listProjectDashboard() {
+export async function listProjectDashboard(workspaceSlug?: string | null) {
   if (!isStoriesPersistenceEnabled()) {
+    const filteredProjects = workspaceSlug
+      ? sampleProjects.filter((project) => project.workspaceSlug === workspaceSlug)
+      : sampleProjects;
+    const workflowCounts = createEmptyWorkflowSummary();
+
+    for (const story of sampleStories) {
+      const matchesWorkspace =
+        !workspaceSlug ||
+        filteredProjects.some((project) => project.workspaceId === story.workspaceId);
+      if (matchesWorkspace) {
+        workflowCounts.set(story.currentStage, (workflowCounts.get(story.currentStage) ?? 0) + 1);
+      }
+    }
+
     return {
-      projects: sampleProjects.map((project) => ({
+      projects: filteredProjects.map((project) => ({
         id: project.id,
         workspaceId: project.workspaceId,
         workspaceSlug: project.workspaceSlug,
@@ -650,14 +664,30 @@ export async function listProjectDashboard() {
         deliveredStories: project.deliveredPackages,
         storyTypeMix: project.storyTypeMix,
       })),
-      workflow: sampleWorkflowSummaries,
+      workflow: sampleWorkflowSummaries.map((summary) => ({
+        ...summary,
+        count: workflowCounts.get(summary.stage) ?? 0,
+      })),
     };
+  }
+
+  let workspaceIdFilter: string | null = null;
+  if (workspaceSlug) {
+    const organizations = await getOrganizationsBySlugs([workspaceSlug]);
+    workspaceIdFilter = organizations[0]?.id ?? null;
+    if (!workspaceIdFilter) {
+      return {
+        projects: [] as ProjectDashboardItem[],
+        workflow: sampleWorkflowSummaries.map((summary) => ({ ...summary, count: 0 })),
+      };
+    }
   }
 
   const projects = await requestJson<StoryProjectRow[]>(
     "/rest/v1/story_projects",
     new URLSearchParams({
       select: "id,workspace_id,name,description,status,story_count_target,deadline_at,created_at,updated_at",
+      ...(workspaceIdFilter ? { workspace_id: `eq.${workspaceIdFilter}` } : {}),
       order: "updated_at.desc",
     })
   );
@@ -738,11 +768,11 @@ export async function listProjectDashboard() {
   };
 }
 
-export async function getStoriesOverviewSnapshot(): Promise<StoriesOverviewSnapshot> {
+export async function getStoriesOverviewSnapshot(workspaceSlug?: string | null): Promise<StoriesOverviewSnapshot> {
   const [{ projects, workflow }, submissions, forms] = await Promise.all([
-    listProjectDashboard(),
-    listSubmissionItems(),
-    listPublishedForms(),
+    listProjectDashboard(workspaceSlug),
+    listSubmissionItems(workspaceSlug),
+    listPublishedForms(workspaceSlug),
   ]);
 
   const storyCount = workflow.reduce((sum, item) => sum + item.count, 0);
@@ -893,9 +923,11 @@ export async function listPublishedForms(workspaceSlug?: string | null) {
   );
 }
 
-export async function listLiveProjectOptions() {
+export async function listLiveProjectOptions(workspaceSlug?: string | null) {
   if (!isStoriesPersistenceEnabled()) {
-    return sampleProjects.map((row) => ({
+    return sampleProjects
+      .filter((row) => !workspaceSlug || row.workspaceSlug === workspaceSlug)
+      .map((row) => ({
       id: `sample:${row.id}`,
       workspaceId: row.workspaceId,
       name: row.name,
@@ -923,8 +955,10 @@ export async function listLiveProjectOptions() {
 
   const existingKeys = new Set(liveOptions.map((row) => row.name));
   const workspaceBySlug = new Map(workspaces.map((workspace) => [workspace.slug ?? "", workspace]));
+  const targetWorkspaceId = workspaceSlug ? workspaceBySlug.get(workspaceSlug)?.id ?? null : null;
 
   const referenceOptions = sampleProjects
+    .filter((project) => !workspaceSlug || project.workspaceSlug === workspaceSlug)
     .filter((project) => !existingKeys.has(project.name))
     .filter((project) => workspaceBySlug.has(project.workspaceSlug))
     .map((project) => ({
@@ -934,7 +968,11 @@ export async function listLiveProjectOptions() {
       source: "reference" as const,
     }));
 
-  return [...liveOptions, ...referenceOptions];
+  const filteredLiveOptions = targetWorkspaceId
+    ? liveOptions.filter((row) => row.workspaceId === targetWorkspaceId)
+    : liveOptions;
+
+  return [...filteredLiveOptions, ...referenceOptions];
 }
 
 async function ensureLiveProject(projectId: string) {
@@ -1349,9 +1387,17 @@ export async function createStoryManually(input: ManualStoryCreationInput) {
   return storyRecord;
 }
 
-export async function listSubmissionItems() {
+export async function listSubmissionItems(workspaceSlug?: string | null) {
   if (!isStoriesPersistenceEnabled()) {
-    return sampleSubmissions.map((submission) => {
+    return sampleSubmissions
+      .filter((submission) => {
+        if (!workspaceSlug) {
+          return true;
+        }
+        const project = sampleProjects.find((item) => item.id === submission.projectId);
+        return project?.workspaceSlug === workspaceSlug;
+      })
+      .map((submission) => {
       const story = sampleStories.find((item) => item.submissionId === submission.id) ?? null;
       const project = sampleProjects.find((item) => item.id === submission.projectId);
       const form = getSamplePublishedFormById(submission.formId);
@@ -1364,7 +1410,16 @@ export async function listSubmissionItems() {
         workspaceName: project?.workspaceName ?? "Workspace",
         workspaceSlug: project?.workspaceSlug ?? "workspace",
       };
-    });
+      });
+  }
+
+  let workspaceIdFilter: string | null = null;
+  if (workspaceSlug) {
+    const organizations = await getOrganizationsBySlugs([workspaceSlug]);
+    workspaceIdFilter = organizations[0]?.id ?? null;
+    if (!workspaceIdFilter) {
+      return [];
+    }
   }
 
   const [submissions, stories] = await Promise.all([
@@ -1372,6 +1427,7 @@ export async function listSubmissionItems() {
       "/rest/v1/story_submissions",
       new URLSearchParams({
         select: "id,workspace_id,project_id,form_id,submitter_name,submitter_email,submission_data_json,photo_urls,status,submitted_at",
+        ...(workspaceIdFilter ? { workspace_id: `eq.${workspaceIdFilter}` } : {}),
         order: "submitted_at.desc",
       })
     ),

@@ -21,6 +21,7 @@ import {
   cn,
 } from "@canopy/ui";
 import { supabase } from "@/lib/supabase-client";
+import { writeStoredWorkspaceId } from "@/lib/workspace-client";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -47,7 +48,6 @@ type StoriesShellProps = {
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
-const ACTIVE_ORG_KEY = "cs_active_org_id_v1";
 const PORTAL_URL = process.env.NEXT_PUBLIC_PORTAL_URL ?? "https://usecanopy.school";
 
 async function waitForSessionTokens() {
@@ -162,10 +162,6 @@ function navClass(active: boolean) {
       ? "bg-white/82 text-[#172033] shadow-[0_10px_24px_rgba(35,74,144,0.08)]"
       : "text-[#506176] hover:bg-white/48 hover:text-[#172033]"
   );
-}
-
-function writeStoredOrgId(id: string) {
-  try { window.localStorage.setItem(ACTIVE_ORG_KEY, id); } catch { /* */ }
 }
 
 // ─── Main shell ───────────────────────────────────────────────────────────────
@@ -335,9 +331,7 @@ export function StoriesShell({
         setIsPlatformOperator(appSession.isPlatformOperator);
         setOrgs(appSession.workspaces);
         setActiveOrgIdState(appSession.activeWorkspace?.id ?? null);
-        if (appSession.activeWorkspace?.id) {
-          writeStoredOrgId(appSession.activeWorkspace.id);
-        }
+        writeStoredWorkspaceId(appSession.activeWorkspace?.id ?? null);
       } catch {
         // session not available — show unauthenticated state
       } finally {

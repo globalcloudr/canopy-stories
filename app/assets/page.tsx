@@ -6,6 +6,7 @@ import Link from "next/link";
 import { BodyText, Button, CardTitle, Input } from "@canopy/ui";
 import { StoriesShell } from "@/app/_components/stories-shell";
 import { apiFetchArray } from "@/lib/api-client";
+import { useStoriesWorkspaceId } from "@/lib/workspace-client";
 
 type Asset = {
   id: string;
@@ -23,16 +24,24 @@ type Asset = {
 const assetTypeFilters = ["all", "video", "image", "graphic", "document"] as const;
 
 export default function AssetsPage() {
+  const workspaceId = useStoriesWorkspaceId();
   const [assets, setAssets] = useState<Asset[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [typeFilter, setTypeFilter] = useState("all");
 
   useEffect(() => {
-    apiFetchArray<Asset>("/api/assets")
+    if (!workspaceId) {
+      setAssets([]);
+      setLoading(true);
+      return;
+    }
+
+    setLoading(true);
+    apiFetchArray<Asset>(`/api/assets?workspaceId=${encodeURIComponent(workspaceId)}`)
       .then((data) => { setAssets(data); setLoading(false); })
       .catch(() => setLoading(false));
-  }, []);
+  }, [workspaceId]);
 
   const filtered = assets.filter((a) => {
     const q = search.toLowerCase();

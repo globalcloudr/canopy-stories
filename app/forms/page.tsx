@@ -6,8 +6,17 @@ import { listLiveProjectOptions, listPublishedForms } from "@/lib/stories-data";
 import { referenceIntakeTemplates } from "@/lib/reference-form-templates";
 import { CreateFormPanel } from "@/app/forms/create-form-panel";
 
-export default async function FormsPage() {
-  const [forms, projects] = await Promise.all([listPublishedForms(), listLiveProjectOptions()]);
+export default async function FormsPage({
+  searchParams,
+}: {
+  searchParams?: Promise<{ workspace?: string | string[] }>;
+}) {
+  const params = searchParams ? await searchParams : undefined;
+  const workspaceSlug = typeof params?.workspace === "string" ? params.workspace.trim() || null : null;
+  const [forms, projects] = await Promise.all([
+    listPublishedForms(workspaceSlug),
+    listLiveProjectOptions(workspaceSlug),
+  ]);
   const workspaces = [...new Set(forms.map((form) => form.workspaceName))];
 
   return (

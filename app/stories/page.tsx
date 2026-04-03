@@ -7,6 +7,7 @@ import { BodyText, Button, Card, CardTitle, Input, Select, SelectContent, Select
 import { StoriesShell } from "@/app/_components/stories-shell";
 import { apiFetchArray } from "@/lib/api-client";
 import { pipelineStageLabel, storyTypeLabel } from "@/lib/stories-domain";
+import { useStoriesWorkspaceId } from "@/lib/workspace-client";
 
 type Story = {
   id: string;
@@ -36,16 +37,24 @@ function stageBadge(stage: string) {
 }
 
 export default function StoriesPage() {
+  const workspaceId = useStoriesWorkspaceId();
   const [stories, setStories] = useState<Story[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [typeFilter, setTypeFilter] = useState("all");
 
   useEffect(() => {
-    apiFetchArray<Story>("/api/stories")
+    if (!workspaceId) {
+      setStories([]);
+      setLoading(true);
+      return;
+    }
+
+    setLoading(true);
+    apiFetchArray<Story>(`/api/stories?workspaceId=${encodeURIComponent(workspaceId)}`)
       .then((data) => { setStories(data); setLoading(false); })
       .catch(() => setLoading(false));
-  }, []);
+  }, [workspaceId]);
 
   const filtered = stories.filter((s) => {
     const q = search.toLowerCase();

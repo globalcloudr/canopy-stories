@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { BodyText, Button, CardTitle, Input } from "@canopy/ui";
 import { apiFetch } from "@/lib/api-client";
+import { useStoriesWorkspaceId } from "@/lib/workspace-client";
 
 type KeyStatus = {
   hasOpenaiKey: boolean;
@@ -10,8 +11,6 @@ type KeyStatus = {
   videoApiProvider: string;
   notificationEmail: string | null;
 };
-
-const ACTIVE_ORG_KEY = "cs_active_org_id_v1";
 
 function MaskedKeyField({
   label,
@@ -72,7 +71,7 @@ function MaskedKeyField({
 }
 
 export function ApiKeysSection() {
-  const [workspaceId, setWorkspaceId] = useState<string | null>(null);
+  const workspaceId = useStoriesWorkspaceId();
   const [status, setStatus] = useState<KeyStatus | null>(null);
   const [openaiKey, setOpenaiKey] = useState("");
   const [videoKey, setVideoKey] = useState("");
@@ -81,20 +80,17 @@ export function ApiKeysSection() {
   const [saveMessage, setSaveMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
 
   useEffect(() => {
-    try {
-      const id = window.localStorage.getItem(ACTIVE_ORG_KEY);
-      setWorkspaceId(id);
-    } catch { /* */ }
-  }, []);
+    if (!workspaceId) {
+      setStatus(null);
+      return;
+    }
 
-  useEffect(() => {
-    if (!workspaceId) return;
     apiFetch(`/api/settings/api-keys?workspaceId=${workspaceId}`)
       .then((r) => r.json())
       .then((data) => {
         const s = data as KeyStatus;
         setStatus(s);
-        if (s.notificationEmail) setNotificationEmail(s.notificationEmail);
+        setNotificationEmail(s.notificationEmail ?? "");
       })
       .catch(() => {});
   }, [workspaceId]);

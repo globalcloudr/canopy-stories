@@ -5,12 +5,19 @@ import { getRequestAccess, requireWorkspaceAccess, toErrorResponse } from "@/lib
 export async function GET(request: Request) {
   try {
     const access = await getRequestAccess(request);
+    const workspaceId = new URL(request.url).searchParams.get("workspaceId")?.trim() || null;
+    if (workspaceId) {
+      await requireWorkspaceAccess(request, workspaceId);
+    }
     const projects = await listAllProjects();
     const allowedWorkspaceIds = access.isPlatformOperator
       ? null
       : new Set(access.memberships.map((membership) => membership.org_id));
+    const visibleProjects = allowedWorkspaceIds
+      ? projects.filter((project) => allowedWorkspaceIds.has(project.workspaceId))
+      : projects;
     return NextResponse.json(
-      allowedWorkspaceIds ? projects.filter((project) => allowedWorkspaceIds.has(project.workspaceId)) : projects
+      workspaceId ? visibleProjects.filter((project) => project.workspaceId === workspaceId) : visibleProjects
     );
   } catch (error) {
     return toErrorResponse(error, "Failed to load projects.");

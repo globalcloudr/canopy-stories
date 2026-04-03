@@ -7,16 +7,25 @@ import { StoriesShell } from "@/app/_components/stories-shell";
 import { ProjectsClient } from "@/app/projects/projects-client";
 import { apiFetchArray } from "@/lib/api-client";
 import type { FlatProject } from "@/lib/stories-data";
+import { useStoriesWorkspaceId } from "@/lib/workspace-client";
 
 export default function ProjectsPage() {
+  const workspaceId = useStoriesWorkspaceId();
   const [projects, setProjects] = useState<FlatProject[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    apiFetchArray<FlatProject>("/api/projects")
+    if (!workspaceId) {
+      setProjects([]);
+      setLoading(true);
+      return;
+    }
+
+    setLoading(true);
+    apiFetchArray<FlatProject>(`/api/projects?workspaceId=${encodeURIComponent(workspaceId)}`)
       .then((data) => { setProjects(data); setLoading(false); })
       .catch(() => setLoading(false));
-  }, []);
+  }, [workspaceId]);
 
   return (
     <StoriesShell
