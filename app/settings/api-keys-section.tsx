@@ -19,8 +19,11 @@ function MaskedKeyField({
   value,
   onChange,
   placeholder,
+  onSubmit,
   onRemove,
+  saving = false,
   removing = false,
+  feedback,
 }: {
   label: string;
   description: string;
@@ -28,8 +31,11 @@ function MaskedKeyField({
   value: string;
   onChange: (v: string) => void;
   placeholder: string;
+  onSubmit: (value: string) => Promise<boolean>;
   onRemove: () => void;
+  saving?: boolean;
   removing?: boolean;
+  feedback?: { type: "success" | "error"; text: string } | null;
 }) {
   const [editing, setEditing] = useState(false);
 
@@ -58,21 +64,54 @@ function MaskedKeyField({
           </div>
         </div>
         <div className="shrink-0 pt-1">
-          <div className="flex items-center gap-2">
-            <Button
-              variant="secondary"
-              size="sm"
-              onClick={() => {
-                if (editing) onChange("");
-                setEditing(!editing);
-              }}
-            >
-              {editing ? "Cancel" : isSet ? "Replace" : "Add key"}
-            </Button>
-            {isSet && !editing ? (
-              <Button variant="secondary" size="sm" onClick={onRemove} disabled={removing}>
-                {removing ? "Removing…" : "Remove"}
-              </Button>
+          <div className="flex flex-col items-end gap-2">
+            <div className="flex items-center gap-2">
+              {editing ? (
+                <>
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    onClick={() => {
+                      onChange("");
+                      setEditing(false);
+                    }}
+                    disabled={saving}
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    variant="primary"
+                    size="sm"
+                    onClick={async () => {
+                      const saved = await onSubmit(value);
+                      if (saved) {
+                        setEditing(false);
+                      }
+                    }}
+                    disabled={saving || value.trim().length === 0}
+                  >
+                    {saving ? "Saving…" : "Save key"}
+                  </Button>
+                </>
+              ) : (
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => setEditing(true)}
+                >
+                  {isSet ? "Replace" : "Add key"}
+                </Button>
+              )}
+              {isSet && !editing ? (
+                <Button variant="secondary" size="sm" onClick={onRemove} disabled={removing}>
+                  {removing ? "Removing…" : "Remove"}
+                </Button>
+              ) : null}
+            </div>
+            {feedback ? (
+              <BodyText className={`text-[12px] ${feedback.type === "success" ? "text-emerald-700" : "text-rose-600"}`}>
+                {feedback.text}
+              </BodyText>
             ) : null}
           </div>
         </div>
@@ -87,9 +126,13 @@ export function ApiKeysSection() {
   const [openaiKey, setOpenaiKey] = useState("");
   const [videoKey, setVideoKey] = useState("");
   const [notificationEmail, setNotificationEmail] = useState("");
-  const [saving, setSaving] = useState(false);
+  const [savingKey, setSavingKey] = useState<"openai" | "video" | null>(null);
+  const [savingEmail, setSavingEmail] = useState(false);
   const [removingKey, setRemovingKey] = useState<"openai" | "video" | null>(null);
   const [saveMessage, setSaveMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
+  const [keyFeedback, setKeyFeedback] = useState<
+    Partial<Record<"openai" | "video", { type: "success" | "error"; text: string } | null>>
+  >({});
 
   useEffect(() => {
     if (!workspaceId) {
@@ -107,18 +150,15 @@ export function ApiKeysSection() {
       .catch(() => {});
   }, [workspaceId]);
 
-  async function handleSave() {
+  async function handleSaveNotificationEmail() {
     if (!workspaceId) return;
-    const hasKeyChange = openaiKey.trim() || videoKey.trim();
     const hasEmailChange = notificationEmail.trim() !== (status?.notificationEmail ?? "");
-    if (!hasKeyChange && !hasEmailChange) return;
+    if (!hasEmailChange) return;
 
-    setSaving(true);
+    setSavingEmail(true);
     setSaveMessage(null);
     try {
       const body: Record<string, string> = { workspaceId };
-      if (openaiKey.trim()) body.openaiApiKey = openaiKey.trim();
-      if (videoKey.trim()) body.videoApiKey = videoKey.trim();
       body.notificationEmail = notificationEmail.trim();
 
       const res = await apiFetch("/api/settings/api-keys", {
@@ -130,18 +170,76 @@ export function ApiKeysSection() {
       if (!res.ok) throw new Error(payload.error ?? "Save failed.");
 
       setStatus((prev) => ({
-        hasOpenaiKey: openaiKey.trim() ? true : (prev?.hasOpenaiKey ?? false),
-        hasVideoKey: videoKey.trim() ? true : (prev?.hasVideoKey ?? false),
+        hasOpenaiKey: prev?.hasOpenaiKey ?? false,
+        hasVideoKey: prev?.hasVideoKey ?? false,
         videoApiProvider: prev?.videoApiProvider ?? "json2video",
         notificationEmail: notificationEmail.trim() || null,
       }));
-      setOpenaiKey("");
-      setVideoKey("");
-      setSaveMessage({ type: "success", text: "Settings saved." });
+      setSaveMessage({ type: "success", text: "Notification email saved." });
     } catch (err) {
       setSaveMessage({ type: "error", text: err instanceof Error ? err.message : "Save failed." });
     } finally {
-      setSaving(false);
+      setSavingEmail(false);
+    }
+  }
+
+  async function handleSaveKey(target: "openai" | "video", rawValue: string) {
+    if (!workspaceId) return false;
+
+    const value = rawValue.trim();
+    if (!value) return false;
+
+    setSavingKey(target);
+    setSaveMessage(null);
+    setKeyFeedback((prev) => ({ ...prev, [target]: null }));
+    try {
+      const body: {
+        workspaceId: string;
+        openaiApiKey?: string;
+        videoApiKey?: string;
+      } = { workspaceId };
+
+      if (target === "openai") {
+        body.openaiApiKey = value;
+      } else {
+        body.videoApiKey = value;
+      }
+
+      const res = await apiFetch("/api/settings/api-keys", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+      const payload = (await res.json()) as { ok?: boolean; error?: string };
+      if (!res.ok) throw new Error(payload.error ?? "Save failed.");
+
+      setStatus((prev) => ({
+        hasOpenaiKey: target === "openai" ? true : (prev?.hasOpenaiKey ?? false),
+        hasVideoKey: target === "video" ? true : (prev?.hasVideoKey ?? false),
+        videoApiProvider: prev?.videoApiProvider ?? "json2video",
+        notificationEmail: prev?.notificationEmail ?? null,
+      }));
+      if (target === "openai") {
+        setOpenaiKey("");
+      } else {
+        setVideoKey("");
+      }
+      setSaveMessage({ type: "success", text: `${target === "openai" ? "OpenAI" : "Video"} API key saved.` });
+      setKeyFeedback((prev) => ({
+        ...prev,
+        [target]: { type: "success", text: "Saved just now." },
+      }));
+      return true;
+    } catch (err) {
+      const text = err instanceof Error ? err.message : "Save failed.";
+      setSaveMessage({ type: "error", text });
+      setKeyFeedback((prev) => ({
+        ...prev,
+        [target]: { type: "error", text },
+      }));
+      return false;
+    } finally {
+      setSavingKey(null);
     }
   }
 
@@ -150,6 +248,7 @@ export function ApiKeysSection() {
 
     setRemovingKey(target);
     setSaveMessage(null);
+    setKeyFeedback((prev) => ({ ...prev, [target]: null }));
     try {
       const body: {
         workspaceId: string;
@@ -183,17 +282,23 @@ export function ApiKeysSection() {
         setVideoKey("");
       }
       setSaveMessage({ type: "success", text: `${target === "openai" ? "OpenAI" : "Video"} API key removed.` });
+      setKeyFeedback((prev) => ({
+        ...prev,
+        [target]: { type: "success", text: "Removed." },
+      }));
     } catch (err) {
-      setSaveMessage({ type: "error", text: err instanceof Error ? err.message : "Remove failed." });
+      const text = err instanceof Error ? err.message : "Remove failed.";
+      setSaveMessage({ type: "error", text });
+      setKeyFeedback((prev) => ({
+        ...prev,
+        [target]: { type: "error", text },
+      }));
     } finally {
       setRemovingKey(null);
     }
   }
 
-  const hasChanges =
-    openaiKey.trim().length > 0 ||
-    videoKey.trim().length > 0 ||
-    notificationEmail.trim() !== (status?.notificationEmail ?? "");
+  const hasEmailChanges = notificationEmail.trim() !== (status?.notificationEmail ?? "");
 
   return (
     <div className="divide-y divide-[var(--border)]">
@@ -220,8 +325,11 @@ export function ApiKeysSection() {
         value={openaiKey}
         onChange={setOpenaiKey}
         placeholder="sk-..."
+        onSubmit={(value) => handleSaveKey("openai", value)}
         onRemove={() => void handleRemoveKey("openai")}
+        saving={savingKey === "openai"}
         removing={removingKey === "openai"}
+        feedback={keyFeedback.openai ?? null}
       />
       <MaskedKeyField
         label="Video generation API key"
@@ -230,8 +338,11 @@ export function ApiKeysSection() {
         value={videoKey}
         onChange={setVideoKey}
         placeholder="Your video API key"
+        onSubmit={(value) => handleSaveKey("video", value)}
         onRemove={() => void handleRemoveKey("video")}
+        saving={savingKey === "video"}
         removing={removingKey === "video"}
+        feedback={keyFeedback.video ?? null}
       />
 
       <div className="flex items-center justify-between gap-4 py-4">
@@ -241,11 +352,11 @@ export function ApiKeysSection() {
           </BodyText>
         ) : (
           <BodyText muted className="text-[13px]">
-            API keys are encrypted and never exposed outside your workspace.
+            API keys save from each row immediately. Notification email changes save here.
           </BodyText>
         )}
-        <Button variant="primary" size="sm" onClick={handleSave} disabled={saving || !hasChanges}>
-          {saving ? "Saving…" : "Save"}
+        <Button variant="primary" size="sm" onClick={handleSaveNotificationEmail} disabled={savingEmail || !hasEmailChanges}>
+          {savingEmail ? "Saving…" : "Save email"}
         </Button>
       </div>
     </div>

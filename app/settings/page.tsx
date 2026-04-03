@@ -1,6 +1,6 @@
 export const dynamic = "force-dynamic";
 import type { ReactNode } from "react";
-import { BodyText, Button, CardTitle } from "@canopy/ui";
+import { BodyText, CardTitle } from "@canopy/ui";
 import { StoriesShell } from "@/app/_components/stories-shell";
 import { ApiKeysSection } from "@/app/settings/api-keys-section";
 
@@ -130,11 +130,6 @@ export default function SettingsPage() {
           <div className="rounded-[24px] border border-[#dfe7f4] bg-transparent shadow-none p-5">
             <ApiKeysSection />
           </div>
-        </div>
-
-        <div className="flex justify-end gap-3 pt-2">
-          <Button variant="secondary">Reset to Defaults</Button>
-          <Button variant="primary">Save Changes</Button>
         </div>
       </div>
     </StoriesShell>
