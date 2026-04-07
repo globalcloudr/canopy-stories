@@ -64,6 +64,8 @@ canopy-stories/
 | `/assets` | Asset library |
 | `/package/[id]` | Package detail and delivery |
 | `/settings` | Product settings |
+| `/submissions` | Submission tracking — view form responses across projects |
+| `/help` | In-app user guide — workflow, setup, and FAQs |
 
 ### API Routes
 | Route | Description |
@@ -84,6 +86,12 @@ canopy-stories/
 | `GET /api/packages/[id]` | Package detail |
 | `GET /api/organizations` | Workspace context lookup |
 | `POST /api/upload` | Public-form image upload — returns signed preview + private storage ref |
+| `GET /api/submissions` | List submissions for a form |
+| `PATCH /api/content/[id]` | Update content item status (approve / flag for revision) |
+| `GET/POST /api/settings/api-keys` | Read and save per-workspace API keys and notification config |
+| `GET /api/launcher-products` | Products the current workspace is entitled to (used by in-app switcher) |
+| `GET /api/app-session` | Server-backed workspace session — user identity, active workspace, accessible workspaces |
+| `POST /api/auth/exchange-handoff` | Exchange Portal launch code for Supabase session tokens |
 
 ## Data Model (Supabase Tables — Product-Owned)
 
@@ -95,7 +103,7 @@ All tables are scoped by `workspace_id`.
 | `story_forms` | Intake form definitions per project |
 | `story_submissions` | Raw form submission data from subjects |
 | `story_records` | Core story entity — tracks pipeline stage |
-| `story_content_items` | AI-generated content (blog, social, newsletter, press release) |
+| `story_content` | AI-generated content (blog, social, newsletter, press release) |
 | `story_assets` | Generated images, graphics, video |
 | `story_packages` | Bundled deliverables for download/sharing |
 
