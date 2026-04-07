@@ -38,9 +38,9 @@ type NavKey = "home" | "projects" | "stories" | "assets" | "settings" | "help";
 
 type StoriesShellProps = {
   activeNav: NavKey;
-  eyebrow: string;
-  title: string;
-  subtitle: string;
+  eyebrow?: string;
+  title?: string;
+  subtitle?: string;
   headerMeta?: string;
   headerActions?: ReactNode;
   children: ReactNode;
@@ -619,19 +619,21 @@ export function StoriesShell({
         {/* Content */}
         <div className="min-w-0 overflow-y-auto bg-[var(--app-content-bg)]">
           <div className="mx-auto flex min-h-full w-full max-w-[1340px] flex-col gap-6 px-4 py-6 sm:px-6">
-            <AppSurface padding="md" variant="clear" className="sm:p-8">
-              <div className="flex flex-wrap items-start justify-between gap-5">
-                <div className="min-w-0">
-                  <Eyebrow className="text-[#2f76dd]">{eyebrow}</Eyebrow>
-                  <PageTitle className="mt-3 text-[#172033]">{title}</PageTitle>
-                  <BodyText muted className="mt-3 max-w-3xl text-[#617286] sm:text-[15px]">{subtitle}</BodyText>
+            {title ? (
+              <AppSurface padding="md" variant="clear" className="sm:p-8">
+                <div className="flex flex-wrap items-start justify-between gap-5">
+                  <div className="min-w-0">
+                    {eyebrow ? <Eyebrow className="text-[#2f76dd]">{eyebrow}</Eyebrow> : null}
+                    <PageTitle className="mt-3 text-[#172033]">{title}</PageTitle>
+                    {subtitle ? <BodyText muted className="mt-3 max-w-3xl text-[#617286] sm:text-[15px]">{subtitle}</BodyText> : null}
+                  </div>
+                  {headerActions ? <div className="flex flex-wrap gap-3">{headerActions}</div> : null}
                 </div>
-                {headerActions ? <div className="flex flex-wrap gap-3">{headerActions}</div> : null}
-              </div>
-              {headerMeta ? (
-                <div className="mt-5 text-sm text-[#7a8798]">{headerMeta}</div>
-              ) : null}
-            </AppSurface>
+                {headerMeta ? (
+                  <div className="mt-5 text-sm text-[#7a8798]">{headerMeta}</div>
+                ) : null}
+              </AppSurface>
+            ) : null}
 
             {children}
           </div>

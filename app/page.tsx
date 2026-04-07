@@ -1,7 +1,7 @@
 export const dynamic = "force-dynamic";
 import React from "react";
 import Link from "next/link";
-import { AppPill, BodyText, Button, Card, CardTitle, SectionTitle } from "@canopy/ui";
+import { AppPill, BodyText, Button, Card, CardTitle, DashboardHero, SectionTitle } from "@canopy/ui";
 import { StoriesShell } from "@/app/_components/stories-shell";
 import { getStoriesOverviewSnapshot } from "@/lib/stories-data";
 import { formatRelativeDate, pipelineStageLabel, storyTypeLabel } from "@/lib/stories-domain";
@@ -64,18 +64,25 @@ export default async function HomePage({
   const overview = await getStoriesOverviewSnapshot(workspaceSlug);
 
   return (
-    <StoriesShell
-      activeNav="home"
-      eyebrow="Dashboard"
-      title="Dashboard"
-      subtitle="Automated production pipeline for success story creation"
-
-      headerActions={
-        <Button asChild variant="primary">
-          <Link href={buildWorkspaceHref("/projects", workspaceSlug)}>New Project</Link>
-        </Button>
-      }
-    >
+    <StoriesShell activeNav="home">
+      <DashboardHero
+        eyebrow="Canopy Stories"
+        headline="Turn Responses Into Stories"
+        subheading="Automated production pipeline for success story creation."
+        ctaLabel="New Project"
+        ctaHref={buildWorkspaceHref("/projects", workspaceSlug)}
+        illustration={
+          <svg width="140" height="120" viewBox="0 0 140 120" fill="none" aria-hidden="true">
+            <rect x="25" y="20" width="64" height="80" rx="10" stroke="currentColor" strokeWidth="2" />
+            <rect x="35" y="15" width="64" height="80" rx="10" stroke="currentColor" strokeWidth="2" opacity="0.6" />
+            <line x1="45" y1="45" x2="75" y2="45" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+            <line x1="45" y1="57" x2="82" y2="57" stroke="currentColor" strokeWidth="2" strokeLinecap="round" opacity="0.7" />
+            <line x1="45" y1="69" x2="68" y2="69" stroke="currentColor" strokeWidth="2" strokeLinecap="round" opacity="0.5" />
+            <circle cx="108" cy="32" r="7" stroke="currentColor" strokeWidth="2" opacity="0.8" />
+            <path d="M105 32 L107.5 34.5 L112 29" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" opacity="0.8" />
+          </svg>
+        }
+      />
       <section className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
         <DashboardStatCard
           title="Active Projects"
