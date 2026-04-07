@@ -22,7 +22,7 @@ All three repos share one Supabase project.
 - **AI**: OpenAI (content generation — blog, social, newsletter, press release)
 - **Video/graphics**: Creatomate API (default — 15-second vertical video + 1:1 highlight card); JSON2Video retained as legacy fallback
 - **Markdown rendering**: `react-markdown` (used in package and story detail pages)
-- **Design system**: `@canopy/ui` (vendored into `vendor/`)
+- **Design system**: `@canopy/ui` v0.1.4 (vendored at `vendor/canopy-ui-0.1.4.tgz`)
 - **Deployment**: Vercel
 
 ## App Structure
