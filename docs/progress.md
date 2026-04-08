@@ -4,6 +4,32 @@ Append new sessions at the top. Do not overwrite history.
 
 ---
 
+## 2026-04-08 — School-facing UX pass across dashboard, projects, and forms
+
+### What changed
+
+- Rewrote visible staff copy across Forms, Help, Settings, and project setup so the app reads like a school workflow instead of internal product/migration tooling
+- Updated the dashboard hero to focus on adult education success stories instead of generic automation language
+- Kept the dashboard metric row and moved the action-oriented guidance into a dismissible quick-start box above the hero
+- Reworked project detail navigation to match the school workflow:
+  - `Overview`
+  - `Forms`
+  - `Responses`
+  - `Stories`
+  - `Assets`
+- Split project responses into their own tab instead of burying them inside the Forms tab
+- Replaced the empty project workflow board with a state-aware setup/next-step panel when a project has no stories yet
+- Promoted starter form templates on the Forms page with two launch paths on each template card:
+  - `Use in existing project`
+  - `Create project with this template`
+- Added a template-first project creation path so choosing a starter template can launch the project dialog and carry that template into the guided setup flow
+
+### Verification
+
+- `npx tsc --noEmit --incremental false` passed
+
+---
+
 ## 2026-04-06 — Bumped to @canopy/ui v0.1.4
 
 - Updated `@canopy/ui` from v0.1.3 → v0.1.4

@@ -11,9 +11,11 @@ AI-powered success story production product for the Canopy platform.
 
 - **Projects** — schools organize story production into projects with targets and deadlines
 - **Guided project creation** — 3-step wizard: create project → pick intake form template → get shareable link with next-steps guide
-- **Form builder** — create intake forms from predefined templates (ESL, CTE, Staff, Program Overview, Employer, Partner) or custom fields; existing forms editable via Customize button on project Forms tab
+- **Starter template gallery** — browse all available intake form templates from the Forms page, use one in an existing project, or start a new project directly from a template
+- **Form builder** — create intake forms from predefined templates (ESL, CTE, Staff, Program Overview, Employer, Partner) or custom fields; existing forms editable via Customize button on the project Forms tab
 - **Public intake forms** — shareable links; subjects fill out forms with no login required; photo upload supported through private per-workspace `story-photos` storage paths with signed preview/download URLs
-- **Form response tracking** — per-form submission counts shown in project forms tab; expandable inline response list per form
+- **Project workflow tabs** — project detail now follows the school workflow: Overview, Forms, Responses, Stories, Assets
+- **Form response tracking** — per-form submission counts shown in the project Forms tab, with a dedicated project Responses tab that aggregates replies across all forms in the project
 - **AI content generation** — on form submission, OpenAI generates: blog post, newsletter feature, social posts (Facebook, Instagram, LinkedIn, X), press release
 - **Video generation** — 15-second vertical short-form video via Creatomate (default); JSON2Video supported as legacy provider
 - **Highlight card** — 1:1 social share graphic generated alongside the video from a separate Creatomate image template
@@ -24,7 +26,8 @@ AI-powered success story production product for the Canopy platform.
 - **Pipeline tracking** — stories move through stages: form_sent → submitted → ai_processing → asset_generation → packaging → delivered; visual stepper shown on each story detail page
 - **Project delivery progress** — progress bar on the project page shows delivered vs. story goal
 - **Package ready notifications** — email sent to a configured address when a story package is ready (via Resend)
-- **Dashboard** — overview metrics and pipeline status
+- **State-aware project overview** — empty projects show a next-step setup panel with share actions instead of an empty workflow board; active projects switch to the workflow board automatically once stories exist
+- **Dashboard** — overview metrics, dismissible quick-start guidance, and refreshed success-story messaging on the home page
 - **Help / user guide** — in-app guide covering workflow, setup, and FAQs at `/help`
 
 ### API Keys (Per Workspace)
