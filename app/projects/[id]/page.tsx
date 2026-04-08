@@ -396,6 +396,9 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
     type: s.storyType,
     stage: s.currentStage,
   }));
+  const totalResponses = forms.reduce((sum, form) => sum + form.submissionCount, 0);
+  const latestForm = forms[0] ?? null;
+  const shareableFormPath = latestForm ? `/forms/${latestForm.publicSlug}` : null;
 
   const tabs: { key: Tab; label: string; count?: number }[] = [
     { key: "overview", label: "Overview" },
@@ -527,7 +530,132 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
       {/* Tab: Overview */}
       {activeTab === "overview" && (
         <div className="space-y-5">
-          <PipelineBoard stories={pipelineStories} />
+          {stories.length === 0 ? (
+            <div className="grid gap-5 lg:grid-cols-[minmax(0,1.4fr)_minmax(320px,0.9fr)]">
+              <Card padding="md" className="rounded-[24px] border border-[#dfe7f4] bg-transparent shadow-none sm:p-7">
+                <div className="flex flex-wrap items-start justify-between gap-4">
+                  <div>
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#2f76dd]">Project setup</p>
+                    <CardTitle className="mt-3 text-[1.6rem] leading-tight">
+                      {totalResponses > 0 ? "Your first responses are in" : latestForm ? "Your form is live" : "Start by adding a form"}
+                    </CardTitle>
+                    <BodyText muted className="mt-3 max-w-2xl text-[14px] leading-6">
+                      {totalResponses > 0
+                        ? "This project has started moving. The workflow board will grow as responses become stories and move toward delivery."
+                        : latestForm
+                          ? "Share your live form with students, staff, or partners. Once someone responds, story progress will appear here automatically."
+                          : "Create a form for this project so your team can start collecting responses and turning them into stories."}
+                    </BodyText>
+                  </div>
+                  <span className={`inline-flex items-center rounded-full border px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.08em] ${statusBadge(project.status)}`}>
+                    {project.status}
+                  </span>
+                </div>
+
+                <div className="mt-6 grid gap-4 sm:grid-cols-3">
+                  <div className="rounded-[20px] border border-[#dfe7f4] bg-[var(--surface-muted)] px-5 py-4">
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[var(--text-muted)]">Goal</p>
+                    <p className="mt-2 text-2xl font-bold text-[var(--foreground)]">{project.storyCountTarget ?? "—"}</p>
+                    <BodyText muted className="mt-1 text-[13px]">Stories planned</BodyText>
+                  </div>
+                  <div className="rounded-[20px] border border-[#dfe7f4] bg-[var(--surface-muted)] px-5 py-4">
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[var(--text-muted)]">Forms</p>
+                    <p className="mt-2 text-2xl font-bold text-[var(--foreground)]">{forms.length}</p>
+                    <BodyText muted className="mt-1 text-[13px]">{forms.length === 1 ? "Live form" : "Live forms"}</BodyText>
+                  </div>
+                  <div className="rounded-[20px] border border-[#dfe7f4] bg-[var(--surface-muted)] px-5 py-4">
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[var(--text-muted)]">Responses</p>
+                    <p className="mt-2 text-2xl font-bold text-[var(--foreground)]">{totalResponses}</p>
+                    <BodyText muted className="mt-1 text-[13px]">Received so far</BodyText>
+                  </div>
+                </div>
+
+                <div className="mt-6 rounded-[20px] border border-[#dfe7f4] bg-white/70 px-5 py-5">
+                  <p className="text-sm font-semibold text-[var(--foreground)]">What to do next</p>
+                  <ol className="mt-4 space-y-3">
+                    {latestForm ? (
+                      [
+                        "Copy the share link below and send it to the person you want to feature.",
+                        "Watch the Responses tab for their reply.",
+                        "Once a response comes in, review the story from the Stories tab.",
+                      ].map((step, index) => (
+                        <li key={step} className="flex gap-3">
+                          <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[#edf3fb] text-xs font-bold text-[#1e40af]">
+                            {index + 1}
+                          </span>
+                          <span className="text-sm text-[var(--text-muted)]">{step}</span>
+                        </li>
+                      ))
+                    ) : (
+                      [
+                        "Create your first form for this project.",
+                        "Share the form with a student, staff member, or partner.",
+                        "Come back here to track progress once responses arrive.",
+                      ].map((step, index) => (
+                        <li key={step} className="flex gap-3">
+                          <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[#edf3fb] text-xs font-bold text-[#1e40af]">
+                            {index + 1}
+                          </span>
+                          <span className="text-sm text-[var(--text-muted)]">{step}</span>
+                        </li>
+                      ))
+                    )}
+                  </ol>
+                </div>
+              </Card>
+
+              <Card padding="md" className="rounded-[24px] border border-[#dfe7f4] bg-transparent shadow-none sm:p-7">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#2f76dd]">Quick actions</p>
+                <CardTitle className="mt-3 text-[1.3rem]">
+                  {latestForm ? "Share your live form" : "Build your first form"}
+                </CardTitle>
+                <BodyText muted className="mt-2 text-[14px] leading-6">
+                  {latestForm
+                    ? "Use this link to start collecting responses for this project."
+                    : "Once your form is ready, this area will show the share link and a cleaner launch path for your team."}
+                </BodyText>
+
+                {latestForm && shareableFormPath ? (
+                  <div className="mt-5 space-y-4">
+                    <div className="rounded-[20px] border border-[#dfe7f4] bg-[var(--surface-muted)] px-4 py-4">
+                      <p className="text-sm font-semibold text-[var(--foreground)]">{latestForm.title}</p>
+                      <BodyText muted className="mt-1 text-[13px]">{latestForm.submissionCount} response{latestForm.submissionCount === 1 ? "" : "s"}</BodyText>
+                      <div className="mt-4 rounded-xl border border-[#d7e3f3] bg-white px-3 py-2 text-sm text-[var(--foreground)]">
+                        {shareableFormPath}
+                      </div>
+                    </div>
+
+                    <div className="flex flex-wrap gap-3">
+                      <Button
+                        variant="primary"
+                        onClick={() => {
+                          const absoluteLink = `${window.location.origin}${shareableFormPath}`;
+                          navigator.clipboard.writeText(absoluteLink);
+                        }}
+                      >
+                        Copy form link
+                      </Button>
+                      <Button asChild variant="secondary">
+                        <Link href={`/forms/${latestForm.publicSlug}`} target="_blank">Open form</Link>
+                      </Button>
+                      <Button variant="secondary" onClick={() => setActiveTab("forms")}>
+                        Manage forms
+                      </Button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="mt-5 rounded-[20px] border border-dashed border-[#dfe7f4] bg-[var(--surface-muted)] px-4 py-8 text-center">
+                    <BodyText muted>Create a form to unlock sharing and response tracking for this project.</BodyText>
+                    <Button variant="primary" className="mt-4" onClick={() => setFormBuilderOpen(true)}>
+                      Create form
+                    </Button>
+                  </div>
+                )}
+              </Card>
+            </div>
+          ) : (
+            <PipelineBoard stories={pipelineStories} />
+          )}
         </div>
       )}
 
