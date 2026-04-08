@@ -12,45 +12,30 @@ import { pipelineStageLabel } from "@/lib/stories-domain";
 import { buildWorkspaceHref } from "@/lib/workspace-href";
 import type { FlatProject, FlatForm, FormSubmissionItem } from "@/lib/stories-data";
 
-// ─── Form responses tab ──────────────────────────────────────────────────────
+type ProjectResponseItem = FormSubmissionItem & {
+  formId: string;
+  formTitle: string;
+  storyType: string;
+};
 
-function FormResponsesTab({
+// ─── Forms tab ───────────────────────────────────────────────────────────────
+
+function FormsTab({
   forms,
   onCreateForm,
   onCustomizeForm,
   onDeleteForm,
+  onOpenResponses,
   typeColors,
-  workspaceSlug,
 }: {
   forms: FlatForm[];
   onCreateForm: () => void;
   onCustomizeForm: (form: FlatForm) => void;
   onDeleteForm: (id: string) => void;
+  onOpenResponses: () => void;
   typeColors: Record<string, string>;
-  workspaceSlug: string | null;
 }) {
-  const [expandedFormId, setExpandedFormId] = useState<string | null>(null);
-  const [responses, setResponses] = useState<Record<string, FormSubmissionItem[]>>({});
-  const [loadingId, setLoadingId] = useState<string | null>(null);
-
-  async function toggleResponses(formId: string) {
-    if (expandedFormId === formId) {
-      setExpandedFormId(null);
-      return;
-    }
-    setExpandedFormId(formId);
-    if (responses[formId]) return; // already loaded
-    setLoadingId(formId);
-    try {
-      const res = await apiFetch(`/api/submissions?formId=${formId}`);
-      if (res.ok) {
-        const data = (await res.json()) as FormSubmissionItem[];
-        setResponses((prev) => ({ ...prev, [formId]: data }));
-      }
-    } finally {
-      setLoadingId(null);
-    }
-  }
+  const totalResponses = forms.reduce((sum, form) => sum + form.submissionCount, 0);
 
   if (forms.length === 0) {
     return (
@@ -95,18 +80,14 @@ function FormResponsesTab({
                 )}
               </div>
               <div className="flex items-center gap-2">
-                {form.submissionCount > 0 && (
-                  <Button
-                    variant="secondary"
-                    size="sm"
-                    onClick={() => toggleResponses(form.id)}
-                  >
-                    {expandedFormId === form.id ? "Hide responses" : "View responses"}
-                  </Button>
-                )}
                 <Button variant="secondary" size="sm" onClick={() => onCustomizeForm(form)}>
                   Customize
                 </Button>
+                {form.submissionCount > 0 && (
+                  <Button variant="secondary" size="sm" onClick={onOpenResponses}>
+                    View responses
+                  </Button>
+                )}
                 <Button
                   variant="secondary"
                   size="sm"
@@ -129,47 +110,144 @@ function FormResponsesTab({
                 </Button>
               </div>
             </div>
+          </div>
+        ))}
+      </div>
+      {totalResponses > 0 ? (
+        <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface-muted)] p-4">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <CardTitle className="text-base">Responses live in their own tab</CardTitle>
+              <BodyText muted className="mt-1 text-[13px]">
+                Open Responses to see every reply for this project in one place.
+              </BodyText>
+            </div>
+            <Button variant="secondary" size="sm" onClick={onOpenResponses}>
+              Open Responses
+            </Button>
+          </div>
+        </div>
+      ) : null}
+    </div>
+  );
+}
 
-            {/* Inline response list */}
-            {expandedFormId === form.id && (
-              <div className="mb-4 rounded-2xl border border-[var(--border)] bg-[var(--surface-muted)] p-4">
-                {loadingId === form.id ? (
-                  <BodyText muted className="text-[13px]">Loading responses…</BodyText>
-                ) : (responses[form.id] ?? []).length === 0 ? (
-                  <BodyText muted className="text-[13px]">No responses found.</BodyText>
-                ) : (
-                  <div className="divide-y divide-[var(--border)]">
-                    {(responses[form.id] ?? []).map((r) => (
-                      <div key={r.id} className="flex flex-wrap items-center justify-between gap-3 py-3">
-                        <div>
-                          <span className="text-[14px] font-medium text-[var(--foreground)]">
-                            {r.submitterName || "Unnamed respondent"}
-                          </span>
-                          {r.submitterEmail && (
-                            <span className="ml-2 text-[13px] text-[var(--text-muted)]">{r.submitterEmail}</span>
-                          )}
-                          <div className="mt-0.5 flex items-center gap-2">
-                            <span className="text-[12px] text-[var(--text-muted)]">
-                              {new Date(r.submittedAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
-                            </span>
-                            {r.storyStage && (
-                              <span className="rounded-full border border-indigo-200 bg-indigo-50 px-2 py-0.5 text-[11px] font-semibold text-indigo-700">
-                                {pipelineStageLabel(r.storyStage)}
-                              </span>
-                            )}
-                          </div>
-                        </div>
-                        {r.storyId && (
-                          <Button asChild variant="secondary" size="sm">
-                            <Link href={buildWorkspaceHref(`/stories/${r.storyId}`, workspaceSlug)}>Open Story</Link>
-                          </Button>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                )}
+function ResponsesTab({
+  forms,
+  workspaceSlug,
+}: {
+  forms: FlatForm[];
+  workspaceSlug: string | null;
+}) {
+  const [responses, setResponses] = useState<ProjectResponseItem[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadResponses() {
+      const formsWithResponses = forms.filter((form) => form.submissionCount > 0);
+      if (formsWithResponses.length === 0) {
+        if (!cancelled) {
+          setResponses([]);
+          setLoading(false);
+        }
+        return;
+      }
+
+      setLoading(true);
+      try {
+        const results = await Promise.all(
+          formsWithResponses.map(async (form) => {
+            const res = await apiFetch(`/api/submissions?formId=${form.id}`);
+            if (!res.ok) {
+              return [] as ProjectResponseItem[];
+            }
+            const items = (await res.json()) as FormSubmissionItem[];
+            return items.map<ProjectResponseItem>((item) => ({
+              ...item,
+              formId: form.id,
+              formTitle: form.title,
+              storyType: form.storyType,
+            }));
+          })
+        );
+
+        if (!cancelled) {
+          setResponses(
+            results
+              .flat()
+              .sort((a, b) => new Date(b.submittedAt).getTime() - new Date(a.submittedAt).getTime())
+          );
+        }
+      } finally {
+        if (!cancelled) {
+          setLoading(false);
+        }
+      }
+    }
+
+    void loadResponses();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [forms]);
+
+  if (loading) {
+    return (
+      <div className="py-12 text-center">
+        <CardTitle>Loading responses…</CardTitle>
+        <BodyText muted className="mt-2">Pulling together every reply from this project&apos;s forms.</BodyText>
+      </div>
+    );
+  }
+
+  if (responses.length === 0) {
+    return (
+      <div className="py-12 text-center">
+        <CardTitle>No responses yet</CardTitle>
+        <BodyText muted className="mt-2">Responses will appear here as soon as someone completes one of this project&apos;s forms.</BodyText>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-3">
+      <p className="text-sm font-semibold text-[var(--foreground)]">{responses.length} response{responses.length !== 1 ? "s" : ""}</p>
+      <div className="divide-y divide-[var(--border)]">
+        {responses.map((response) => (
+          <div key={response.id} className="flex flex-wrap items-center justify-between gap-3 py-4">
+            <div className="min-w-0">
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="font-medium text-[var(--foreground)]">{response.submitterName || "Unnamed respondent"}</span>
+                <span className="rounded-full border border-[var(--border)] bg-[var(--surface-muted)] px-2 py-0.5 text-[11px] font-semibold uppercase tracking-[0.06em] text-[var(--text-muted)]">
+                  {response.storyType.replace("_", "/")}
+                </span>
+                {response.storyStage ? (
+                  <span className="rounded-full border border-indigo-200 bg-indigo-50 px-2 py-0.5 text-[11px] font-semibold text-indigo-700">
+                    {pipelineStageLabel(response.storyStage)}
+                  </span>
+                ) : null}
               </div>
-            )}
+              <BodyText muted className="mt-1 text-[13px]">
+                {response.formTitle} · {new Date(response.submittedAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
+              </BodyText>
+              {response.submitterEmail ? (
+                <BodyText muted className="mt-0.5 text-[13px]">{response.submitterEmail}</BodyText>
+              ) : null}
+            </div>
+            <div className="flex items-center gap-2">
+              {response.storyId ? (
+                <Button asChild variant="secondary" size="sm">
+                  <Link href={buildWorkspaceHref(`/stories/${response.storyId}`, workspaceSlug)}>Open Story</Link>
+                </Button>
+              ) : (
+                <span className="rounded-full border border-amber-200 bg-amber-50 px-2 py-0.5 text-[11px] font-semibold text-amber-700">
+                  Story pending
+                </span>
+              )}
+            </div>
           </div>
         ))}
       </div>
@@ -205,7 +283,7 @@ type Asset = {
   createdAt: string;
 };
 
-type Tab = "overview" | "forms" | "content" | "assets" | "package";
+type Tab = "overview" | "forms" | "responses" | "stories" | "assets";
 
 function formatDeadline(value: string | null) {
   if (!value) return "No deadline";
@@ -322,9 +400,9 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
   const tabs: { key: Tab; label: string; count?: number }[] = [
     { key: "overview", label: "Overview" },
     { key: "forms", label: "Forms", count: forms.length },
-    { key: "content", label: "Content", count: stories.length },
+    { key: "responses", label: "Responses", count: forms.reduce((sum, form) => sum + form.submissionCount, 0) },
+    { key: "stories", label: "Stories", count: stories.length },
     { key: "assets", label: "Assets", count: assets.length },
-    { key: "package", label: "Ready-to-publish package", count: packages.length },
   ];
 
   if (loading) {
@@ -455,18 +533,23 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
 
       {/* Tab: Forms */}
       {activeTab === "forms" && (
-        <FormResponsesTab
+        <FormsTab
           forms={forms}
           onCreateForm={() => { setEditingForm(null); setFormBuilderOpen(true); }}
           onCustomizeForm={(form) => { setEditingForm(form); setFormBuilderOpen(true); }}
           onDeleteForm={handleDeleteForm}
+          onOpenResponses={() => setActiveTab("responses")}
           typeColors={typeColors}
-          workspaceSlug={workspaceSlug}
         />
       )}
 
-      {/* Tab: Content */}
-      {activeTab === "content" && (
+      {/* Tab: Responses */}
+      {activeTab === "responses" && (
+        <ResponsesTab forms={forms} workspaceSlug={workspaceSlug} />
+      )}
+
+      {/* Tab: Stories */}
+      {activeTab === "stories" && (
         <div className="space-y-3">
           <p className="text-sm font-semibold text-[var(--foreground)]">{stories.length} stor{stories.length !== 1 ? "ies" : "y"}</p>
 
@@ -547,55 +630,54 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
               ))}
             </div>
           )}
-        </div>
-      )}
+          <div className="mt-8 space-y-3 border-t border-[var(--border)] pt-6">
+            <p className="text-sm font-semibold text-[var(--foreground)]">{packages.length} ready-to-publish package{packages.length !== 1 ? "s" : ""}</p>
 
-      {/* Tab: Ready-to-publish package */}
-      {activeTab === "package" && (
-        <div className="space-y-3">
-          <p className="text-sm font-semibold text-[var(--foreground)]">{packages.length} ready-to-publish package{packages.length !== 1 ? "s" : ""}</p>
-
-          {packages.length === 0 ? (
-            <div className="py-12 text-center">
-              <CardTitle>No ready-to-publish packages yet</CardTitle>
-              <BodyText muted className="mt-2">
-                Ready-to-publish packages are created automatically when the content bundle is ready to deliver.
-              </BodyText>
-            </div>
-          ) : (
-            <div className="divide-y divide-[var(--border)]">
-              {packages.map((pkg) => (
-                <div key={pkg.id} className="flex flex-wrap items-center justify-between gap-3 py-4">
-                  <div className="min-w-0">
-                    <div className="flex items-center gap-2">
-                      <span className="font-medium text-[var(--foreground)]">{pkg.name}</span>
-                      <span className={`rounded-full border px-2 py-0.5 text-[11px] font-semibold uppercase tracking-[0.06em] ${pkg.status === "delivered" || pkg.status === "ready" ? "border-emerald-200 bg-emerald-50 text-emerald-700" : "border-indigo-200 bg-indigo-50 text-indigo-700"}`}>
-                        {pkg.status}
-                      </span>
+            {packages.length === 0 ? (
+              <div className="py-12 text-center">
+                <CardTitle>No ready-to-publish packages yet</CardTitle>
+                <BodyText muted className="mt-2">
+                  Ready-to-publish packages are created automatically when the content bundle is ready to deliver.
+                </BodyText>
+              </div>
+            ) : (
+              <div className="divide-y divide-[var(--border)]">
+                {packages.map((pkg) => (
+                  <div key={pkg.id} className="flex flex-wrap items-center justify-between gap-3 py-4">
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-2">
+                        <span className="font-medium text-[var(--foreground)]">{pkg.name}</span>
+                        <span className={`rounded-full border px-2 py-0.5 text-[11px] font-semibold uppercase tracking-[0.06em] ${pkg.status === "delivered" || pkg.status === "ready" ? "border-emerald-200 bg-emerald-50 text-emerald-700" : "border-indigo-200 bg-indigo-50 text-indigo-700"}`}>
+                          {pkg.status}
+                        </span>
+                      </div>
+                      <BodyText muted className="mt-0.5 text-[13px]">{pkg.downloadCount} downloads</BodyText>
                     </div>
-                    <BodyText muted className="mt-0.5 text-[13px]">{pkg.downloadCount} downloads</BodyText>
+                    <div className="flex items-center gap-2">
+                      <Button asChild variant="secondary" size="sm">
+                        <Link href={buildWorkspaceHref(`/package/${pkg.id}`, workspaceSlug)}>Open</Link>
+                      </Button>
+                      <Button
+                        variant="secondary"
+                        size="sm"
+                        onClick={() => navigator.clipboard.writeText(`${window.location.origin}/package/${pkg.id}`)}
+                      >
+                        Copy Link
+                      </Button>
+                      <Button
+                        variant="secondary"
+                        size="sm"
+                        className="text-rose-600 hover:bg-rose-50"
+                        onClick={() => handleDeletePackage(pkg.id)}
+                      >
+                        Delete
+                      </Button>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <Button
-                      variant="secondary"
-                      size="sm"
-                      onClick={() => navigator.clipboard.writeText(`${window.location.origin}/package/${pkg.id}`)}
-                    >
-                      Copy Link
-                    </Button>
-                    <Button
-                      variant="secondary"
-                      size="sm"
-                      className="text-rose-600 hover:bg-rose-50"
-                      onClick={() => handleDeletePackage(pkg.id)}
-                    >
-                      Delete
-                    </Button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
+                ))}
+              </div>
+            )}
+          </div>
         </div>
       )}
 
