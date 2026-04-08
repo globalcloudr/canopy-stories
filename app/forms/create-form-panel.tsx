@@ -1,6 +1,7 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import Link from "next/link";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Badge, BodyText, Button, Card, CardTitle, FieldLabel, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@canopy/ui";
 import { apiFetch } from "@/lib/api-client";
@@ -22,6 +23,7 @@ export function CreateFormPanel({ projects }: CreateFormPanelProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const workspaceSlug = searchParams.get("workspace")?.trim() || null;
+  const requestedTemplateId = searchParams.get("template")?.trim() || "";
   const [projectId, setProjectId] = useState<string>("");
   const [templateId, setTemplateId] = useState<string>("");
   const [state, setState] = useState<CreateState>({ type: "idle" });
@@ -32,6 +34,17 @@ export function CreateFormPanel({ projects }: CreateFormPanelProps) {
   );
 
   const hasLiveProjects = projects.length > 0;
+
+  useEffect(() => {
+    if (!requestedTemplateId) {
+      return;
+    }
+
+    const matchingTemplate = referenceIntakeTemplates.find((template) => template.id === requestedTemplateId);
+    if (matchingTemplate) {
+      setTemplateId(matchingTemplate.id);
+    }
+  }, [requestedTemplateId]);
 
   async function handleCreate() {
     if (!projectId || !templateId) {
@@ -128,9 +141,18 @@ export function CreateFormPanel({ projects }: CreateFormPanelProps) {
 
       {!hasLiveProjects ? (
         <div className="mt-5 rounded-[24px] border border-amber-200 bg-amber-50 px-4 py-3">
-          <BodyText className="text-amber-800">
-            No projects are ready yet. Create a project first, then come back here to build and share a form.
-          </BodyText>
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <BodyText className="text-amber-800">
+              No projects are ready yet. Create a project first, then come back here to build and share a form.
+            </BodyText>
+            {templateId ? (
+              <Button asChild variant="secondary" size="sm">
+                <Link href={buildWorkspaceHref(`/projects?start=create-project&template=${templateId}`, workspaceSlug)}>
+                  Create project with this template
+                </Link>
+              </Button>
+            ) : null}
+          </div>
         </div>
       ) : null}
 

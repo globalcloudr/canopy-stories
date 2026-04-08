@@ -58,6 +58,8 @@ export function ProjectsClient({ initial }: { initial: FlatProject[] }) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const workspaceSlug = searchParams.get("workspace")?.trim() || null;
+  const requestedTemplateId = searchParams.get("template")?.trim() || "";
+  const requestedLaunchMode = searchParams.get("start")?.trim() || "";
   const activeWorkspaceId = useStoriesWorkspaceId();
   const [projects, setProjects] = useState<FlatProject[]>(initial);
   const [orgs, setOrgs] = useState<Org[]>([]);
@@ -77,6 +79,8 @@ export function ProjectsClient({ initial }: { initial: FlatProject[] }) {
   const [step3Open, setStep3Open] = useState(false);
   const [wizardFormSlug, setWizardFormSlug] = useState<string | null>(null);
   const [copyFeedback, setCopyFeedback] = useState<string | null>(null);
+  const [templateLaunchHandled, setTemplateLaunchHandled] = useState(false);
+  const [projectLaunchTemplateId, setProjectLaunchTemplateId] = useState("");
 
   const [form, setForm] = useState({
     workspaceId: "",
@@ -140,6 +144,23 @@ export function ProjectsClient({ initial }: { initial: FlatProject[] }) {
     }
   }, [activeWorkspaceId]);
 
+  useEffect(() => {
+    if (requestedLaunchMode !== "create-project" || templateLaunchHandled) {
+      return;
+    }
+
+    const requestedTemplate = referenceIntakeTemplates.find((template) => template.id === requestedTemplateId) ?? null;
+    if (requestedTemplate) {
+      setProjectLaunchTemplateId(requestedTemplate.id);
+      setSelectedTemplateId(requestedTemplate.id);
+      setFormTitle(requestedTemplate.name);
+    }
+
+    setDialogOpen(true);
+    setTemplateLaunchHandled(true);
+    router.replace(buildWorkspaceHref("/projects", workspaceSlug));
+  }, [requestedLaunchMode, requestedTemplateId, templateLaunchHandled, router, workspaceSlug]);
+
   async function refreshProjects() {
     try {
       const target = activeWorkspaceId
@@ -172,8 +193,9 @@ export function ProjectsClient({ initial }: { initial: FlatProject[] }) {
       setDialogOpen(false);
       setForm((f) => ({ workspaceId: f.workspaceId, name: "", description: "", storyCountTarget: "", deadlineAt: "" }));
       setWizardProjectId(payload.id ?? null);
-      setSelectedTemplateId("");
-      setFormTitle("");
+      const requestedTemplate = referenceIntakeTemplates.find((template) => template.id === projectLaunchTemplateId) ?? null;
+      setSelectedTemplateId(requestedTemplate?.id ?? selectedTemplateId);
+      setFormTitle(requestedTemplate?.name ?? formTitle);
       setStep2Open(true);
       await refreshProjects();
     } catch (err) {
@@ -378,7 +400,18 @@ export function ProjectsClient({ initial }: { initial: FlatProject[] }) {
       )}
 
       {/* Create project dialog */}
-      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+      <Dialog
+        open={dialogOpen}
+        onOpenChange={(open) => {
+          setDialogOpen(open);
+          if (!open) {
+            setError(null);
+            setProjectLaunchTemplateId("");
+            setSelectedTemplateId("");
+            setFormTitle("");
+          }
+        }}
+      >
         <DialogContent className="sm:max-w-lg">
           <DialogHeader>
             <DialogTitle>Create New Project</DialogTitle>
@@ -388,6 +421,16 @@ export function ProjectsClient({ initial }: { initial: FlatProject[] }) {
           </DialogHeader>
 
           <div className="space-y-4 py-3">
+            {projectLaunchTemplateId ? (
+              <div className="rounded-2xl border border-[#d7e3f3] bg-[#edf3fb] px-4 py-4">
+                <p className="text-sm font-semibold text-[var(--foreground)]">
+                  Creating a project from {referenceIntakeTemplates.find((template) => template.id === projectLaunchTemplateId)?.name ?? "a starter template"}
+                </p>
+                <BodyText muted className="mt-1 text-[13px]">
+                  After you create the project, we&apos;ll take you straight to the matching form setup.
+                </BodyText>
+              </div>
+            ) : null}
             {orgs.length > 1 && (
               <div className="space-y-2">
                 <FieldLabel>Workspace (School / Organization)</FieldLabel>
@@ -453,7 +496,7 @@ export function ProjectsClient({ initial }: { initial: FlatProject[] }) {
           </div>
 
           <DialogFooter>
-            <Button variant="secondary" onClick={() => { setDialogOpen(false); setError(null); }}>
+            <Button variant="secondary" onClick={() => { setDialogOpen(false); setError(null); setProjectLaunchTemplateId(""); setSelectedTemplateId(""); setFormTitle(""); }}>
               Cancel
             </Button>
             <Button variant="primary" onClick={handleCreate} disabled={submitting}>
@@ -476,7 +519,7 @@ export function ProjectsClient({ initial }: { initial: FlatProject[] }) {
               Choose an intake form template
             </DialogTitle>
             <DialogDescription>
-              Pick the template that best fits your story type. All fields are pre-filled — you can customize them later from the project page.
+              Pick the template that best fits your story type. All fields are pre-filled, and you can customize them later from the project page.
             </DialogDescription>
           </DialogHeader>
 

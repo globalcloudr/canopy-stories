@@ -40,7 +40,7 @@ export default async function FormsPage({
     >
       <CreateFormPanel projects={projects} />
 
-      <section className="rounded-[28px] border border-[#dfe7f4] bg-transparent p-6 shadow-none sm:p-7">
+      <section id="starter-templates" className="rounded-[28px] border border-[#dfe7f4] bg-transparent p-6 shadow-none sm:p-7">
         <Eyebrow className="text-[#2f76dd]">Starter templates</Eyebrow>
         <SectionTitle className="mt-3">Start with a proven intake form</SectionTitle>
         <BodyText muted className="mt-3">
@@ -59,6 +59,18 @@ export default async function FormsPage({
               <BodyText muted className="mt-2">{template.description}</BodyText>
               <div className="mt-4 rounded-[20px] border border-[#d7e3f3] bg-[#edf3fb] px-4 py-3 text-sm text-[var(--text-muted)]">
                 {template.fields.length} fields
+              </div>
+              <div className="mt-4 flex flex-wrap gap-3">
+                <Button asChild variant="secondary" size="sm">
+                  <Link href={buildWorkspaceHref(`/forms?template=${template.id}#create-form`, workspaceSlug)}>
+                    Use in existing project
+                  </Link>
+                </Button>
+                <Button asChild variant="primary" size="sm">
+                  <Link href={buildWorkspaceHref(`/projects?start=create-project&template=${template.id}`, workspaceSlug)}>
+                    Create project with this template
+                  </Link>
+                </Button>
               </div>
             </Card>
           ))}

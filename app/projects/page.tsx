@@ -1,16 +1,21 @@
 "use client"
 export const dynamic = "force-dynamic";
 
+import Link from "next/link";
 import { useState, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import { BodyText, Button, Card, CardTitle } from "@canopy/ui";
 import { StoriesShell } from "@/app/_components/stories-shell";
 import { ProjectsClient } from "@/app/projects/projects-client";
 import { apiFetchArray } from "@/lib/api-client";
 import type { FlatProject } from "@/lib/stories-data";
 import { useStoriesWorkspaceId } from "@/lib/workspace-client";
+import { buildWorkspaceHref } from "@/lib/workspace-href";
 
 export default function ProjectsPage() {
   const workspaceId = useStoriesWorkspaceId();
+  const searchParams = useSearchParams();
+  const workspaceSlug = searchParams.get("workspace")?.trim() || null;
   const [projects, setProjects] = useState<FlatProject[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -35,15 +40,20 @@ export default function ProjectsPage() {
       subtitle="Manage campaigns and track automated story production"
       headerMeta={loading ? undefined : `${projects.length} project${projects.length === 1 ? "" : "s"}`}
       headerActions={
-        <Button
-          variant="primary"
-          type="button"
-          onClick={() => {
-            document.getElementById("open-create-project")?.click();
-          }}
-        >
-          Create Project
-        </Button>
+        <>
+          <Button asChild variant="secondary">
+            <Link href={buildWorkspaceHref("/forms#starter-templates", workspaceSlug)}>Browse templates</Link>
+          </Button>
+          <Button
+            variant="primary"
+            type="button"
+            onClick={() => {
+              document.getElementById("open-create-project")?.click();
+            }}
+          >
+            Create Project
+          </Button>
+        </>
       }
     >
       {loading ? (
