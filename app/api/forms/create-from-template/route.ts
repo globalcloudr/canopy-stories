@@ -21,7 +21,7 @@ export async function POST(request: Request) {
     const created = await createFormFromReferenceTemplate(body.projectId, body.templateId);
 
     return NextResponse.json({
-      message: "Live form created from reference template.",
+      message: "Form created and ready to share.",
       id: created.id,
       publicSlug: created.public_slug,
     });

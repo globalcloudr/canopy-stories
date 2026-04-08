@@ -246,7 +246,7 @@ export function ProjectsClient({ initial }: { initial: FlatProject[] }) {
         "Please take a few minutes to complete this short form:",
         shareableFormLink,
         "",
-        "Your responses will help us create a story package with copy and visuals for our team.",
+        "Your responses will help us prepare a polished story with copy and visuals for our team.",
         "",
         "Thank you!",
       ].join("\n")
@@ -549,7 +549,7 @@ export function ProjectsClient({ initial }: { initial: FlatProject[] }) {
               Your project is ready
             </DialogTitle>
             <DialogDescription>
-              Here&apos;s your intake form link. Share it with students or subjects — no login required.
+              Here&apos;s your intake form link. Share it with students, staff, or partners. No login is required.
             </DialogDescription>
           </DialogHeader>
 
@@ -623,7 +623,7 @@ export function ProjectsClient({ initial }: { initial: FlatProject[] }) {
                 {[
                   { n: "1", text: "Copy the link or email message above and send it to the student, staff member, or partner you want to feature." },
                   { n: "2", text: "Watch for their response in your project. Canopy Stories will automatically turn it into draft content and visuals." },
-                  { n: "3", text: "Review the story, approve the content you want to use, and download the final package when it is ready." },
+                  { n: "3", text: "Review the story, approve the content you want to use, and download the ready-to-publish package when it is ready." },
                 ].map((step) => (
                   <li key={step.n} className="flex gap-3">
                     <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-indigo-100 text-xs font-bold text-indigo-700">

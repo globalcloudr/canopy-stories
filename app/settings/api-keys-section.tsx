@@ -350,9 +350,9 @@ export function ApiKeysSection() {
   return (
     <div className="divide-y divide-[var(--border)]">
       <div className="py-4">
-        <CardTitle className="text-base">Package ready notifications</CardTitle>
+        <CardTitle className="text-base">Ready-to-publish package alerts</CardTitle>
         <BodyText muted className="mt-1 text-[13px]">
-          Where to send an email when a story package is ready to review and download.
+          Choose where your team should receive an email when a story is ready to review and download.
         </BodyText>
         <div className="mt-3">
           <Input
@@ -455,7 +455,7 @@ export function ApiKeysSection() {
           </BodyText>
         ) : (
           <BodyText muted className="text-[13px]">
-            API keys save from each row immediately. Notification email changes save here.
+            Save each API key from its row. Use Save email after updating the notification inbox.
           </BodyText>
         )}
         <Button variant="primary" size="sm" onClick={handleSaveNotificationEmail} disabled={savingEmail || !hasEmailChanges}>

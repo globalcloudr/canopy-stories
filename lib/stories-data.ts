@@ -1030,7 +1030,7 @@ export async function listLiveProjectOptions(workspaceSlug?: string | null) {
     .map((project) => ({
       id: `sample:${project.id}`,
       workspaceId: workspaceBySlug.get(project.workspaceSlug)?.id ?? "",
-      name: `${project.name} (Reference)`,
+      name: project.name,
       source: "reference" as const,
     }));
 

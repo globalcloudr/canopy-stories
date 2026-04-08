@@ -48,7 +48,7 @@ export default function HelpPage() {
       activeNav="help"
       eyebrow="Help"
       title="User guide"
-      subtitle="How Canopy Stories works and how to get the most out of it"
+      subtitle="Learn the workflow and help your team get the most out of Canopy Stories"
     >
       <div className="mx-auto max-w-3xl space-y-10">
 
@@ -56,17 +56,16 @@ export default function HelpPage() {
         <Section title="How Canopy Stories works">
           <Card padding="md" className="border border-[#dfe7f4] bg-transparent shadow-none sm:p-8">
             <BodyText className="mb-6 text-[15px]">
-              Canopy Stories automates the production of success stories — from collecting responses to
-              delivering a ready-to-publish package of blog posts, social captions, press releases, and
-              graphics. Each story moves through six stages automatically.
+              Canopy Stories helps your team collect responses, turn them into polished school stories,
+              and prepare copy and visuals your team can publish. Each story moves through six stages automatically.
             </BodyText>
             <div className="space-y-5">
               <Step number={1} title="Form sent" description="You create an intake form and share the link with your subject — a student, graduate, employer, or partner. The form collects their story in their own words." />
-              <Step number={2} title="Response received" description="When the form is submitted, Canopy Stories creates a story record and queues it for production. You can track all responses in the Responses view." />
-              <Step number={3} title="Writing content" description="The AI writer drafts a blog post, social captions, a newsletter feature, and a press release based on the submission. This usually takes under a minute." />
+              <Step number={2} title="Response received" description="When someone completes the form, Canopy Stories creates a story record and starts the workflow. You can track every response in the Responses view." />
+              <Step number={3} title="Writing content" description="Canopy Stories drafts a blog post, social captions, a newsletter feature, and a press release based on the response. This usually takes under a minute." />
               <Step number={4} title="Creating graphics" description="Branded graphic assets and short-form video clips are generated for social media and your website." />
               <Step number={5} title="Preparing delivery" description="All content and assets are bundled into a ready-to-publish package with download links." />
-              <Step number={6} title="Delivered" description="The ready-to-publish package is ready. Your team receives an email notification and can review, approve, and download everything from the story detail page." />
+              <Step number={6} title="Delivered" description="When everything is ready, your team receives an email update and can review, approve, and download everything from the story detail page." />
             </div>
           </Card>
         </Section>
@@ -81,7 +80,7 @@ export default function HelpPage() {
                   Go to <Link href="/settings" className="underline underline-offset-2">Settings</Link> and add
                   your OpenAI API key and video generation API key. These power the content and graphics
                   workflow. You can also set a notification email so your team is alerted when
-                  each ready-to-publish package is ready.
+                  each ready-to-publish package is available.
                 </BodyText>
               </div>
               <div>
@@ -110,7 +109,7 @@ export default function HelpPage() {
                 </BodyText>
               </div>
               <div>
-                <CardTitle className="text-base">5. Download the ready-to-publish package</CardTitle>
+                <CardTitle className="text-base">5. Download your ready-to-publish package</CardTitle>
                 <BodyText muted className="mt-2 text-[14px]">
                   Click <strong>View Ready-to-Publish Package</strong> on any delivered story to access the full delivery
                   bundle — blog post, captions, press release, newsletter copy, and all media files.
@@ -145,8 +144,8 @@ export default function HelpPage() {
                 answer="Video assets are generated via your video API key (JSON2Video or Creatomate) and stored as links in the ready-to-publish package. They are available to download from the package page."
               />
               <Faq
-                question="Who receives the 'package ready' email notification?"
-                answer="The email address saved under Settings → Package ready notifications. Only one address is supported per workspace. Make sure it's the inbox your team monitors."
+                question="Who receives the ready-to-publish package email update?"
+                answer="The email address saved under Settings → Ready-to-publish package alerts. Only one address is supported per workspace. Make sure it is the inbox your team monitors."
               />
               <Faq
                 question="Can I delete a story or project?"

@@ -35,7 +35,7 @@ export function CreateFormPanel({ projects }: CreateFormPanelProps) {
 
   async function handleCreate() {
     if (!projectId || !templateId) {
-      setState({ type: "error", message: "Choose a project and a reference template first." });
+      setState({ type: "error", message: "Choose a project and a starter template first." });
       return;
     }
 
@@ -56,7 +56,7 @@ export function CreateFormPanel({ projects }: CreateFormPanelProps) {
         throw new Error(payload.error || "Could not create form.");
       }
 
-      setState({ type: "success", message: payload.message || "Form created from reference template." });
+      setState({ type: "success", message: payload.message || "Form created and ready to share." });
       router.push(buildWorkspaceHref("/forms", workspaceSlug));
       router.refresh();
     } catch (error) {
@@ -71,10 +71,10 @@ export function CreateFormPanel({ projects }: CreateFormPanelProps) {
     <Card id="create-form" padding="md" className="sm:p-7">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
-          <Badge variant="sky" className="text-[11px] uppercase tracking-[0.08em]">Create live form</Badge>
-          <CardTitle className="mt-3 text-xl">Promote a reference template into a real form</CardTitle>
+          <Badge variant="sky" className="text-[11px] uppercase tracking-[0.08em]">Create form</Badge>
+          <CardTitle className="mt-3 text-xl">Create a shareable intake form</CardTitle>
           <BodyText muted className="mt-2">
-            This uses the mature template set from the existing Stories app and creates a real `story_forms` row in Supabase.
+            Choose a project and a starter template to create a form you can share with students, staff, and partners.
           </BodyText>
         </div>
       </div>
@@ -84,7 +84,7 @@ export function CreateFormPanel({ projects }: CreateFormPanelProps) {
           <FieldLabel>Project</FieldLabel>
           <Select value={projectId} onValueChange={setProjectId} disabled={!hasLiveProjects}>
             <SelectTrigger>
-              <SelectValue placeholder={hasLiveProjects ? "Choose a live or reference project" : "No project options yet"} />
+              <SelectValue placeholder={hasLiveProjects ? "Choose a project" : "Create a project first"} />
             </SelectTrigger>
             <SelectContent>
               {projects.map((project) => (
@@ -97,10 +97,10 @@ export function CreateFormPanel({ projects }: CreateFormPanelProps) {
         </div>
 
         <div className="space-y-2">
-          <FieldLabel>Reference template</FieldLabel>
+          <FieldLabel>Starter template</FieldLabel>
           <Select value={templateId} onValueChange={setTemplateId}>
             <SelectTrigger>
-              <SelectValue placeholder="Choose a tested template" />
+              <SelectValue placeholder="Choose a template" />
             </SelectTrigger>
             <SelectContent>
               {referenceIntakeTemplates.map((template) => (
@@ -129,8 +129,7 @@ export function CreateFormPanel({ projects }: CreateFormPanelProps) {
       {!hasLiveProjects ? (
         <div className="mt-5 rounded-[24px] border border-amber-200 bg-amber-50 px-4 py-3">
           <BodyText className="text-amber-800">
-            No usable project options were found yet. Make sure the target workspace exists in Canopy so Stories can
-            create a real project and form from the reference setup.
+            No projects are ready yet. Create a project first, then come back here to build and share a form.
           </BodyText>
         </div>
       ) : null}
@@ -149,7 +148,7 @@ export function CreateFormPanel({ projects }: CreateFormPanelProps) {
 
       <div className="mt-5">
         <Button type="button" variant="primary" onClick={handleCreate} disabled={!hasLiveProjects || state.type === "submitting"}>
-          {state.type === "submitting" ? "Creating..." : "Create live form"}
+          {state.type === "submitting" ? "Creating..." : "Create form"}
         </Button>
       </div>
     </Card>

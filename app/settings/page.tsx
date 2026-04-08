@@ -68,38 +68,38 @@ export default function SettingsPage() {
       activeNav="settings"
       eyebrow="Settings"
       title="Settings"
-      subtitle="Manage your platform preferences and configuration"
+      subtitle="Manage your team setup, alerts, and story workflow"
     >
       <div className="mx-auto w-full max-w-4xl space-y-8">
         <SettingSection
-          title="Automation"
-          description="Configure how the workflow processes stories"
+          title="Story workflow"
+          description="Choose how Canopy Stories handles drafts, graphics, and delivery"
         >
           <SettingRow
-            title="Auto-generate content on submission"
-            description="Trigger AI content generation when a form is submitted"
+            title="Start drafts automatically"
+            description="Begin drafting content as soon as someone submits a form"
           />
           <SettingRow
-            title="Create packages automatically"
-            description="Bundle content into packages as soon as all assets are ready"
+            title="Build ready-to-publish packages automatically"
+            description="Prepare the full download package as soon as graphics and video are ready"
           />
           <StaticField
-            label="Processing timeout"
-            value="15 minutes — maximum time before marking a story as failed"
+            label="Processing window"
+            value="Up to 15 minutes before a story is marked for follow-up"
           />
         </SettingSection>
 
         <SettingSection
           title="Notifications"
-          description="Choose when and how you receive notifications"
+          description="Choose which updates your team receives"
         >
           <SettingRow
             title="Email notifications"
             description="Receive updates about story completion and errors"
           />
           <SettingRow
-            title="Package ready notifications"
-            description="Alert when content packages are ready for download"
+            title="Ready-to-publish package alerts"
+            description="Send an email when a story is ready for review and download"
           />
           <StaticField
             label="Notification email"
@@ -109,7 +109,7 @@ export default function SettingsPage() {
 
         <SettingSection
           title="Branding"
-          description="Customize how your organization appears to clients"
+          description="Customize how your school appears in story materials"
         >
           <StaticField label="Organization name" value="Akkedis Digital" />
           <StaticField
