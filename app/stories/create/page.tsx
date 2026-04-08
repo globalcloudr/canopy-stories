@@ -19,7 +19,7 @@ export default async function CreateStoryPage({
       activeNav="stories"
       eyebrow="Stories"
       title="Create Success Story"
-      subtitle="Collect source information manually and start the automation pipeline."
+      subtitle="Collect source information manually and start the automation workflow."
       headerActions={
         <Link href={buildWorkspaceHref("/stories", workspaceSlug)}>
           <Button variant="secondary">Back to Stories</Button>

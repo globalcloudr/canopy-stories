@@ -56,17 +56,17 @@ export default function HelpPage() {
         <Section title="How Canopy Stories works">
           <Card padding="md" className="border border-[#dfe7f4] bg-transparent shadow-none sm:p-8">
             <BodyText className="mb-6 text-[15px]">
-              Canopy Stories automates the production of success stories — from collecting submissions to
+              Canopy Stories automates the production of success stories — from collecting responses to
               delivering a ready-to-publish package of blog posts, social captions, press releases, and
               graphics. Each story moves through six stages automatically.
             </BodyText>
             <div className="space-y-5">
               <Step number={1} title="Form sent" description="You create an intake form and share the link with your subject — a student, graduate, employer, or partner. The form collects their story in their own words." />
-              <Step number={2} title="Response received" description="When the form is submitted, Canopy Stories creates a story record and queues it for production. You can track all submissions in the Submissions view." />
+              <Step number={2} title="Response received" description="When the form is submitted, Canopy Stories creates a story record and queues it for production. You can track all responses in the Responses view." />
               <Step number={3} title="Writing content" description="The AI writer drafts a blog post, social captions, a newsletter feature, and a press release based on the submission. This usually takes under a minute." />
               <Step number={4} title="Creating graphics" description="Branded graphic assets and short-form video clips are generated for social media and your website." />
-              <Step number={5} title="Packaging" description="All content and assets are bundled into a delivery package with download links." />
-              <Step number={6} title="Delivered" description="The package is ready. Your team receives an email notification and can review, approve, and download everything from the story detail page." />
+              <Step number={5} title="Preparing delivery" description="All content and assets are bundled into a ready-to-publish package with download links." />
+              <Step number={6} title="Delivered" description="The ready-to-publish package is ready. Your team receives an email notification and can review, approve, and download everything from the story detail page." />
             </div>
           </Card>
         </Section>
@@ -80,8 +80,8 @@ export default function HelpPage() {
                 <BodyText muted className="mt-2 text-[14px]">
                   Go to <Link href="/settings" className="underline underline-offset-2">Settings</Link> and add
                   your OpenAI API key and video generation API key. These power the content and graphics
-                  production pipeline. You can also set a notification email so your team is alerted when
-                  each package is ready.
+                  workflow. You can also set a notification email so your team is alerted when
+                  each ready-to-publish package is ready.
                 </BodyText>
               </div>
               <div>
@@ -110,9 +110,9 @@ export default function HelpPage() {
                 </BodyText>
               </div>
               <div>
-                <CardTitle className="text-base">5. Download the package</CardTitle>
+                <CardTitle className="text-base">5. Download the ready-to-publish package</CardTitle>
                 <BodyText muted className="mt-2 text-[14px]">
-                  Click <strong>View Package</strong> on any delivered story to access the full delivery
+                  Click <strong>View Ready-to-Publish Package</strong> on any delivered story to access the full delivery
                   bundle — blog post, captions, press release, newsletter copy, and all media files.
                 </BodyText>
               </div>
@@ -130,11 +130,11 @@ export default function HelpPage() {
               />
               <Faq
                 question="Can I edit the AI-generated content before publishing?"
-                answer="Yes. The content in each story package is meant to be a strong first draft. Copy it into your website CMS, email tool, or social platform and make any adjustments you need before publishing."
+                answer="Yes. The content in each ready-to-publish package is meant to be a strong first draft. Copy it into your website CMS, email tool, or social platform and make any adjustments you need before publishing."
               />
               <Faq
                 question="How do I send a form to multiple people?"
-                answer="Each intake form has a single public link that can be shared with anyone. The same link works for multiple submissions — every submission creates a separate story record."
+                answer="Each intake form has a single public link that can be shared with anyone. The same link works for multiple responses — every response creates a separate story record."
               />
               <Faq
                 question="What story types are supported?"
@@ -142,7 +142,7 @@ export default function HelpPage() {
               />
               <Faq
                 question="Where are the video assets stored?"
-                answer="Video assets are generated via your video API key (JSON2Video or Creatomate) and stored as links in the story package. They are available to download from the package page."
+                answer="Video assets are generated via your video API key (JSON2Video or Creatomate) and stored as links in the ready-to-publish package. They are available to download from the package page."
               />
               <Faq
                 question="Who receives the 'package ready' email notification?"

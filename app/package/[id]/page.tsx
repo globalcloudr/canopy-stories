@@ -39,7 +39,7 @@ export default async function PublicPackagePage({ params, searchParams }: Public
     <PublicStoriesFrame
       eyebrow={snapshot.workspaceName}
       title={snapshot.story ? `${snapshot.story.title}` : snapshot.storyPackage.name}
-      subtitle={`Here's the content package for ${snapshot.projectName}.`}
+      subtitle={`Here's the ready-to-publish package for ${snapshot.projectName}.`}
     >
       <Card padding="md" className="sm:p-8">
         <div className="flex flex-wrap items-start justify-between gap-4">
@@ -57,7 +57,7 @@ export default async function PublicPackagePage({ params, searchParams }: Public
         <div className="mt-6 flex flex-wrap gap-3">
           {snapshot.storyPackage.packageUrl ? (
             <a href={snapshot.storyPackage.packageUrl} target="_blank" rel="noopener noreferrer">
-              <Button variant="primary">Download Package</Button>
+              <Button variant="primary">Download Ready-to-Publish Package</Button>
             </a>
           ) : (
             <Button variant="secondary">Download All Content</Button>

@@ -76,6 +76,7 @@ export function ProjectsClient({ initial }: { initial: FlatProject[] }) {
   const [step2Error, setStep2Error] = useState<string | null>(null);
   const [step3Open, setStep3Open] = useState(false);
   const [wizardFormSlug, setWizardFormSlug] = useState<string | null>(null);
+  const [copyFeedback, setCopyFeedback] = useState<string | null>(null);
 
   const [form, setForm] = useState({
     workspaceId: "",
@@ -226,6 +227,42 @@ export function ProjectsClient({ initial }: { initial: FlatProject[] }) {
       setStep2Error(err instanceof Error ? err.message : "Failed to create form.");
     } finally {
       setStep2Submitting(false);
+    }
+  }
+
+  const shareableFormLink = wizardFormSlug
+    ? typeof window !== "undefined"
+      ? `${window.location.origin}/forms/${wizardFormSlug}`
+      : `/forms/${wizardFormSlug}`
+    : "";
+  const suggestedEmailSubject = form.name.trim()
+    ? `Share your story for ${form.name}`
+    : "Share your story with us";
+  const suggestedEmailBody = shareableFormLink
+    ? [
+        "Hi,",
+        "",
+        "We would love to feature your story in upcoming school marketing and outreach.",
+        "Please take a few minutes to complete this short form:",
+        shareableFormLink,
+        "",
+        "Your responses will help us create a story package with copy and visuals for our team.",
+        "",
+        "Thank you!",
+      ].join("\n")
+    : "";
+
+  async function copyText(value: string, label: string) {
+    if (!value.trim()) return;
+
+    try {
+      await navigator.clipboard.writeText(value);
+      setCopyFeedback(`${label} copied.`);
+      window.setTimeout(() => {
+        setCopyFeedback((current) => (current === `${label} copied.` ? null : current));
+      }, 2000);
+    } catch {
+      setCopyFeedback(`Could not copy ${label.toLowerCase()}.`);
     }
   }
 
@@ -503,7 +540,7 @@ export function ProjectsClient({ initial }: { initial: FlatProject[] }) {
       </Dialog>
 
       {/* Step 3 — You're all set */}
-      <Dialog open={step3Open} onOpenChange={setStep3Open}>
+      <Dialog open={step3Open} onOpenChange={(open) => { setStep3Open(open); if (!open) setCopyFeedback(null); }}>
         <DialogContent className="sm:max-w-lg">
           <DialogHeader>
             <DialogTitle>
@@ -519,16 +556,16 @@ export function ProjectsClient({ initial }: { initial: FlatProject[] }) {
           <div className="space-y-5 py-2">
             {/* Shareable link */}
             {wizardFormSlug && (
-              <div className="space-y-2">
+              <div className="space-y-3">
                 <FieldLabel>Shareable form link</FieldLabel>
                 <div className="flex items-center gap-2">
                   <div className="flex-1 truncate rounded-xl border border-[var(--border)] bg-[var(--surface-muted)] px-3 py-2 text-sm font-mono text-[var(--foreground)]">
-                    {typeof window !== "undefined" ? `${window.location.origin}/forms/${wizardFormSlug}` : `/forms/${wizardFormSlug}`}
+                    {shareableFormLink}
                   </div>
                   <Button
                     variant="secondary"
                     size="sm"
-                    onClick={() => navigator.clipboard.writeText(`${window.location.origin}/forms/${wizardFormSlug}`)}
+                    onClick={() => void copyText(shareableFormLink, "Form link")}
                   >
                     Copy
                   </Button>
@@ -536,14 +573,57 @@ export function ProjectsClient({ initial }: { initial: FlatProject[] }) {
               </div>
             )}
 
+            {wizardFormSlug ? (
+              <div className="space-y-4 rounded-2xl border border-[var(--border)] bg-[var(--surface-muted)] p-4">
+                <div>
+                  <p className="text-sm font-semibold text-[var(--foreground)]">Suggested email subject</p>
+                  <div className="mt-2 flex items-center gap-2">
+                    <div className="flex-1 rounded-xl border border-[var(--border)] bg-white px-3 py-2 text-sm text-[var(--foreground)]">
+                      {suggestedEmailSubject}
+                    </div>
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      onClick={() => void copyText(suggestedEmailSubject, "Email subject")}
+                    >
+                      Copy
+                    </Button>
+                  </div>
+                </div>
+
+                <div>
+                  <p className="text-sm font-semibold text-[var(--foreground)]">Suggested email message</p>
+                  <div className="mt-2 rounded-xl border border-[var(--border)] bg-white p-3">
+                    <pre className="whitespace-pre-wrap text-sm leading-6 text-[var(--foreground)]">{suggestedEmailBody}</pre>
+                  </div>
+                  <div className="mt-2 flex flex-wrap gap-2">
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      onClick={() => void copyText(suggestedEmailBody, "Email message")}
+                    >
+                      Copy message
+                    </Button>
+                    <Button asChild variant="secondary" size="sm">
+                      <a
+                        href={`mailto:?subject=${encodeURIComponent(suggestedEmailSubject)}&body=${encodeURIComponent(suggestedEmailBody)}`}
+                      >
+                        Open email draft
+                      </a>
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            ) : null}
+
             {/* Next steps */}
             <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface-muted)] p-4">
-              <p className="mb-3 text-sm font-semibold text-[var(--foreground)]">What happens next</p>
+              <p className="mb-3 text-sm font-semibold text-[var(--foreground)]">What to do next</p>
               <ol className="space-y-3">
                 {[
-                  { n: "1", text: "Share the form link with students, staff, or partners — they fill it out with no login required." },
-                  { n: "2", text: "When they submit, Canopy Stories automatically generates a blog post, social media content, newsletter feature, and press release." },
-                  { n: "3", text: "Review the generated content in your project, then download and share the final package." },
+                  { n: "1", text: "Copy the link or email message above and send it to the student, staff member, or partner you want to feature." },
+                  { n: "2", text: "Watch for their response in your project. Canopy Stories will automatically turn it into draft content and visuals." },
+                  { n: "3", text: "Review the story, approve the content you want to use, and download the final package when it is ready." },
                 ].map((step) => (
                   <li key={step.n} className="flex gap-3">
                     <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-indigo-100 text-xs font-bold text-indigo-700">
@@ -554,6 +634,12 @@ export function ProjectsClient({ initial }: { initial: FlatProject[] }) {
                 ))}
               </ol>
             </div>
+
+            {copyFeedback ? (
+              <div className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
+                {copyFeedback}
+              </div>
+            ) : null}
           </div>
 
           <DialogFooter>

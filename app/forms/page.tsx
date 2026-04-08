@@ -24,8 +24,8 @@ export default async function FormsPage({
     <StoriesShell
       activeNav="projects"
       eyebrow="Forms"
-      title="Templates and public intake"
-      subtitle="This page now reads from the Stories product data layer. Public forms here can become real submission entry points instead of staying as static previews."
+      title="Forms"
+      subtitle="Choose a template, create a shareable intake form, and collect story responses for your school."
       headerMeta={`${forms.length} active form${forms.length === 1 ? "" : "s"} across ${workspaces.length} workspace${workspaces.length === 1 ? "" : "s"}`}
       headerActions={
         <>
@@ -41,11 +41,11 @@ export default async function FormsPage({
       <CreateFormPanel projects={projects} />
 
       <section className="rounded-[28px] border border-[#dfe7f4] bg-transparent p-6 shadow-none sm:p-7">
-        <Eyebrow className="text-[#2f76dd]">Reference templates</Eyebrow>
-        <SectionTitle className="mt-3">Promoted from the mature Stories app</SectionTitle>
+        <Eyebrow className="text-[#2f76dd]">Starter templates</Eyebrow>
+        <SectionTitle className="mt-3">Start with a proven intake form</SectionTitle>
         <BodyText muted className="mt-3">
-          These are the full template forms from the tested Replit app. They are product templates, not yet published
-          workspace forms, so they should remain visible even before the live Stories tables are fully populated.
+          Use these templates to get started quickly. Each one is designed for a common school story type such as ESL,
+          CTE, staff highlights, employer partners, and program overviews.
         </BodyText>
         <div className="mt-5 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
           {referenceIntakeTemplates.map((template) => (
@@ -66,8 +66,8 @@ export default async function FormsPage({
       </section>
 
       <section className="rounded-[28px] border border-[#dfe7f4] bg-transparent p-6 shadow-none sm:p-7">
-        <Eyebrow className="text-[#2f76dd]">Published intake</Eyebrow>
-        <SectionTitle className="mt-3">Active public forms</SectionTitle>
+        <Eyebrow className="text-[#2f76dd]">Live forms</Eyebrow>
+        <SectionTitle className="mt-3">Forms ready to share</SectionTitle>
         <div className="mt-5 space-y-4">
           {forms.map((form) => (
             <Card key={form.id} variant="soft" padding="sm" className="rounded-[24px] border border-[#dfe7f4] bg-transparent shadow-none">
@@ -75,7 +75,7 @@ export default async function FormsPage({
                 <div>
                   <CardTitle className="text-lg">{form.title}</CardTitle>
                   <BodyText muted className="mt-1">
-                    {form.workspaceName} · {form.submissionCount} submission{form.submissionCount === 1 ? "" : "s"}
+                    {form.workspaceName} · {form.submissionCount} response{form.submissionCount === 1 ? "" : "s"}
                   </BodyText>
                 </div>
                 <Badge variant="sky" className="text-[11px] uppercase tracking-[0.08em]">
@@ -97,7 +97,7 @@ export default async function FormsPage({
             <Card padding="md" className="border border-[#dfe7f4] bg-transparent shadow-none sm:p-7">
               <CardTitle>No forms yet</CardTitle>
               <BodyText muted className="mt-2">
-                Run the Stories SQL contract and create the first form records to make this page fully data-backed.
+                Create your first form to start collecting student, staff, and partner stories.
               </BodyText>
             </Card>
           ) : null}

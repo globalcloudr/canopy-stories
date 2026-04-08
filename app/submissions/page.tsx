@@ -25,14 +25,14 @@ export default async function SubmissionsPage({
   return (
     <StoriesShell
       activeNav="stories"
-      eyebrow="Submissions"
-      title="Submissions"
+      eyebrow="Responses"
+      title="Responses"
       subtitle="Responses received from intake forms"
-      headerMeta={`${items.length} submission${items.length === 1 ? "" : "s"}`}
+      headerMeta={`${items.length} response${items.length === 1 ? "" : "s"}`}
     >
       {items.length === 0 ? (
         <div className="py-12 text-center">
-          <CardTitle>No submissions yet</CardTitle>
+          <CardTitle>No responses yet</CardTitle>
           <BodyText muted className="mt-2">
             Once a public form is submitted, responses will appear here.
           </BodyText>

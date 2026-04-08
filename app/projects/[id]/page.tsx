@@ -61,7 +61,7 @@ function FormResponsesTab({
         </div>
         <div className="py-12 text-center">
           <CardTitle>No forms yet</CardTitle>
-          <BodyText muted className="mt-2">Create an intake form to start collecting story submissions.</BodyText>
+          <BodyText muted className="mt-2">Create an intake form to start collecting story responses.</BodyText>
           <div className="mt-5">
             <Button variant="primary" onClick={onCreateForm}>Create Form</Button>
           </div>
@@ -324,7 +324,7 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
     { key: "forms", label: "Forms", count: forms.length },
     { key: "content", label: "Content", count: stories.length },
     { key: "assets", label: "Assets", count: assets.length },
-    { key: "package", label: "Package", count: packages.length },
+    { key: "package", label: "Ready-to-publish package", count: packages.length },
   ];
 
   if (loading) {
@@ -359,7 +359,7 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
       activeNav="projects"
       eyebrow={project.workspaceName}
       title={project.name}
-      subtitle={project.description || "Live project workspace for forms, submissions, and linked story records."}
+      subtitle={project.description || "Live project workspace for forms, responses, and linked story records."}
       headerMeta={`Deadline: ${formatDeadline(project.deadlineAt)}`}
       headerActions={
         <>
@@ -521,7 +521,7 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
           {assets.length === 0 ? (
             <div className="py-12 text-center">
               <CardTitle>No assets yet</CardTitle>
-              <BodyText muted className="mt-2">Assets are generated automatically as stories move through the pipeline.</BodyText>
+              <BodyText muted className="mt-2">Assets are generated automatically as stories move through the workflow.</BodyText>
             </div>
           ) : (
             <div className="divide-y divide-[var(--border)]">
@@ -550,16 +550,16 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
         </div>
       )}
 
-      {/* Tab: Package */}
+      {/* Tab: Ready-to-publish package */}
       {activeTab === "package" && (
         <div className="space-y-3">
-          <p className="text-sm font-semibold text-[var(--foreground)]">{packages.length} package{packages.length !== 1 ? "s" : ""}</p>
+          <p className="text-sm font-semibold text-[var(--foreground)]">{packages.length} ready-to-publish package{packages.length !== 1 ? "s" : ""}</p>
 
           {packages.length === 0 ? (
             <div className="py-12 text-center">
-              <CardTitle>No packages yet</CardTitle>
+              <CardTitle>No ready-to-publish packages yet</CardTitle>
               <BodyText muted className="mt-2">
-                Packages are created automatically when the content bundle is ready to deliver.
+                Ready-to-publish packages are created automatically when the content bundle is ready to deliver.
               </BodyText>
             </div>
           ) : (

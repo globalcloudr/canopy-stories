@@ -199,6 +199,8 @@ export type StoriesOverviewSnapshot = {
   storyCount: number;
   storiesInProductionCount: number;
   deliveredCount: number;
+  storiesReadyForReviewCount: number;
+  packagesReadyCount: number;
   workspaceCount: number;
   latestProject: ProjectDashboardItem | null;
   latestSubmission: SubmissionListItem | null;
@@ -787,6 +789,68 @@ export async function getStoriesOverviewSnapshot(workspaceSlug?: string | null):
   const formsSubmittedByProjectId = new Map<string, number>();
   const seenStoryIds = new Set<string>();
   const pipelineStories: StoriesOverviewSnapshot["pipelineStories"] = [];
+  const workspaceIds = [...new Set([
+    ...projects.map((project) => project.workspaceId),
+    ...forms.map((form) => form.workspaceId),
+    ...submissions.map((item) => item.submission.workspaceId),
+  ])].filter(Boolean);
+
+  let storiesReadyForReviewCount = 0;
+  let packagesReadyCount = 0;
+
+  if (!isStoriesPersistenceEnabled()) {
+    const matchingWorkspaceIds = workspaceSlug
+      ? new Set(projects.map((project) => project.workspaceId))
+      : null;
+
+    storiesReadyForReviewCount = new Set(
+      sampleContentArtifacts
+        .filter((content) => content.status === "ready")
+        .filter((content) => !matchingWorkspaceIds || matchingWorkspaceIds.has(content.workspaceId))
+        .map((content) => content.storyId)
+    ).size;
+
+    packagesReadyCount = samplePackages.filter((pkg) => {
+      if (pkg.status !== "ready" && pkg.status !== "delivered") {
+        return false;
+      }
+
+      return !matchingWorkspaceIds || matchingWorkspaceIds.has(pkg.workspaceId);
+    }).length;
+  } else if (workspaceSlug || workspaceIds.length > 0) {
+    let workspaceIdFilter = workspaceIds[0] ?? null;
+
+    if (workspaceSlug) {
+      const organizations = await getOrganizationsBySlugs([workspaceSlug]);
+      workspaceIdFilter = organizations[0]?.id ?? null;
+    }
+
+    if (workspaceIdFilter) {
+      const [readyContentRows, readyPackageRows] = await Promise.all([
+        requestJsonOrEmpty<Array<{ story_id: string }>>(
+          "/rest/v1/story_content",
+          new URLSearchParams({
+            select: "story_id",
+            workspace_id: `eq.${workspaceIdFilter}`,
+            status: "eq.ready",
+          })
+        ),
+        requestJsonOrEmpty<Array<{ id: string; status: string }>>(
+          "/rest/v1/story_packages",
+          new URLSearchParams({
+            select: "id,status",
+            workspace_id: `eq.${workspaceIdFilter}`,
+            status: "in.(ready,delivered)",
+          })
+        ),
+      ]);
+
+      storiesReadyForReviewCount = new Set(
+        readyContentRows.map((row) => row.story_id).filter(Boolean)
+      ).size;
+      packagesReadyCount = readyPackageRows.length;
+    }
+  }
 
   for (const item of submissions) {
     formsSubmittedByProjectId.set(
@@ -814,6 +878,8 @@ export async function getStoriesOverviewSnapshot(workspaceSlug?: string | null):
     storyCount,
     storiesInProductionCount,
     deliveredCount,
+    storiesReadyForReviewCount,
+    packagesReadyCount,
     workspaceCount,
     latestProject: projects[0] ?? null,
     latestSubmission: submissions[0] ?? null,

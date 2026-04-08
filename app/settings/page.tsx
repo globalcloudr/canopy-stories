@@ -73,7 +73,7 @@ export default function SettingsPage() {
       <div className="mx-auto w-full max-w-4xl space-y-8">
         <SettingSection
           title="Automation"
-          description="Configure how the pipeline processes stories"
+          description="Configure how the workflow processes stories"
         >
           <SettingRow
             title="Auto-generate content on submission"

@@ -57,7 +57,7 @@ export default async function StoryDetailPage({ params, searchParams }: StoryDet
           </Link>
           {snapshot.storyPackage ? (
             <Link href={buildWorkspaceHref(`/package/${snapshot.storyPackage.id}`, workspaceSlug)}>
-              <Button variant="primary">View Package</Button>
+              <Button variant="primary">View Ready-to-Publish Package</Button>
             </Link>
           ) : null}
           <Link href={buildWorkspaceHref("/projects", workspaceSlug)}>
@@ -99,7 +99,7 @@ export default async function StoryDetailPage({ params, searchParams }: StoryDet
 
       <section className="grid gap-4 lg:grid-cols-[1.4fr_1fr]">
         <Card padding="md" className="border border-[#dfe7f4] bg-transparent shadow-none sm:p-7">
-          <Eyebrow>Submission</Eyebrow>
+          <Eyebrow>Response</Eyebrow>
           <PageTitle className="mt-3 text-[2rem]">About {snapshot.story.subjectName || "this subject"}</PageTitle>
           <div className="mt-5 space-y-4">
             <div className="grid grid-cols-[120px_1fr] gap-2 text-[15px]">
@@ -110,7 +110,7 @@ export default async function StoryDetailPage({ params, searchParams }: StoryDet
               {photoCount > 0 ? (
                 <>
                   <span className="text-[var(--text-muted)]">Photos</span>
-                  <span>{photoCount} submitted</span>
+                  <span>{photoCount} uploaded</span>
                 </>
               ) : null}
             </div>
@@ -118,7 +118,7 @@ export default async function StoryDetailPage({ params, searchParams }: StoryDet
         </Card>
 
         <Card padding="md" className="border border-[#dfe7f4] bg-transparent shadow-none sm:p-7">
-          <Eyebrow>Package</Eyebrow>
+          <Eyebrow>Ready-to-Publish Package</Eyebrow>
           <PageTitle className="mt-3 text-[2rem]">Content delivery</PageTitle>
           {snapshot.storyPackage ? (
             <div className="mt-5 space-y-4">
@@ -132,7 +132,7 @@ export default async function StoryDetailPage({ params, searchParams }: StoryDet
               </div>
               <div className="pt-1">
                 <Link href={buildWorkspaceHref(`/package/${snapshot.storyPackage.id}`, workspaceSlug)}>
-                  <Button variant="secondary" size="sm">Open Package</Button>
+                  <Button variant="secondary" size="sm">Open Ready-to-Publish Package</Button>
                 </Link>
               </div>
             </div>

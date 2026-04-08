@@ -169,7 +169,7 @@ export function FormBuilderDialog({ open, onOpenChange, projectId, onCreated, ed
           <DialogDescription>
             {isEditMode
               ? "Edit the form title, story type, and fields. Changes apply immediately."
-              : "Choose a pre-built template or design a custom form for submissions."}
+              : "Choose a pre-built template or design a custom form for responses."}
           </DialogDescription>
         </DialogHeader>
 
