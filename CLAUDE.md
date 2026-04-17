@@ -144,7 +144,7 @@ StoryAssetType: "image" | "graphic" | "video" | "document"
 - dashboard, projects, stories, forms, submissions, assets, and detail links should all preserve the selected workspace context
 - Portal restores its own cookies and issues the next redirect using `303` semantics so the destination app receives a normal `GET`
 
-**Environment variable for portal URL**: `NEXT_PUBLIC_PORTAL_URL` (default: `https://usecanopy.school`)
+**Environment variable for portal URL**: `NEXT_PUBLIC_PORTAL_URL` (default: `https://app.usecanopy.school`)
 
 ## AI Pipeline
 
@@ -197,7 +197,7 @@ NEXT_PUBLIC_SUPABASE_URL=
 NEXT_PUBLIC_SUPABASE_ANON_KEY=
 SUPABASE_SERVICE_ROLE_KEY=
 DATABASE_URL=
-NEXT_PUBLIC_PORTAL_URL=https://usecanopy.school
+NEXT_PUBLIC_PORTAL_URL=https://app.usecanopy.school
 
 # Email notifications (optional — silent fallback if not set)
 RESEND_API_KEY=
