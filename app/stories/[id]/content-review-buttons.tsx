@@ -33,8 +33,8 @@ export function ContentReviewButtons({
   if (status === "approved") {
     return (
       <div className="flex items-center gap-2">
-        <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-[12px] font-medium text-emerald-700">
-          <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+        <span className="inline-flex items-center gap-1.5 rounded-full border border-[var(--rule)] bg-[var(--surface-muted)] px-2.5 py-1 text-[12px] font-medium text-[var(--success)]">
+          <span className="h-1.5 w-1.5 rounded-full bg-[var(--success)]" />
           Approved
         </span>
         <button

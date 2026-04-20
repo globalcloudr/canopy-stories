@@ -39,13 +39,13 @@ const templateTypeColors: Record<string, string> = {
   EMPLOYER: "bg-orange-100 text-orange-800",
   STAFF: "bg-pink-100 text-pink-800",
   PARTNER: "bg-teal-100 text-teal-800",
-  OVERVIEW: "bg-gray-100 text-gray-800",
+  OVERVIEW: "bg-[var(--surface-muted)] text-[var(--ink-2)]",
 };
 
 function statusClass(status: string) {
-  if (status === "active") return "border-emerald-200 bg-emerald-50 text-emerald-700";
+  if (status === "active") return "border-[var(--rule)] bg-[var(--surface-muted)] text-[var(--success)]";
   if (status === "paused") return "border-amber-200 bg-amber-50 text-amber-700";
-  if (status === "delivered") return "border-blue-200 bg-blue-50 text-blue-700";
+  if (status === "delivered") return "border-[var(--rule)] bg-[var(--surface-muted)] text-[var(--accent)]";
   return "border-indigo-200 bg-indigo-50 text-indigo-700";
 }
 
@@ -316,11 +316,11 @@ export function ProjectsClient({ initial }: { initial: FlatProject[] }) {
             placeholder="Search by school or project name..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="border-[#dfe7f4] bg-transparent pl-9"
+            className="border-[var(--rule)] bg-transparent pl-9"
           />
         </div>
         <Select value={statusFilter} onValueChange={setStatusFilter}>
-          <SelectTrigger className="w-44 border-[#dfe7f4] bg-transparent">
+          <SelectTrigger className="w-44 border-[var(--rule)] bg-transparent">
             <SelectValue>
               {statusFilter === "all" ? "All Status" : statusFilter.charAt(0).toUpperCase() + statusFilter.slice(1)}
             </SelectValue>
@@ -337,7 +337,7 @@ export function ProjectsClient({ initial }: { initial: FlatProject[] }) {
 
       {/* Project cards */}
       {filtered.length === 0 ? (
-        <Card padding="md" className="border border-[#dfe7f4] bg-transparent py-12 text-center shadow-none sm:p-12">
+        <Card padding="md" className="border border-[var(--rule)] bg-transparent py-12 text-center shadow-none sm:p-12">
           <CardTitle>
             {search || statusFilter !== "all" ? "No projects match your filters" : "No projects yet"}
           </CardTitle>
@@ -357,7 +357,7 @@ export function ProjectsClient({ initial }: { initial: FlatProject[] }) {
       ) : (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {filtered.map((project) => (
-            <Card key={project.id} padding="sm" className="flex flex-col rounded-[24px] border border-[#dfe7f4] bg-transparent shadow-none transition hover:border-[#c8d7eb] hover:bg-white/65">
+            <Card key={project.id} padding="sm" className="flex flex-col rounded-[24px] border border-[var(--rule)] bg-transparent shadow-none transition hover:border-[#c8d7eb] hover:bg-white/65">
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
                   <BodyText muted className="text-[12px]">{project.workspaceName}</BodyText>
@@ -422,7 +422,7 @@ export function ProjectsClient({ initial }: { initial: FlatProject[] }) {
 
           <div className="space-y-4 py-3">
             {projectLaunchTemplateId ? (
-              <div className="rounded-2xl border border-[#d7e3f3] bg-[#edf3fb] px-4 py-4">
+              <div className="rounded-2xl border border-[var(--rule)] bg-[var(--surface-muted)] px-4 py-4">
                 <p className="text-sm font-semibold text-[var(--foreground)]">
                   Creating a project from {referenceIntakeTemplates.find((template) => template.id === projectLaunchTemplateId)?.name ?? "a starter template"}
                 </p>
@@ -534,12 +534,12 @@ export function ProjectsClient({ initial }: { initial: FlatProject[] }) {
                   className={`w-full rounded-2xl border p-4 text-left transition ${
                     selectedTemplateId === t.id
                       ? "border-indigo-400 bg-indigo-50 ring-1 ring-indigo-400"
-                      : "border-[var(--border)] bg-white hover:border-slate-300 hover:bg-slate-50"
+                      : "border-[var(--border)] bg-white hover:border-[var(--rule)] hover:bg-[var(--surface-muted)]"
                   }`}
                 >
                   <div className="flex items-start justify-between gap-2">
                     <span className="font-semibold text-[var(--foreground)]">{t.name}</span>
-                    <span className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider ${templateTypeColors[t.storyType] ?? "bg-gray-100 text-gray-700"}`}>
+                    <span className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider ${templateTypeColors[t.storyType] ?? "bg-[var(--surface-muted)] text-[var(--ink-2)]"}`}>
                       {t.storyType.replace("_", "/")}
                     </span>
                   </div>
@@ -669,7 +669,7 @@ export function ProjectsClient({ initial }: { initial: FlatProject[] }) {
                   { n: "3", text: "Review the story, approve the content you want to use, and download the ready-to-publish package when it is ready." },
                 ].map((step) => (
                   <li key={step.n} className="flex gap-3">
-                    <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-indigo-100 text-xs font-bold text-indigo-700">
+                    <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[var(--surface-muted)] text-xs font-bold text-[var(--accent)]">
                       {step.n}
                     </span>
                     <span className="text-sm text-[var(--text-muted)]">{step.text}</span>
@@ -679,7 +679,7 @@ export function ProjectsClient({ initial }: { initial: FlatProject[] }) {
             </div>
 
             {copyFeedback ? (
-              <div className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
+              <div className="rounded-xl border border-[var(--rule)] bg-[var(--surface-muted)] px-4 py-3 text-sm text-[var(--success)]">
                 {copyFeedback}
               </div>
             ) : null}

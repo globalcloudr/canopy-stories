@@ -68,10 +68,10 @@ function FormsTab({
               <div className="min-w-0">
                 <div className="flex flex-wrap items-center gap-2">
                   <span className="font-medium text-[var(--foreground)]">{form.title}</span>
-                  <span className={`rounded-full px-2 py-0.5 text-[11px] font-semibold uppercase tracking-[0.06em] ${typeColors[form.storyType] ?? "bg-gray-100 text-gray-700"}`}>
+                  <span className={`rounded-full px-2 py-0.5 text-[11px] font-semibold uppercase tracking-[0.06em] ${typeColors[form.storyType] ?? "bg-[var(--surface-muted)] text-[var(--ink-2)]"}`}>
                     {form.storyType.replace("_", "/")}
                   </span>
-                  <span className={`rounded-full border px-2 py-0.5 text-[11px] font-semibold ${form.submissionCount > 0 ? "border-emerald-200 bg-emerald-50 text-emerald-700" : "border-[var(--border)] bg-[var(--surface-muted)] text-[var(--text-muted)]"}`}>
+                  <span className={`rounded-full border px-2 py-0.5 text-[11px] font-semibold ${form.submissionCount > 0 ? "border-[var(--rule)] bg-[var(--surface-muted)] text-[var(--success)]" : "border-[var(--border)] bg-[var(--surface-muted)] text-[var(--text-muted)]"}`}>
                     {form.submissionCount} response{form.submissionCount !== 1 ? "s" : ""}
                   </span>
                 </div>
@@ -296,14 +296,14 @@ function formatDeadline(value: string | null) {
 }
 
 function statusBadge(status: string) {
-  if (status === "active") return "border-emerald-200 bg-emerald-50 text-emerald-700";
+  if (status === "active") return "border-[var(--rule)] bg-[var(--surface-muted)] text-[var(--success)]";
   if (status === "paused") return "border-amber-200 bg-amber-50 text-amber-700";
-  if (status === "delivered") return "border-blue-200 bg-blue-50 text-blue-700";
+  if (status === "delivered") return "border-[var(--rule)] bg-[var(--surface-muted)] text-[var(--accent)]";
   return "border-indigo-200 bg-indigo-50 text-indigo-700";
 }
 
 function stageBadge(stage: string) {
-  if (stage === "delivered") return "border-emerald-200 bg-emerald-50 text-emerald-700";
+  if (stage === "delivered") return "border-[var(--rule)] bg-[var(--surface-muted)] text-[var(--success)]";
   if (stage === "packaging" || stage === "asset_generation") return "border-amber-200 bg-amber-50 text-amber-700";
   return "border-indigo-200 bg-indigo-50 text-indigo-700";
 }
@@ -315,7 +315,7 @@ const typeColors: Record<string, string> = {
   EMPLOYER: "bg-orange-100 text-orange-800",
   STAFF: "bg-pink-100 text-pink-800",
   PARTNER: "bg-teal-100 text-teal-800",
-  OVERVIEW: "bg-gray-100 text-gray-800",
+  OVERVIEW: "bg-[var(--surface-muted)] text-[var(--ink-2)]",
 };
 
 export default function ProjectDetailPage({ params }: { params: Promise<{ id: string }> }) {
@@ -413,7 +413,7 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
       <StoriesShell activeNav="projects" eyebrow="Projects" title="Loading..." subtitle="">
         <div className="grid gap-4 md:grid-cols-4">
           {[1, 2, 3, 4].map((i) => (
-            <Card key={i} padding="sm" className="h-28 animate-pulse rounded-[24px] border border-[#dfe7f4] bg-[#f3f6fb]" />
+            <Card key={i} padding="sm" className="h-28 animate-pulse rounded-[24px] border border-[var(--rule)] bg-[var(--surface-muted)]" />
           ))}
         </div>
       </StoriesShell>
@@ -423,7 +423,7 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
   if (!project) {
     return (
       <StoriesShell activeNav="projects" eyebrow="Projects" title="Not found" subtitle="">
-        <Card padding="md" className="border border-[#dfe7f4] bg-transparent py-12 text-center shadow-none">
+        <Card padding="md" className="border border-[var(--rule)] bg-transparent py-12 text-center shadow-none">
           <CardTitle>Project not found</CardTitle>
           <div className="mt-4">
             <Button asChild variant="primary">
@@ -493,7 +493,7 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
                 </div>
                 <div className="h-2 w-full overflow-hidden rounded-full bg-[var(--surface-muted)]">
                   <div
-                    className="h-full rounded-full bg-[#1e40af] transition-all duration-500"
+                    className="h-full rounded-full bg-[var(--accent)] transition-all duration-500"
                     style={{ width: `${pct}%` }}
                   />
                 </div>
@@ -532,10 +532,10 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
         <div className="space-y-5">
           {stories.length === 0 ? (
             <div className="grid gap-5 lg:grid-cols-[minmax(0,1.4fr)_minmax(320px,0.9fr)]">
-              <Card padding="md" className="rounded-[24px] border border-[#dfe7f4] bg-transparent shadow-none sm:p-7">
+              <Card padding="md" className="rounded-[24px] border border-[var(--rule)] bg-transparent shadow-none sm:p-7">
                 <div className="flex flex-wrap items-start justify-between gap-4">
                   <div>
-                    <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#2f76dd]">Project setup</p>
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[var(--accent)]">Project setup</p>
                     <CardTitle className="mt-3 text-[1.6rem] leading-tight">
                       {totalResponses > 0 ? "Your first responses are in" : latestForm ? "Your form is live" : "Start by adding a form"}
                     </CardTitle>
@@ -553,24 +553,24 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
                 </div>
 
                 <div className="mt-6 grid gap-4 sm:grid-cols-3">
-                  <div className="rounded-[20px] border border-[#dfe7f4] bg-[var(--surface-muted)] px-5 py-4">
+                  <div className="rounded-[20px] border border-[var(--rule)] bg-[var(--surface-muted)] px-5 py-4">
                     <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[var(--text-muted)]">Goal</p>
                     <p className="mt-2 text-2xl font-bold text-[var(--foreground)]">{project.storyCountTarget ?? "—"}</p>
                     <BodyText muted className="mt-1 text-[13px]">Stories planned</BodyText>
                   </div>
-                  <div className="rounded-[20px] border border-[#dfe7f4] bg-[var(--surface-muted)] px-5 py-4">
+                  <div className="rounded-[20px] border border-[var(--rule)] bg-[var(--surface-muted)] px-5 py-4">
                     <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[var(--text-muted)]">Forms</p>
                     <p className="mt-2 text-2xl font-bold text-[var(--foreground)]">{forms.length}</p>
                     <BodyText muted className="mt-1 text-[13px]">{forms.length === 1 ? "Live form" : "Live forms"}</BodyText>
                   </div>
-                  <div className="rounded-[20px] border border-[#dfe7f4] bg-[var(--surface-muted)] px-5 py-4">
+                  <div className="rounded-[20px] border border-[var(--rule)] bg-[var(--surface-muted)] px-5 py-4">
                     <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[var(--text-muted)]">Responses</p>
                     <p className="mt-2 text-2xl font-bold text-[var(--foreground)]">{totalResponses}</p>
                     <BodyText muted className="mt-1 text-[13px]">Received so far</BodyText>
                   </div>
                 </div>
 
-                <div className="mt-6 rounded-[20px] border border-[#dfe7f4] bg-white/70 px-5 py-5">
+                <div className="mt-6 rounded-[20px] border border-[var(--rule)] bg-white/70 px-5 py-5">
                   <p className="text-sm font-semibold text-[var(--foreground)]">What to do next</p>
                   <ol className="mt-4 space-y-3">
                     {latestForm ? (
@@ -580,7 +580,7 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
                         "Once a response comes in, review the story from the Stories tab.",
                       ].map((step, index) => (
                         <li key={step} className="flex gap-3">
-                          <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[#edf3fb] text-xs font-bold text-[#1e40af]">
+                          <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[var(--surface-muted)] text-xs font-bold text-[var(--accent)]">
                             {index + 1}
                           </span>
                           <span className="text-sm text-[var(--text-muted)]">{step}</span>
@@ -593,7 +593,7 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
                         "Come back here to track progress once responses arrive.",
                       ].map((step, index) => (
                         <li key={step} className="flex gap-3">
-                          <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[#edf3fb] text-xs font-bold text-[#1e40af]">
+                          <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[var(--surface-muted)] text-xs font-bold text-[var(--accent)]">
                             {index + 1}
                           </span>
                           <span className="text-sm text-[var(--text-muted)]">{step}</span>
@@ -604,8 +604,8 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
                 </div>
               </Card>
 
-              <Card padding="md" className="rounded-[24px] border border-[#dfe7f4] bg-transparent shadow-none sm:p-7">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#2f76dd]">Quick actions</p>
+              <Card padding="md" className="rounded-[24px] border border-[var(--rule)] bg-transparent shadow-none sm:p-7">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[var(--accent)]">Quick actions</p>
                 <CardTitle className="mt-3 text-[1.3rem]">
                   {latestForm ? "Share your live form" : "Build your first form"}
                 </CardTitle>
@@ -617,10 +617,10 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
 
                 {latestForm && shareableFormPath ? (
                   <div className="mt-5 space-y-4">
-                    <div className="rounded-[20px] border border-[#dfe7f4] bg-[var(--surface-muted)] px-4 py-4">
+                    <div className="rounded-[20px] border border-[var(--rule)] bg-[var(--surface-muted)] px-4 py-4">
                       <p className="text-sm font-semibold text-[var(--foreground)]">{latestForm.title}</p>
                       <BodyText muted className="mt-1 text-[13px]">{latestForm.submissionCount} response{latestForm.submissionCount === 1 ? "" : "s"}</BodyText>
-                      <div className="mt-4 rounded-xl border border-[#d7e3f3] bg-white px-3 py-2 text-sm text-[var(--foreground)]">
+                      <div className="mt-4 rounded-xl border border-[var(--rule)] bg-white px-3 py-2 text-sm text-[var(--foreground)]">
                         {shareableFormPath}
                       </div>
                     </div>
@@ -644,7 +644,7 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
                     </div>
                   </div>
                 ) : (
-                  <div className="mt-5 rounded-[20px] border border-dashed border-[#dfe7f4] bg-[var(--surface-muted)] px-4 py-8 text-center">
+                  <div className="mt-5 rounded-[20px] border border-dashed border-[var(--rule)] bg-[var(--surface-muted)] px-4 py-8 text-center">
                     <BodyText muted>Create a form to unlock sharing and response tracking for this project.</BodyText>
                     <Button variant="primary" className="mt-4" onClick={() => setFormBuilderOpen(true)}>
                       Create form
@@ -693,7 +693,7 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
                   <div className="min-w-0">
                     <div className="flex items-center gap-2">
                       <span className="font-medium text-[var(--foreground)]">{story.title}</span>
-                      <span className={`rounded-full px-2 py-0.5 text-[11px] font-semibold uppercase tracking-[0.06em] ${typeColors[story.storyType] ?? "bg-gray-100 text-gray-700"}`}>
+                      <span className={`rounded-full px-2 py-0.5 text-[11px] font-semibold uppercase tracking-[0.06em] ${typeColors[story.storyType] ?? "bg-[var(--surface-muted)] text-[var(--ink-2)]"}`}>
                         {story.storyType.replace("_", "/")}
                       </span>
                     </div>
@@ -745,7 +745,7 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
                         {asset.assetType}
                       </span>
                     </div>
-                    <span className={`mt-0.5 inline-block rounded-full border px-2 py-0.5 text-[11px] font-semibold ${asset.status === "ready" ? "border-emerald-200 bg-emerald-50 text-emerald-700" : "border-gray-200 bg-gray-50 text-gray-600"}`}>
+                    <span className={`mt-0.5 inline-block rounded-full border px-2 py-0.5 text-[11px] font-semibold ${asset.status === "ready" ? "border-[var(--rule)] bg-[var(--surface-muted)] text-[var(--success)]" : "border-[var(--rule)] bg-[var(--surface-muted)] text-[var(--text-muted)]"}`}>
                       {asset.status}
                     </span>
                   </div>
@@ -775,7 +775,7 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
                     <div className="min-w-0">
                       <div className="flex items-center gap-2">
                         <span className="font-medium text-[var(--foreground)]">{pkg.name}</span>
-                        <span className={`rounded-full border px-2 py-0.5 text-[11px] font-semibold uppercase tracking-[0.06em] ${pkg.status === "delivered" || pkg.status === "ready" ? "border-emerald-200 bg-emerald-50 text-emerald-700" : "border-indigo-200 bg-indigo-50 text-indigo-700"}`}>
+                        <span className={`rounded-full border px-2 py-0.5 text-[11px] font-semibold uppercase tracking-[0.06em] ${pkg.status === "delivered" || pkg.status === "ready" ? "border-[var(--rule)] bg-[var(--surface-muted)] text-[var(--success)]" : "border-indigo-200 bg-indigo-50 text-indigo-700"}`}>
                           {pkg.status}
                         </span>
                       </div>

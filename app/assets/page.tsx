@@ -91,7 +91,7 @@ export default function AssetsPage() {
             placeholder="Search assets..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="border-[#dfe7f4] bg-transparent pl-9"
+            className="border-[var(--rule)] bg-transparent pl-9"
           />
         </div>
         <div className="flex items-center gap-1">
@@ -103,7 +103,7 @@ export default function AssetsPage() {
               className={`rounded-full border px-3 py-1.5 text-[12px] font-medium transition-all duration-150 ease-out focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--foreground)] hover:-translate-y-px active:translate-y-0 active:scale-[0.985] ${
                 typeFilter === type
                   ? "border-[var(--foreground)] bg-[var(--foreground)] text-white shadow-[0_10px_20px_rgba(15,23,42,0.16)]"
-                  : "border-[#d7e3f3] bg-[#edf3fb] text-[var(--text-muted)] hover:border-[#c8d7eb] hover:bg-white hover:text-[var(--foreground)] hover:shadow-[0_8px_18px_rgba(148,163,184,0.16)]"
+                  : "border-[var(--rule)] bg-[var(--surface-muted)] text-[var(--text-muted)] hover:border-[var(--rule)] hover:bg-white hover:text-[var(--foreground)] hover:shadow-[0_8px_18px_rgba(148,163,184,0.16)]"
               }`}
             >
               {type === "all" ? "All" : type.charAt(0).toUpperCase() + type.slice(1) + "s"}
@@ -134,7 +134,7 @@ export default function AssetsPage() {
           </BodyText>
         </div>
       ) : (
-        <div className="rounded-[24px] border border-[#dfe7f4] bg-transparent shadow-none divide-y divide-[var(--border)]">
+        <div className="rounded-[24px] border border-[var(--rule)] bg-transparent shadow-none divide-y divide-[var(--border)]">
           {filtered.map((asset) => (
             <div key={asset.id} className="flex flex-wrap items-center justify-between gap-3 px-5 py-4">
               <div className="min-w-0">
@@ -151,7 +151,7 @@ export default function AssetsPage() {
                 </BodyText>
               </div>
               <div className="flex items-center gap-2">
-                <span className={`rounded-full border px-2 py-0.5 text-[11px] font-semibold ${asset.status === "ready" ? "border-emerald-200 bg-emerald-50 text-emerald-700" : "border-gray-200 bg-gray-50 text-gray-600"}`}>
+                <span className={`rounded-full border px-2 py-0.5 text-[11px] font-semibold ${asset.status === "ready" ? "border-[var(--rule)] bg-[var(--surface-muted)] text-[var(--success)]" : "border-[var(--rule)] bg-[var(--surface-muted)] text-[var(--text-muted)]"}`}>
                   {asset.status}
                 </span>
                 <Button asChild variant="secondary" size="sm">

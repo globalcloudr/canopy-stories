@@ -620,7 +620,7 @@ export function PublicStoriesFrame({ eyebrow, title, subtitle, children }: Publi
         <div className="mx-auto flex h-14 max-w-5xl items-center justify-between gap-3 px-4 sm:px-6">
           <div className="flex items-center gap-2">
             <div
-              className="grid h-8 w-8 place-items-center rounded-[7px] bg-[#0f1f3d] text-[0.95rem] font-extrabold tracking-[-0.02em] text-white"
+              className="grid h-8 w-8 place-items-center rounded-[7px] bg-[var(--ink)] text-[0.95rem] font-extrabold tracking-[-0.02em] text-white"
               aria-hidden="true"
             >
               C
@@ -634,9 +634,9 @@ export function PublicStoriesFrame({ eyebrow, title, subtitle, children }: Publi
       </div>
       <div className="mx-auto flex w-full max-w-5xl flex-col gap-6 px-4 py-6 sm:px-6 sm:py-8">
         <AppSurface padding="md" variant="clear" className="sm:p-8">
-          <Eyebrow className="text-[#2f76dd]">{eyebrow}</Eyebrow>
-          <PageTitle className="mt-3 text-[#172033]">{title}</PageTitle>
-          <BodyText muted className="mt-3 max-w-3xl text-[#617286] sm:text-[15px]">{subtitle}</BodyText>
+          <Eyebrow className="text-[var(--accent)]">{eyebrow}</Eyebrow>
+          <PageTitle className="mt-3 text-[var(--ink)]">{title}</PageTitle>
+          <BodyText muted className="mt-3 max-w-3xl text-[var(--text-muted)] sm:text-[15px]">{subtitle}</BodyText>
         </AppSurface>
         {children}
       </div>

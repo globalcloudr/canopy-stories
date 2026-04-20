@@ -22,7 +22,7 @@ function Step({
 }) {
   return (
     <div className="flex gap-4">
-      <div className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-[#1e40af] text-[13px] font-bold text-white">
+      <div className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-[var(--accent)] text-[13px] font-bold text-white">
         {number}
       </div>
       <div className="min-w-0 pt-0.5">
@@ -54,7 +54,7 @@ export default function HelpPage() {
 
         {/* How it works */}
         <Section title="How Canopy Stories works">
-          <Card padding="md" className="border border-[#dfe7f4] bg-transparent shadow-none sm:p-8">
+          <Card padding="md" className="border border-[var(--rule)] bg-transparent shadow-none sm:p-8">
             <BodyText className="mb-6 text-[15px]">
               Canopy Stories helps your team collect responses, turn them into polished school stories,
               and prepare copy and visuals your team can publish. Each story moves through six stages automatically.
@@ -72,7 +72,7 @@ export default function HelpPage() {
 
         {/* Getting started */}
         <Section title="Getting started">
-          <Card padding="md" className="border border-[#dfe7f4] bg-transparent shadow-none sm:p-8">
+          <Card padding="md" className="border border-[var(--rule)] bg-transparent shadow-none sm:p-8">
             <div className="space-y-6">
               <div>
                 <CardTitle className="text-base">1. Add your API keys</CardTitle>
@@ -121,7 +121,7 @@ export default function HelpPage() {
 
         {/* FAQs */}
         <Section title="Frequently asked questions">
-          <Card padding="md" className="border border-[#dfe7f4] bg-transparent shadow-none sm:p-8">
+          <Card padding="md" className="border border-[var(--rule)] bg-transparent shadow-none sm:p-8">
             <div className="divide-y divide-[var(--border)]">
               <Faq
                 question="Why isn't my story moving past 'Writing content'?"

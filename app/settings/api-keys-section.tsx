@@ -58,8 +58,8 @@ function MaskedKeyField({
                 className="font-mono text-[13px]"
               />
             ) : (
-              <span className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[12px] font-medium ${isSet ? "border-emerald-200 bg-emerald-50 text-emerald-700" : "border-[#d7e3f3] bg-[#edf3fb] text-[var(--text-muted)]"}`}>
-                <span className={`h-1.5 w-1.5 rounded-full ${isSet ? "bg-emerald-500" : "bg-slate-400"}`} />
+              <span className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[12px] font-medium ${isSet ? "border-[var(--rule)] bg-[var(--surface-muted)] text-[var(--success)]" : "border-[var(--rule)] bg-[var(--surface-muted)] text-[var(--text-muted)]"}`}>
+                <span className={`h-1.5 w-1.5 rounded-full ${isSet ? "bg-[var(--success)]" : "bg-[var(--text-muted)]"}`} />
                 {isSet ? "Key saved" : "Not configured"}
               </span>
             )}
@@ -111,7 +111,7 @@ function MaskedKeyField({
               ) : null}
             </div>
             {feedback ? (
-              <BodyText className={`text-[12px] ${feedback.type === "success" ? "text-emerald-700" : "text-rose-600"}`}>
+              <BodyText className={`text-[12px] ${feedback.type === "success" ? "text-[var(--success)]" : "text-rose-600"}`}>
                 {feedback.text}
               </BodyText>
             ) : null}
@@ -441,7 +441,7 @@ export function ApiKeysSection() {
             {savingTemplates ? "Saving…" : "Save video settings"}
           </Button>
           {templateMessage ? (
-            <BodyText className={`text-[12px] ${templateMessage.type === "success" ? "text-emerald-700" : "text-rose-600"}`}>
+            <BodyText className={`text-[12px] ${templateMessage.type === "success" ? "text-[var(--success)]" : "text-rose-600"}`}>
               {templateMessage.text}
             </BodyText>
           ) : null}
@@ -450,7 +450,7 @@ export function ApiKeysSection() {
 
       <div className="flex items-center justify-between gap-4 py-4">
         {saveMessage ? (
-          <BodyText className={`text-[13px] ${saveMessage.type === "success" ? "text-emerald-700" : "text-rose-600"}`}>
+          <BodyText className={`text-[13px] ${saveMessage.type === "success" ? "text-[var(--success)]" : "text-rose-600"}`}>
             {saveMessage.text}
           </BodyText>
         ) : (

@@ -163,8 +163,8 @@ export function CreateFormPanel({ projects }: CreateFormPanelProps) {
       ) : null}
 
       {state.type === "success" ? (
-        <div className="mt-5 rounded-[24px] border border-emerald-200 bg-emerald-50 px-4 py-3">
-          <BodyText className="text-emerald-800">{state.message}</BodyText>
+        <div className="mt-5 rounded-[24px] border border-[var(--rule)] bg-[var(--surface-muted)] px-4 py-3">
+          <BodyText className="text-[var(--success)]">{state.message}</BodyText>
         </div>
       ) : null}
 

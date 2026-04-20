@@ -40,8 +40,8 @@ export default async function FormsPage({
     >
       <CreateFormPanel projects={projects} />
 
-      <section id="starter-templates" className="rounded-[28px] border border-[#dfe7f4] bg-transparent p-6 shadow-none sm:p-7">
-        <Eyebrow className="text-[#2f76dd]">Starter templates</Eyebrow>
+      <section id="starter-templates" className="rounded-[28px] border border-[var(--rule)] bg-transparent p-6 shadow-none sm:p-7">
+        <Eyebrow className="text-[var(--accent)]">Starter templates</Eyebrow>
         <SectionTitle className="mt-3">Start with a proven intake form</SectionTitle>
         <BodyText muted className="mt-3">
           Use these templates to get started quickly. Each one is designed for a common school story type such as ESL,
@@ -49,7 +49,7 @@ export default async function FormsPage({
         </BodyText>
         <div className="mt-5 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
           {referenceIntakeTemplates.map((template) => (
-            <Card key={template.id} variant="soft" padding="sm" className="rounded-[24px] border border-[#dfe7f4] bg-transparent shadow-none">
+            <Card key={template.id} variant="soft" padding="sm" className="rounded-[24px] border border-[var(--rule)] bg-transparent shadow-none">
               <div className="flex items-center justify-between gap-3">
                 <CardTitle className="text-base">{template.name}</CardTitle>
                 <Badge variant="outline" className="text-[11px] uppercase tracking-[0.08em]">
@@ -57,7 +57,7 @@ export default async function FormsPage({
                 </Badge>
               </div>
               <BodyText muted className="mt-2">{template.description}</BodyText>
-              <div className="mt-4 rounded-[20px] border border-[#d7e3f3] bg-[#edf3fb] px-4 py-3 text-sm text-[var(--text-muted)]">
+              <div className="mt-4 rounded-[20px] border border-[var(--rule)] bg-[var(--surface-muted)] px-4 py-3 text-sm text-[var(--text-muted)]">
                 {template.fields.length} fields
               </div>
               <div className="mt-4 flex flex-wrap gap-3">
@@ -77,12 +77,12 @@ export default async function FormsPage({
         </div>
       </section>
 
-      <section className="rounded-[28px] border border-[#dfe7f4] bg-transparent p-6 shadow-none sm:p-7">
-        <Eyebrow className="text-[#2f76dd]">Live forms</Eyebrow>
+      <section className="rounded-[28px] border border-[var(--rule)] bg-transparent p-6 shadow-none sm:p-7">
+        <Eyebrow className="text-[var(--accent)]">Live forms</Eyebrow>
         <SectionTitle className="mt-3">Forms ready to share</SectionTitle>
         <div className="mt-5 space-y-4">
           {forms.map((form) => (
-            <Card key={form.id} variant="soft" padding="sm" className="rounded-[24px] border border-[#dfe7f4] bg-transparent shadow-none">
+            <Card key={form.id} variant="soft" padding="sm" className="rounded-[24px] border border-[var(--rule)] bg-transparent shadow-none">
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div>
                   <CardTitle className="text-lg">{form.title}</CardTitle>
@@ -99,14 +99,14 @@ export default async function FormsPage({
                 <Button asChild variant="primary">
                   <Link href={form.shareablePath}>Open public form</Link>
                 </Button>
-                <code className="inline-flex h-11 items-center rounded-xl border border-[#d7e3f3] bg-[#edf3fb] px-4 text-sm text-[var(--text-muted)]">
+                <code className="inline-flex h-11 items-center rounded-xl border border-[var(--rule)] bg-[var(--surface-muted)] px-4 text-sm text-[var(--text-muted)]">
                   {form.shareablePath}
                 </code>
               </div>
             </Card>
           ))}
           {forms.length === 0 ? (
-            <Card padding="md" className="border border-[#dfe7f4] bg-transparent shadow-none sm:p-7">
+            <Card padding="md" className="border border-[var(--rule)] bg-transparent shadow-none sm:p-7">
               <CardTitle>No forms yet</CardTitle>
               <BodyText muted className="mt-2">
                 Create your first form to start collecting student, staff, and partner stories.

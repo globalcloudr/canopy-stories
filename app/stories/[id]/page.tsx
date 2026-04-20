@@ -83,22 +83,22 @@ export default async function StoryDetailPage({ params, searchParams }: StoryDet
       </section>
 
       <section className="grid gap-4 md:grid-cols-3">
-        <Card padding="sm" className="rounded-[20px] border border-[#dfe7f4] bg-transparent shadow-none">
+        <Card padding="sm" className="rounded-[20px] border border-[var(--rule)] bg-transparent shadow-none">
           <CardTitle className="text-sm text-[var(--text-muted)]">Subject</CardTitle>
           <SectionTitle className="mt-4 text-3xl sm:text-3xl">{snapshot.story.subjectName || "N/A"}</SectionTitle>
         </Card>
-        <Card padding="sm" className="rounded-[20px] border border-[#dfe7f4] bg-transparent shadow-none">
+        <Card padding="sm" className="rounded-[20px] border border-[var(--rule)] bg-transparent shadow-none">
           <CardTitle className="text-sm text-[var(--text-muted)]">Content pieces</CardTitle>
           <SectionTitle className="mt-4 text-3xl sm:text-3xl">{snapshot.contents.length}</SectionTitle>
         </Card>
-        <Card padding="sm" className="rounded-[20px] border border-[#dfe7f4] bg-transparent shadow-none">
+        <Card padding="sm" className="rounded-[20px] border border-[var(--rule)] bg-transparent shadow-none">
           <CardTitle className="text-sm text-[var(--text-muted)]">Assets</CardTitle>
           <SectionTitle className="mt-4 text-3xl sm:text-3xl">{snapshot.assets.length}</SectionTitle>
         </Card>
       </section>
 
       <section className="grid gap-4 lg:grid-cols-[1.4fr_1fr]">
-        <Card padding="md" className="border border-[#dfe7f4] bg-transparent shadow-none sm:p-7">
+        <Card padding="md" className="border border-[var(--rule)] bg-transparent shadow-none sm:p-7">
           <Eyebrow>Response</Eyebrow>
           <PageTitle className="mt-3 text-[2rem]">About {snapshot.story.subjectName || "this subject"}</PageTitle>
           <div className="mt-5 space-y-4">
@@ -117,7 +117,7 @@ export default async function StoryDetailPage({ params, searchParams }: StoryDet
           </div>
         </Card>
 
-        <Card padding="md" className="border border-[#dfe7f4] bg-transparent shadow-none sm:p-7">
+        <Card padding="md" className="border border-[var(--rule)] bg-transparent shadow-none sm:p-7">
           <Eyebrow>Ready-to-Publish Package</Eyebrow>
           <PageTitle className="mt-3 text-[2rem]">Content delivery</PageTitle>
           {snapshot.storyPackage ? (
@@ -148,13 +148,13 @@ export default async function StoryDetailPage({ params, searchParams }: StoryDet
           <PageTitle className="mt-3 text-[2rem]">Ready to publish</PageTitle>
         </div>
         {snapshot.contents.length === 0 ? (
-          <Card padding="md" className="border border-[#dfe7f4] bg-transparent shadow-none sm:p-8">
+          <Card padding="md" className="border border-[var(--rule)] bg-transparent shadow-none sm:p-8">
             <BodyText muted>Content is being written. Check back shortly.</BodyText>
           </Card>
         ) : (
           <div className="grid gap-4 lg:grid-cols-2">
             {snapshot.contents.map((content) => (
-              <Card key={content.id} padding="md" className="border border-[#dfe7f4] bg-transparent shadow-none sm:p-7">
+              <Card key={content.id} padding="md" className="border border-[var(--rule)] bg-transparent shadow-none sm:p-7">
                 <div className="flex items-start justify-between gap-3">
                   <div>
                     <CardTitle className="text-lg">{content.title || content.contentType}</CardTitle>
@@ -162,9 +162,9 @@ export default async function StoryDetailPage({ params, searchParams }: StoryDet
                       {content.channel} · {content.contentType}
                     </BodyText>
                   </div>
-                  <Badge variant="outline" className="border-[#d7e3f3] bg-[#edf3fb]">{contentStatusLabel(content.status)}</Badge>
+                  <Badge variant="outline" className="border-[var(--rule)] bg-[var(--surface-muted)]">{contentStatusLabel(content.status)}</Badge>
                 </div>
-                <div className="mt-5 rounded-2xl border border-[#e3eaf6] bg-white/62 p-5 text-sm">
+                <div className="mt-5 rounded-2xl border border-[var(--rule)] bg-white/62 p-5 text-sm">
                   <MarkdownBody>{content.body}</MarkdownBody>
                 </div>
                 <div className="mt-4 border-t border-[var(--border)] pt-4">
@@ -182,13 +182,13 @@ export default async function StoryDetailPage({ params, searchParams }: StoryDet
           <PageTitle className="mt-3 text-[2rem]">Graphics and video</PageTitle>
         </div>
         {snapshot.assets.length === 0 ? (
-          <Card padding="md" className="border border-[#dfe7f4] bg-transparent shadow-none sm:p-8">
+          <Card padding="md" className="border border-[var(--rule)] bg-transparent shadow-none sm:p-8">
             <BodyText muted>Graphics and video are being created. They'll appear here when ready.</BodyText>
           </Card>
         ) : (
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             {snapshot.assets.map((asset) => (
-              <Card key={asset.id} padding="md" className="border border-[#dfe7f4] bg-transparent shadow-none sm:p-6">
+              <Card key={asset.id} padding="md" className="border border-[var(--rule)] bg-transparent shadow-none sm:p-6">
                 <div className="flex items-start justify-between gap-3">
                   <div>
                     <CardTitle className="text-base">{asset.fileName}</CardTitle>

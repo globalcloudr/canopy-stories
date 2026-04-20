@@ -8,7 +8,7 @@ function SettingRow({
   title,
   description,
   trailing = (
-    <div className="flex h-7 w-11 items-center rounded-full bg-[#2f76dd] px-1">
+    <div className="flex h-7 w-11 items-center rounded-full bg-[var(--accent)] px-1">
       <div className="ml-auto h-5 w-5 rounded-full bg-white shadow-sm" />
     </div>
   ),
@@ -38,12 +38,12 @@ function SettingSection({
   children: ReactNode;
 }) {
   return (
-    <div className="grid gap-8 border-b border-[#dfe7f4] pb-8 md:grid-cols-[200px_1fr]">
+    <div className="grid gap-8 border-b border-[var(--rule)] pb-8 md:grid-cols-[200px_1fr]">
       <div className="pt-4">
         <h2 className="text-[0.95rem] font-semibold text-[var(--foreground)]">{title}</h2>
         <BodyText muted className="mt-1 text-[13px] leading-relaxed">{description}</BodyText>
       </div>
-      <div className="rounded-[24px] border border-[#dfe7f4] bg-transparent shadow-none divide-y divide-[var(--border)] px-5">{children}</div>
+      <div className="rounded-[24px] border border-[var(--rule)] bg-transparent shadow-none divide-y divide-[var(--border)] px-5">{children}</div>
     </div>
   );
 }
@@ -115,19 +115,19 @@ export default function SettingsPage() {
           <StaticField
             label="Primary brand color"
             value="#2563eb"
-            trailing={<div className="h-6 w-6 rounded-md border border-[var(--border)] bg-[#2563eb]" />}
+            trailing={<div className="h-6 w-6 rounded-md border border-[var(--border)] bg-[var(--accent)]" />}
           />
           <StaticField label="Logo URL" value="https://example.com/logo.png" />
         </SettingSection>
 
-        <div className="grid gap-8 border-b border-[#dfe7f4] pb-8 md:grid-cols-[200px_1fr]">
+        <div className="grid gap-8 border-b border-[var(--rule)] pb-8 md:grid-cols-[200px_1fr]">
           <div className="pt-4">
             <h2 className="text-[0.95rem] font-semibold text-[var(--foreground)]">API Keys</h2>
             <BodyText muted className="mt-1 text-[13px] leading-relaxed">
               Add your own keys for content generation and video creation. Keys are encrypted and only used within your workspace.
             </BodyText>
           </div>
-          <div className="rounded-[24px] border border-[#dfe7f4] bg-transparent shadow-none p-5">
+          <div className="rounded-[24px] border border-[var(--rule)] bg-transparent shadow-none p-5">
             <ApiKeysSection />
           </div>
         </div>
