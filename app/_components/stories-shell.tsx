@@ -243,7 +243,7 @@ export function StoriesShell({
         const payload = (await response.json()) as { products?: LauncherProductKey[] };
         setLauncherProductKeys(
           (payload.products ?? []).filter((value): value is LauncherProductKey =>
-            value === "photovault" || value === "stories_canopy" || value === "reach_canopy"
+            value === "photovault" || value === "stories_canopy" || value === "reach_canopy" || value === "community_canopy"
           )
         );
       } catch {
