@@ -54,6 +54,12 @@ Each school workspace adds its own API keys in Settings:
 - Internal Stories navigation preserves `?workspace=<slug>` for platform operators so dashboard, projects, stories, forms, submissions, assets, and detail pages stay in the selected school
 - Submission photos now persist as private storage refs and are signed on read; older public bucket URLs are still supported during the transition
 
+### UI Foundation
+
+- `@canopy/ui` v0.1.10 vendored at `vendor/canopy-ui-0.1.10.tgz`
+- Stories now consumes the shared shell frame from `@canopy/ui` for the outer app layout
+- Core Canopy app fonts are now loaded from `@canopy/ui` via `canopyFontVariables` instead of local `next/font` setup in the app repo
+
 ## What Is Not Done Yet
 
 - Automated email delivery of form links (staff copies and sends the link manually at MVP)

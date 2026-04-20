@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Button } from "@canopy/ui";
+import { Button } from "@globalcloudr/canopy-ui";
 import { apiFetch } from "@/lib/api-client";
 
 export function RegenerateButton({ storyId }: { storyId: string }) {

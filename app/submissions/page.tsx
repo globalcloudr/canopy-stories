@@ -1,6 +1,6 @@
 export const dynamic = "force-dynamic";
 import Link from "next/link";
-import { Badge, BodyText, Button, CardTitle } from "@canopy/ui";
+import { Badge, BodyText, Button, CardTitle } from "@globalcloudr/canopy-ui";
 import { StoriesShell } from "@/app/_components/stories-shell";
 import { listSubmissionItems } from "@/lib/stories-data";
 import { formatRelativeDate, pipelineStageLabel, storyTypeLabel } from "@/lib/stories-domain";

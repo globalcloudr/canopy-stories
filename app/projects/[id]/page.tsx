@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback, use } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { AppPill, BodyText, Button, Card, CardTitle } from "@canopy/ui";
+import { AppPill, BodyText, Button, Card, CardTitle } from "@globalcloudr/canopy-ui";
 import { StoriesShell } from "@/app/_components/stories-shell";
 import { PipelineBoard } from "@/app/_components/pipeline-board";
 import { FormBuilderDialog } from "@/app/_components/form-builder-dialog";

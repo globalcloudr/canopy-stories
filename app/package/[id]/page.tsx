@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Badge, BodyText, Button, Card, CardTitle, Eyebrow, PageTitle, SectionTitle } from "@canopy/ui";
+import { Badge, BodyText, Button, Card, CardTitle, Eyebrow, PageTitle, SectionTitle } from "@globalcloudr/canopy-ui";
 import { packageStatusLabel } from "@/lib/stories-domain";
 import { PublicStoriesFrame } from "@/app/_components/stories-shell";
 import { getPackageDetailSnapshot } from "@/lib/stories-data";

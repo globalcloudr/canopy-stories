@@ -1,6 +1,6 @@
 export const dynamic = "force-dynamic";
 import type { ReactNode } from "react";
-import { BodyText, CardTitle } from "@canopy/ui";
+import { BodyText, CardTitle } from "@globalcloudr/canopy-ui";
 import { StoriesShell } from "@/app/_components/stories-shell";
 import { ApiKeysSection } from "@/app/settings/api-keys-section";
 

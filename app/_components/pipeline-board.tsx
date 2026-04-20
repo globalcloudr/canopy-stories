@@ -1,6 +1,6 @@
 "use client";
 
-import { Card, BodyText } from "@canopy/ui";
+import { Card, BodyText } from "@globalcloudr/canopy-ui";
 import { pipelineStageLabel, storyTypeLabel } from "@/lib/stories-domain";
 
 type PipelineStory = {

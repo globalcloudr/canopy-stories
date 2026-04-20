@@ -24,7 +24,7 @@ import {
   PageTitle,
   sidebarNavItemClass,
   cn,
-} from "@canopy/ui";
+} from "@globalcloudr/canopy-ui";
 import { supabase } from "@/lib/supabase-client";
 import { writeStoredWorkspaceId } from "@/lib/workspace-client";
 

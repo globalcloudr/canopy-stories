@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { Badge, BodyText, Card, CardTitle } from "@canopy/ui";
+import { Badge, BodyText, Card, CardTitle } from "@globalcloudr/canopy-ui";
 import type { StoryLibraryItem } from "@/lib/stories-data";
 import { formatRelativeDate } from "@/lib/stories-domain";
 import { buildWorkspaceHref } from "@/lib/workspace-href";

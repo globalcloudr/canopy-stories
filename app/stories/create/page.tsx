@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Button } from "@canopy/ui";
+import { Button } from "@globalcloudr/canopy-ui";
 import { StoriesShell } from "@/app/_components/stories-shell";
 import { listLiveProjectOptions } from "@/lib/stories-data";
 import { StoryCreatorForm } from "@/app/stories/create/story-creator-form";

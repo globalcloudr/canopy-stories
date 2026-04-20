@@ -27,7 +27,7 @@ import {
   SelectTrigger,
   SelectValue,
   Textarea,
-} from "@canopy/ui";
+} from "@globalcloudr/canopy-ui";
 import type { FlatProject } from "@/lib/stories-data";
 
 type Org = { id: string; name: string; slug: string };

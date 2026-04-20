@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Badge, BodyText, Button, Card, CardTitle, FieldLabel, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@canopy/ui";
+import { Badge, BodyText, Button, Card, CardTitle, FieldLabel, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@globalcloudr/canopy-ui";
 import { apiFetch } from "@/lib/api-client";
 import type { LiveProjectOption } from "@/lib/stories-data";
 import { referenceIntakeTemplates } from "@/lib/reference-form-templates";

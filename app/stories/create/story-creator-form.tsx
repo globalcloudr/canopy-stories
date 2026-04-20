@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { BodyText, Button, Card, CardTitle } from "@canopy/ui";
+import { BodyText, Button, Card, CardTitle } from "@globalcloudr/canopy-ui";
 import { apiFetch } from "@/lib/api-client";
 import type { LiveProjectOption } from "@/lib/stories-data";
 import { storyTypes } from "@/lib/stories-schema";

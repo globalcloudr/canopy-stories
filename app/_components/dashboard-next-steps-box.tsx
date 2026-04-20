@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { BodyText, Button, Card, CardTitle } from "@canopy/ui";
+import { BodyText, Button, Card, CardTitle } from "@globalcloudr/canopy-ui";
 
 type DashboardGuideItem = {
   eyebrow: string;

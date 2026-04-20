@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { BodyText, Button, Card, CardTitle } from "@canopy/ui";
+import { BodyText, Button, Card, CardTitle } from "@globalcloudr/canopy-ui";
 import { StoriesShell } from "@/app/_components/stories-shell";
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {

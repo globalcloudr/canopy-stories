@@ -4,6 +4,21 @@ Append new sessions at the top. Do not overwrite history.
 
 ---
 
+## 2026-04-19 — Moved more shell ownership into @canopy/ui
+
+- Updated Stories to `@canopy/ui` v0.1.10
+- Switched the outer app layout to the shared shell-frame primitives:
+  - `AppShellFrame`
+  - `AppShellSidebar`
+  - `AppShellContent`
+- Removed local Canopy app font loading from `app/layout.tsx`
+- Stories now imports `canopyFontVariables` from `@canopy/ui`, so the core app font stack is owned by the shared package instead of the product repo
+
+### Verification
+
+- `npm run build` passed
+- `package-lock.json` now resolves `@canopy/ui` to `vendor/canopy-ui-0.1.10.tgz`
+
 ## 2026-04-08 — School-facing UX pass across dashboard, projects, and forms
 
 ### What changed

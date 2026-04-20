@@ -22,7 +22,7 @@ import {
   SelectTrigger,
   SelectValue,
   Textarea,
-} from "@canopy/ui";
+} from "@globalcloudr/canopy-ui";
 import { apiFetch } from "@/lib/api-client";
 import { referenceIntakeTemplates } from "@/lib/reference-form-templates";
 

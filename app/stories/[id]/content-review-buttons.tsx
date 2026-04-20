@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Button } from "@canopy/ui";
+import { Button } from "@globalcloudr/canopy-ui";
 import { apiFetch } from "@/lib/api-client";
 
 type ReviewStatus = "draft" | "ready" | "approved";

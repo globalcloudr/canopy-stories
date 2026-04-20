@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { BodyText, Button, CardTitle, Input } from "@canopy/ui";
+import { BodyText, Button, CardTitle, Input } from "@globalcloudr/canopy-ui";
 import { apiFetch } from "@/lib/api-client";
 import { useStoriesWorkspaceId } from "@/lib/workspace-client";
 

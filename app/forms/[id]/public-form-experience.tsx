@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { BodyText, Button, FieldLabel, Input, Textarea } from "@canopy/ui";
+import { BodyText, Button, FieldLabel, Input, Textarea } from "@globalcloudr/canopy-ui";
 import type { PublishedIntakeForm } from "@/lib/stories-domain";
 
 type PublicFormExperienceProps = {

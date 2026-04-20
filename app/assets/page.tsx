@@ -4,7 +4,7 @@ export const dynamic = "force-dynamic";
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { BodyText, Button, CardTitle, Input } from "@canopy/ui";
+import { BodyText, Button, CardTitle, Input } from "@globalcloudr/canopy-ui";
 import { StoriesShell } from "@/app/_components/stories-shell";
 import { apiFetchArray } from "@/lib/api-client";
 import { useStoriesWorkspaceId } from "@/lib/workspace-client";

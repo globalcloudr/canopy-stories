@@ -1,6 +1,6 @@
 export const dynamic = "force-dynamic";
 import Link from "next/link";
-import { Badge, BodyText, Button, Card, CardTitle, Eyebrow, SectionTitle } from "@canopy/ui";
+import { Badge, BodyText, Button, Card, CardTitle, Eyebrow, SectionTitle } from "@globalcloudr/canopy-ui";
 import { StoriesShell } from "@/app/_components/stories-shell";
 import { listLiveProjectOptions, listPublishedForms } from "@/lib/stories-data";
 import { referenceIntakeTemplates } from "@/lib/reference-form-templates";

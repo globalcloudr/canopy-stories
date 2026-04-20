@@ -1,7 +1,7 @@
 export const dynamic = "force-dynamic";
 import React from "react";
 import Link from "next/link";
-import { AppPill, BodyText, Button, Card, CardTitle, DashboardHero, SectionTitle } from "@canopy/ui";
+import { AppPill, BodyText, Button, Card, CardTitle, DashboardHero, SectionTitle } from "@globalcloudr/canopy-ui";
 import { DashboardNextStepsBox } from "@/app/_components/dashboard-next-steps-box";
 import { StoriesShell } from "@/app/_components/stories-shell";
 import { getStoriesOverviewSnapshot } from "@/lib/stories-data";
