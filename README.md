@@ -56,9 +56,13 @@ Each school workspace adds its own API keys in Settings:
 
 ### UI Foundation
 
-- `@canopy/ui` v0.1.10 vendored at `vendor/canopy-ui-0.1.10.tgz`
-- Stories now consumes the shared shell frame from `@canopy/ui` for the outer app layout
-- Core Canopy app fonts are now loaded from `@canopy/ui` via `canopyFontVariables` instead of local `next/font` setup in the app repo
+- `@canopy/ui` v0.1.10 vendored at `vendor/canopy-ui-0.1.10.tgz` — the shared Canopy design system across all products
+- All Canopy products (PhotoVault, Stories, Reach, Create, Community, Portal) now use shared `@globalcloudr/canopy-ui` design tokens and components
+- Design tokens: `--ink`, `--ink-2`, `--faint`, `--text-muted`, `--foreground`, `--surface`, `--surface-muted`, `--accent`, `--rule`, `--border` — replacing all hardcoded hex colors
+- Per-product accent colors via `.product-stories` class; Stories accent is brand-aligned
+- Stories consumes the shared shell frame from `@canopy/ui` for the outer app layout (`AppShellFrame`, `AppShellSidebar`, `AppShellContent`)
+- Core Canopy app fonts (Plus Jakarta Sans, Maven Pro, Source Serif 4) are now owned by `@canopy/ui` via `canopyFontVariables`
+- All product sidebars now structurally identical: `AppSidebarPanel`, `AppSidebarSection`, `border-l-2` left-border nav indicators
 
 ## What Is Not Done Yet
 

@@ -4,6 +4,36 @@ Append new sessions at the top. Do not overwrite history.
 
 ---
 
+## 2026-04-20 — Design system alignment pass across all products
+
+All Canopy products (photovault, canopy-stories, canopy-reach, canopy-create, canopy-community, canopy-platform portal) are now fully on the shared `@globalcloudr/canopy-ui` design system.
+
+### Design tokens unified
+- Replaced hardcoded hex colors with CSS design tokens (`--ink`, `--ink-2`, `--faint`, `--text-muted`, `--foreground`, `--surface`, `--surface-muted`, `--accent`, `--rule`, `--border`) across 50+ files
+- Per-product accent classes: `.product-photovault { --accent: #c6531f }`, `.product-stories`, `.product-reach`, `.product-create`, `.product-community`
+- All products now use Plus Jakarta Sans from `@canopy/ui`
+
+### Product switcher — Canopy Community added to all products
+- Added `community_canopy` to every product's launcher
+- Updated client-side filter to include `community_canopy` in product switching
+- Each product now shows "Canopy Community" in the in-app product switcher dropdown
+- Canopy Community marks itself as "current" when accessed from its own shell
+
+### Sidebar and shell components standardized
+- All products use: `AppShellFrame`, `AppShellSidebar`, `AppShellContent`
+- All products use: `AppSidebarPanel`, `AppSidebarSection`, `sidebarNavItemClass(active)`
+- Workspace switcher / product launcher via `AppWorkspaceSwitcher`
+- Top bar via `CanopyHeader` with callback-based Portal actions
+- Nav items use `border-l-2` left-border active indicator across all products
+
+### Verification
+- `npm run build` passed across all 6 Canopy products
+- Sidebar layout and navigation patterns visually consistent
+- Product switcher functional in every product
+- No auth or session regressions
+
+---
+
 ## 2026-04-19 — Moved more shell ownership into @canopy/ui
 
 - Updated Stories to `@canopy/ui` v0.1.10
