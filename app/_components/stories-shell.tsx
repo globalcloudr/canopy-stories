@@ -8,7 +8,7 @@ import {
   AppPageHeader,
   AppSidebarPanel,
   AppSidebarPanelBody,
-  AppSidebarSectionLabel,
+  AppSidebarSection,
   AppSurface,
   AppWorkspaceSwitcher,
   BodyText,
@@ -571,8 +571,7 @@ export function StoriesShell({
             {/* Nav */}
             <AppSidebarPanel>
               <AppSidebarPanelBody>
-                <AppSidebarSectionLabel>Navigation</AppSidebarSectionLabel>
-                <div className="space-y-1.5">
+                <AppSidebarSection label="Navigation">
                   {navItems.map((item) => {
                     const Icon = item.icon;
                     return (
@@ -586,7 +585,7 @@ export function StoriesShell({
                       </Link>
                     );
                   })}
-                </div>
+                </AppSidebarSection>
               </AppSidebarPanelBody>
             </AppSidebarPanel>
           </div>
