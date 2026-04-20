@@ -6,6 +6,8 @@ import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
 import {
   AppPageHeader,
+  AppSidebarPanel,
+  AppSidebarPanelBody,
   AppSidebarSectionLabel,
   AppSurface,
   AppWorkspaceSwitcher,
@@ -567,8 +569,8 @@ export function StoriesShell({
             </AppWorkspaceSwitcher>
 
             {/* Nav */}
-            <nav className="px-4 py-6">
-              <div className="rounded-[28px] bg-transparent px-4 py-4 shadow-none">
+            <AppSidebarPanel>
+              <AppSidebarPanelBody>
                 <AppSidebarSectionLabel>Navigation</AppSidebarSectionLabel>
                 <div className="space-y-1.5">
                   {navItems.map((item) => {
@@ -585,8 +587,8 @@ export function StoriesShell({
                     );
                   })}
                 </div>
-              </div>
-            </nav>
+              </AppSidebarPanelBody>
+            </AppSidebarPanel>
           </div>
         </aside>
 
