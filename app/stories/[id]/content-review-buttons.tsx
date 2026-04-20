@@ -51,7 +51,7 @@ export function ContentReviewButtons({
   return (
     <div className="flex items-center gap-2">
       <Button
-        variant="primary"
+        variant="accent"
         size="sm"
         onClick={() => setContentStatus("approved")}
         disabled={loading}

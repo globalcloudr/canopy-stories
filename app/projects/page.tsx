@@ -45,7 +45,7 @@ export default function ProjectsPage() {
             <Link href={buildWorkspaceHref("/forms#starter-templates", workspaceSlug)}>Browse templates</Link>
           </Button>
           <Button
-            variant="primary"
+            variant="accent"
             type="button"
             onClick={() => {
               document.getElementById("open-create-project")?.click();

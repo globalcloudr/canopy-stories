@@ -176,7 +176,7 @@ export function PublicFormExperience({ form }: PublicFormExperienceProps) {
         </div>
       ) : null}
 
-      <Button type="submit" variant="primary" size="lg" className="w-full" disabled={submitState.type === "submitting" || isUploading}>
+      <Button type="submit" variant="accent" size="lg" className="w-full" disabled={submitState.type === "submitting" || isUploading}>
         {isUploading ? "Uploading photo…" : submitState.type === "submitting" ? "Submitting…" : "Share your story"}
       </Button>
     </form>

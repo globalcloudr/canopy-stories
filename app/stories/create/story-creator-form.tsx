@@ -133,7 +133,7 @@ export function StoryCreatorForm({ projectOptions }: StoryCreatorFormProps) {
       ) : null}
 
       <div className="flex flex-wrap gap-3">
-        <Button type="submit" variant="primary" disabled={isPending || projectOptions.length === 0}>
+        <Button type="submit" variant="accent" disabled={isPending || projectOptions.length === 0}>
           {isPending ? "Creating story..." : "Create Story"}
         </Button>
         <Button type="button" variant="secondary" onClick={() => router.push(buildWorkspaceHref("/stories", workspaceSlug))}>

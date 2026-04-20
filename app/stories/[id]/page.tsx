@@ -57,7 +57,7 @@ export default async function StoryDetailPage({ params, searchParams }: StoryDet
           </Link>
           {snapshot.storyPackage ? (
             <Link href={buildWorkspaceHref(`/package/${snapshot.storyPackage.id}`, workspaceSlug)}>
-              <Button variant="primary">View Ready-to-Publish Package</Button>
+              <Button variant="accent">View Ready-to-Publish Package</Button>
             </Link>
           ) : null}
           <Link href={buildWorkspaceHref("/projects", workspaceSlug)}>

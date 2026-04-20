@@ -32,7 +32,7 @@ export default async function FormsPage({
           <Button asChild variant="secondary">
             <Link href={buildWorkspaceHref("/projects", workspaceSlug)}>Back to projects</Link>
           </Button>
-          <Button asChild type="button" variant="primary">
+          <Button asChild type="button" variant="accent">
             <Link href={buildWorkspaceHref("#create-form", workspaceSlug)}>Create form</Link>
           </Button>
         </>
@@ -66,7 +66,7 @@ export default async function FormsPage({
                     Use in existing project
                   </Link>
                 </Button>
-                <Button asChild variant="primary" size="sm">
+                <Button asChild variant="accent" size="sm">
                   <Link href={buildWorkspaceHref(`/projects?start=create-project&template=${template.id}`, workspaceSlug)}>
                     Create project with this template
                   </Link>
@@ -96,7 +96,7 @@ export default async function FormsPage({
               </div>
               <BodyText muted className="mt-3">{form.description}</BodyText>
               <div className="mt-4 flex flex-wrap gap-3">
-                <Button asChild variant="primary">
+                <Button asChild variant="accent">
                   <Link href={form.shareablePath}>Open public form</Link>
                 </Button>
                 <code className="inline-flex h-11 items-center rounded-xl border border-[var(--rule)] bg-[var(--surface-muted)] px-4 text-sm text-[var(--text-muted)]">

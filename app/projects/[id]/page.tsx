@@ -42,13 +42,13 @@ function FormsTab({
       <div className="space-y-3">
         <div className="flex items-center justify-between">
           <p className="text-sm font-semibold text-[var(--foreground)]">0 forms</p>
-          <Button variant="primary" size="sm" onClick={onCreateForm}>+ Create Form</Button>
+          <Button variant="accent" size="sm" onClick={onCreateForm}>+ Create Form</Button>
         </div>
         <div className="py-12 text-center">
           <CardTitle>No forms yet</CardTitle>
           <BodyText muted className="mt-2">Create an intake form to start collecting story responses.</BodyText>
           <div className="mt-5">
-            <Button variant="primary" onClick={onCreateForm}>Create Form</Button>
+            <Button variant="accent" onClick={onCreateForm}>Create Form</Button>
           </div>
         </div>
       </div>
@@ -59,7 +59,7 @@ function FormsTab({
     <div className="space-y-3">
       <div className="flex items-center justify-between">
         <p className="text-sm font-semibold text-[var(--foreground)]">{forms.length} form{forms.length !== 1 ? "s" : ""}</p>
-        <Button variant="primary" size="sm" onClick={onCreateForm}>+ Create Form</Button>
+        <Button variant="accent" size="sm" onClick={onCreateForm}>+ Create Form</Button>
       </div>
       <div className="divide-y divide-[var(--border)]">
         {forms.map((form) => (
@@ -97,7 +97,7 @@ function FormsTab({
                 >
                   Copy Link
                 </Button>
-                <Button asChild variant="primary" size="sm">
+                <Button asChild variant="accent" size="sm">
                   <Link href={`/forms/${form.publicSlug}`} target="_blank">Open</Link>
                 </Button>
                 <Button
@@ -426,7 +426,7 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
         <Card padding="md" className="border border-[var(--rule)] bg-transparent py-12 text-center shadow-none">
           <CardTitle>Project not found</CardTitle>
           <div className="mt-4">
-            <Button asChild variant="primary">
+            <Button asChild variant="accent">
               <Link href={buildWorkspaceHref("/projects", workspaceSlug)}>Back to projects</Link>
             </Button>
           </div>
@@ -447,7 +447,7 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
           <Button asChild variant="secondary">
             <Link href={buildWorkspaceHref("/projects", workspaceSlug)}>← Projects</Link>
           </Button>
-          <Button variant="primary" onClick={() => setFormBuilderOpen(true)}>
+          <Button variant="accent" onClick={() => setFormBuilderOpen(true)}>
             + Add Form
           </Button>
         </>
@@ -627,7 +627,7 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
 
                     <div className="flex flex-wrap gap-3">
                       <Button
-                        variant="primary"
+                        variant="accent"
                         onClick={() => {
                           const absoluteLink = `${window.location.origin}${shareableFormPath}`;
                           navigator.clipboard.writeText(absoluteLink);
@@ -646,7 +646,7 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
                 ) : (
                   <div className="mt-5 rounded-[20px] border border-dashed border-[var(--rule)] bg-[var(--surface-muted)] px-4 py-8 text-center">
                     <BodyText muted>Create a form to unlock sharing and response tracking for this project.</BodyText>
-                    <Button variant="primary" className="mt-4" onClick={() => setFormBuilderOpen(true)}>
+                    <Button variant="accent" className="mt-4" onClick={() => setFormBuilderOpen(true)}>
                       Create form
                     </Button>
                   </div>
@@ -705,7 +705,7 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
                     <span className={`rounded-full border px-2 py-0.5 text-[11px] font-semibold uppercase tracking-[0.06em] ${stageBadge(story.currentStage)}`}>
                       {story.currentStage.replace(/_/g, " ")}
                     </span>
-                    <Button asChild variant="primary" size="sm">
+                    <Button asChild variant="accent" size="sm">
                       <Link href={buildWorkspaceHref(`/stories/${story.id}`, workspaceSlug)}>Open</Link>
                     </Button>
                     <Button

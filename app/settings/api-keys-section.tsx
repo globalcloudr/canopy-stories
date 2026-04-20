@@ -82,7 +82,7 @@ function MaskedKeyField({
                     Cancel
                   </Button>
                   <Button
-                    variant="primary"
+                    variant="accent"
                     size="sm"
                     onClick={async () => {
                       const saved = await onSubmit(value);
@@ -437,7 +437,7 @@ export function ApiKeysSection() {
           </div>
         </div>
         <div className="mt-3 flex items-center gap-3">
-          <Button variant="primary" size="sm" onClick={handleSaveTemplates} disabled={savingTemplates}>
+          <Button variant="accent" size="sm" onClick={handleSaveTemplates} disabled={savingTemplates}>
             {savingTemplates ? "Saving…" : "Save video settings"}
           </Button>
           {templateMessage ? (
@@ -458,7 +458,7 @@ export function ApiKeysSection() {
             Save each API key from its row. Use Save email after updating the notification inbox.
           </BodyText>
         )}
-        <Button variant="primary" size="sm" onClick={handleSaveNotificationEmail} disabled={savingEmail || !hasEmailChanges}>
+        <Button variant="accent" size="sm" onClick={handleSaveNotificationEmail} disabled={savingEmail || !hasEmailChanges}>
           {savingEmail ? "Saving…" : "Save email"}
         </Button>
       </div>

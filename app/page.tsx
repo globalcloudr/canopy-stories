@@ -253,7 +253,7 @@ export default async function HomePage({
             </div>
             <SectionTitle className="mt-6 text-[1.9rem] sm:text-[1.9rem]">No stories in progress yet</SectionTitle>
             <BodyText muted className="mt-3">Create a project and collect your first response to see stories move through here</BodyText>
-            <Button asChild variant="primary" className="mt-6">
+            <Button asChild variant="accent" className="mt-6">
               <Link href={buildWorkspaceHref("/projects", workspaceSlug)}>Get Started</Link>
             </Button>
           </Card>
@@ -306,7 +306,7 @@ export default async function HomePage({
           <Card padding="md" className="rounded-[24px] border border-[var(--rule)] bg-transparent text-center shadow-none sm:p-10">
             <SectionTitle className="text-[1.8rem] sm:text-[1.8rem]">No projects yet</SectionTitle>
             <BodyText muted className="mt-3">Create your first project to start collecting and delivering success stories</BodyText>
-            <Button asChild variant="primary" className="mt-6">
+            <Button asChild variant="accent" className="mt-6">
               <Link href={buildWorkspaceHref("/projects", workspaceSlug)}>Create Project</Link>
             </Button>
           </Card>

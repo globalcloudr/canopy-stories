@@ -348,7 +348,7 @@ export function ProjectsClient({ initial }: { initial: FlatProject[] }) {
           </BodyText>
           {!search && statusFilter === "all" && (
             <div className="mt-5">
-              <Button variant="primary" onClick={() => setDialogOpen(true)}>
+              <Button variant="accent" onClick={() => setDialogOpen(true)}>
                 Create Project
               </Button>
             </div>
@@ -382,7 +382,7 @@ export function ProjectsClient({ initial }: { initial: FlatProject[] }) {
               </div>
 
               <div className="mt-4 flex items-center gap-2">
-                <Button asChild variant="primary" size="sm" className="flex-1">
+                <Button asChild variant="accent" size="sm" className="flex-1">
                   <Link href={buildWorkspaceHref(`/projects/${project.id}`, workspaceSlug)}>Open project</Link>
                 </Button>
                 <Button
@@ -499,7 +499,7 @@ export function ProjectsClient({ initial }: { initial: FlatProject[] }) {
             <Button variant="secondary" onClick={() => { setDialogOpen(false); setError(null); setProjectLaunchTemplateId(""); setSelectedTemplateId(""); setFormTitle(""); }}>
               Cancel
             </Button>
-            <Button variant="primary" onClick={handleCreate} disabled={submitting}>
+            <Button variant="accent" onClick={handleCreate} disabled={submitting}>
               {submitting ? "Creating..." : "Create Project"}
             </Button>
           </DialogFooter>
@@ -575,7 +575,7 @@ export function ProjectsClient({ initial }: { initial: FlatProject[] }) {
             >
               Skip — I&apos;ll add a form later
             </button>
-            <Button variant="primary" onClick={handleStep2Submit} disabled={step2Submitting || !selectedTemplateId}>
+            <Button variant="accent" onClick={handleStep2Submit} disabled={step2Submitting || !selectedTemplateId}>
               {step2Submitting ? "Creating form..." : "Create Form"}
             </Button>
           </DialogFooter>
@@ -687,7 +687,7 @@ export function ProjectsClient({ initial }: { initial: FlatProject[] }) {
 
           <DialogFooter>
             <Button
-              variant="primary"
+              variant="accent"
               onClick={() => {
                 setStep3Open(false);
                 if (wizardProjectId) {

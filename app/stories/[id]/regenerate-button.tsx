@@ -30,7 +30,7 @@ export function RegenerateButton({ storyId }: { storyId: string }) {
       <div className="flex items-center gap-2">
         <span className="text-[13px] text-[var(--text-muted)]">This will replace all existing content and assets.</span>
         <Button variant="secondary" size="sm" onClick={() => setState("idle")}>Cancel</Button>
-        <Button variant="primary" size="sm" onClick={handleRegenerate}>Yes, regenerate</Button>
+        <Button variant="accent" size="sm" onClick={handleRegenerate}>Yes, regenerate</Button>
       </div>
     );
   }

@@ -57,7 +57,7 @@ export default async function PublicPackagePage({ params, searchParams }: Public
         <div className="mt-6 flex flex-wrap gap-3">
           {snapshot.storyPackage.packageUrl ? (
             <a href={snapshot.storyPackage.packageUrl} target="_blank" rel="noopener noreferrer">
-              <Button variant="primary">Download Ready-to-Publish Package</Button>
+              <Button variant="accent">Download Ready-to-Publish Package</Button>
             </a>
           ) : (
             <Button variant="secondary">Download All Content</Button>

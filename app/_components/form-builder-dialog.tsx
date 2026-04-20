@@ -323,7 +323,7 @@ export function FormBuilderDialog({ open, onOpenChange, projectId, onCreated, ed
           <Button variant="secondary" onClick={() => { resetForm(); onOpenChange(false); }}>
             Cancel
           </Button>
-          <Button variant="primary" onClick={handleSubmit} disabled={submitting}>
+          <Button variant="accent" onClick={handleSubmit} disabled={submitting}>
             {submitting ? (isEditMode ? "Saving..." : "Creating...") : (isEditMode ? "Save Changes" : "Create Form")}
           </Button>
         </DialogFooter>

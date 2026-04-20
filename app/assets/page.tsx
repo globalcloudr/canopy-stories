@@ -158,7 +158,7 @@ export default function AssetsPage() {
                   <Link href={buildWorkspaceHref(`/stories/${asset.storyId}`, workspaceSlug)}>Story</Link>
                 </Button>
                 {asset.fileUrl && !asset.fileUrl.startsWith("[") && (
-                  <Button asChild variant="primary" size="sm">
+                  <Button asChild variant="accent" size="sm">
                     <a href={asset.fileUrl} target="_blank" rel="noopener noreferrer">Download</a>
                   </Button>
                 )}
