@@ -5,8 +5,10 @@ import type { ReactNode } from "react";
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
 import {
-  AppWorkspaceSwitcher,
+  AppPageHeader,
+  AppSidebarSectionLabel,
   AppSurface,
+  AppWorkspaceSwitcher,
   BodyText,
   Button,
   CanopyHeader,
@@ -567,7 +569,7 @@ export function StoriesShell({
             {/* Nav */}
             <nav className="px-4 py-6">
               <div className="rounded-[28px] bg-transparent px-4 py-4 shadow-none">
-                <p className="mb-3 px-3 text-[11px] font-semibold uppercase tracking-[0.12em] text-[#8ea0b7]">Navigation</p>
+                <AppSidebarSectionLabel>Navigation</AppSidebarSectionLabel>
                 <div className="space-y-1.5">
                   {navItems.map((item) => {
                     const Icon = item.icon;
@@ -592,19 +594,7 @@ export function StoriesShell({
         <div className="min-w-0 overflow-y-auto bg-[var(--app-content-bg)]">
           <div className="mx-auto flex min-h-full w-full max-w-[1340px] flex-col gap-6 px-4 py-6 sm:px-6">
             {title ? (
-              <AppSurface padding="md" variant="clear" className="sm:p-8">
-                <div className="flex flex-wrap items-start justify-between gap-5">
-                  <div className="min-w-0">
-                    {eyebrow ? <Eyebrow className="text-[#2f76dd]">{eyebrow}</Eyebrow> : null}
-                    <PageTitle className="mt-3 text-[#172033]">{title}</PageTitle>
-                    {subtitle ? <BodyText muted className="mt-3 max-w-3xl text-[#617286] sm:text-[15px]">{subtitle}</BodyText> : null}
-                  </div>
-                  {headerActions ? <div className="flex flex-wrap gap-3">{headerActions}</div> : null}
-                </div>
-                {headerMeta ? (
-                  <div className="mt-5 text-sm text-[#7a8798]">{headerMeta}</div>
-                ) : null}
-              </AppSurface>
+              <AppPageHeader eyebrow={eyebrow} title={title} subtitle={subtitle} meta={headerMeta} actions={headerActions} />
             ) : null}
 
             {children}
