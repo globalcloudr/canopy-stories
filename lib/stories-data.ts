@@ -1447,15 +1447,10 @@ export async function createStoryManually(input: ManualStoryCreationInput) {
 
   const storyRecord = toStoryRecord(story);
 
-  void logPortalActivity({
-    workspace_id: storyRecord.workspaceId,
-    product_key:  "stories_canopy",
-    event_type:   "in_progress",
-    title:        storyRecord.title,
-    description:  storyRecord.subjectName ?? null,
-    event_url:    `/auth/launch/stories?path=/stories/${storyRecord.id}`,
-  });
-
+  // No in_progress log here — Stories runs automation immediately and publishes
+  // within the same request, so the story would appear in both "In progress" and
+  // "Recent" simultaneously. The story_published event logged inside
+  // runStoryAutomation is the only signal the portal nerve center needs.
   await runStoryAutomation(storyRecord);
 
   await requestJson<StoryProjectRow[]>(
