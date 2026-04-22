@@ -1,3 +1,4 @@
+import { logPortalActivity } from "@/lib/portal-activity";
 import {
   getPublishedFormById as getSamplePublishedFormById,
   getPublishedFormsForWorkspace as getSamplePublishedFormsForWorkspace,
@@ -598,6 +599,15 @@ async function runStoryAutomation(story: StoryRecord) {
       current_stage: "delivered",
       updated_at: new Date().toISOString(),
       error_message: null,
+    });
+
+    void logPortalActivity({
+      workspace_id: story.workspaceId,
+      product_key:  "stories_canopy",
+      event_type:   "story_published",
+      title:        story.title,
+      description:  story.subjectName ?? null,
+      event_url:    `/auth/launch/stories?path=/stories/${story.id}`,
     });
 
     if (story.submissionId) {
@@ -1436,6 +1446,16 @@ export async function createStoryManually(input: ManualStoryCreationInput) {
   }
 
   const storyRecord = toStoryRecord(story);
+
+  void logPortalActivity({
+    workspace_id: storyRecord.workspaceId,
+    product_key:  "stories_canopy",
+    event_type:   "in_progress",
+    title:        storyRecord.title,
+    description:  storyRecord.subjectName ?? null,
+    event_url:    `/auth/launch/stories?path=/stories/${storyRecord.id}`,
+  });
+
   await runStoryAutomation(storyRecord);
 
   await requestJson<StoryProjectRow[]>(
