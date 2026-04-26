@@ -22,7 +22,7 @@ All three repos share one Supabase project.
 - **AI**: OpenAI (content generation — blog, social, newsletter, press release)
 - **Video/graphics**: Creatomate API (default — 15-second vertical video + 1:1 highlight card); JSON2Video retained as legacy fallback
 - **Markdown rendering**: `react-markdown` (used in package and story detail pages)
-- **Design system**: `@canopy/ui` v0.1.4 (vendored at `vendor/canopy-ui-0.1.4.tgz`)
+- **Design system**: `@globalcloudr/canopy-ui` v0.2.9 — installed from npm
 - **Deployment**: Vercel
 
 ## App Structure
@@ -31,7 +31,6 @@ All three repos share one Supabase project.
 canopy-stories/
   app/                  — Next.js App Router pages and API routes
   lib/                  — Data layer, domain types, automation
-  vendor/               — @canopy/ui (vendored copy of shared UI)
   docs/                 — Product docs
 ```
 
@@ -186,7 +185,7 @@ When a form is submitted:
 - All data queries must be scoped by `workspace_id`
 - Do not re-implement auth or workspace management — consume it from the Canopy handoff
 - Use `lib/stories-data.ts` as the data access layer; do not write raw Supabase calls in components
-- Use `@canopy/ui` components (from `vendor/`) for shell and common UI
+- Use `@globalcloudr/canopy-ui` components for shell and common UI
 - The public intake form (`/forms/[id]`) requires NO auth — subjects fill it out without logging in
 - Public-form photo uploads should persist private storage refs, not permanent public bucket URLs
 
