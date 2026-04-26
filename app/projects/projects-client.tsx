@@ -344,7 +344,7 @@ export function ProjectsClient({ initial }: { initial: FlatProject[] }) {
           <BodyText muted className="mt-2">
             {search || statusFilter !== "all"
               ? "Try clearing your search or status filter."
-              : "Create your first project to start collecting stories."}
+              : "Each project collects stories from students or staff through a shareable intake form. AI turns their responses into blog posts, social content, and short videos."}
           </BodyText>
           {!search && statusFilter === "all" && (
             <div className="mt-5">

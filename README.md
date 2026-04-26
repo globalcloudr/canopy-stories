@@ -56,8 +56,7 @@ Each school workspace adds its own API keys in Settings:
 
 ### UI Foundation
 
-- `@canopy/ui` v0.1.10 vendored at `vendor/canopy-ui-0.1.10.tgz` — the shared Canopy design system across all products
-- All Canopy products (PhotoVault, Stories, Reach, Create, Community, Portal) now use shared `@globalcloudr/canopy-ui` design tokens and components
+- `@globalcloudr/canopy-ui` v0.2.9 — the shared Canopy design system installed from npm across all products
 - Design tokens: `--ink`, `--ink-2`, `--faint`, `--text-muted`, `--foreground`, `--surface`, `--surface-muted`, `--accent`, `--rule`, `--border` — replacing all hardcoded hex colors
 - Per-product accent colors via `.product-stories` class; Stories accent is brand-aligned
 - Stories consumes the shared shell frame from `@canopy/ui` for the outer app layout (`AppShellFrame`, `AppShellSidebar`, `AppShellContent`)
@@ -89,7 +88,7 @@ NEXT_PUBLIC_SUPABASE_URL=
 NEXT_PUBLIC_SUPABASE_ANON_KEY=
 SUPABASE_SERVICE_ROLE_KEY=
 DATABASE_URL=
-NEXT_PUBLIC_PORTAL_URL=https://usecanopy.school
+NEXT_PUBLIC_PORTAL_URL=https://app.usecanopy.school
 
 # Email notifications (optional — silent fallback if not set)
 RESEND_API_KEY=
