@@ -2454,6 +2454,13 @@ export async function getPackageDetailSnapshot(packageId: string): Promise<Packa
     return null;
   }
 
+  // Enforce share expiry. Package pages are public and contain generated
+  // content that may include subject PII, so an expired link must stop
+  // resolving rather than remain readable forever by UUID.
+  if (packageRow.expires_at && new Date(packageRow.expires_at).valueOf() < Date.now()) {
+    return null;
+  }
+
   const [projects, workspaces, storyRows, contents, assets] = await Promise.all([
     getProjectsByIds([packageRow.project_id]),
     getOrganizationsByIds([packageRow.workspace_id]),
