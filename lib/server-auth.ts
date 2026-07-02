@@ -3,6 +3,7 @@ import "server-only";
 import { createClient } from "@supabase/supabase-js";
 import { NextResponse } from "next/server";
 import type { User } from "@supabase/supabase-js";
+import { isStoriesEnabledForWorkspace } from "@/lib/stories-entitlements";
 
 type ProfileRow = {
   is_super_admin?: boolean | null;
@@ -133,6 +134,12 @@ export async function requireWorkspaceAccess(request: Request, workspaceId: stri
   const membership = access.memberships.find((row) => row.org_id === workspaceId);
   if (!membership) {
     throw new RouteAuthError(403, "You do not have access to this workspace.");
+  }
+
+  // Membership is not sufficient: the workspace must also have Stories enabled
+  // (not paused / in pilot / mid-setup). Operators bypass this for support.
+  if (!(await isStoriesEnabledForWorkspace(workspaceId))) {
+    throw new RouteAuthError(403, "Stories is not enabled for this workspace.");
   }
 
   return {
