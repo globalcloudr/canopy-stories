@@ -1,4 +1,5 @@
 import { logPortalActivity } from "@/lib/portal-activity";
+import { encryptSecret, decryptSecretNullable } from "@/lib/secret-crypto";
 import {
   getPublishedFormById as getSamplePublishedFormById,
   getPublishedFormsForWorkspace as getSamplePublishedFormsForWorkspace,
@@ -2550,8 +2551,8 @@ export async function getWorkspaceApiKeys(workspaceId: string): Promise<Workspac
   const row = rows[0];
   if (!row) return null;
   return {
-    openaiApiKey: row.openai_api_key,
-    videoApiKey: row.video_api_key,
+    openaiApiKey: decryptSecretNullable(row.openai_api_key),
+    videoApiKey: decryptSecretNullable(row.video_api_key),
     videoApiProvider: row.video_api_provider,
     videoTemplateId: row.video_template_id,
     imageTemplateId: row.image_template_id,
@@ -2570,8 +2571,10 @@ export async function upsertWorkspaceApiKeys(
     workspace_id: workspaceId,
     updated_at: new Date().toISOString(),
   };
-  if (keys.openaiApiKey !== undefined) body.openai_api_key = keys.openaiApiKey || null;
-  if (keys.videoApiKey !== undefined) body.video_api_key = keys.videoApiKey || null;
+  if (keys.openaiApiKey !== undefined)
+    body.openai_api_key = keys.openaiApiKey ? encryptSecret(keys.openaiApiKey) : null;
+  if (keys.videoApiKey !== undefined)
+    body.video_api_key = keys.videoApiKey ? encryptSecret(keys.videoApiKey) : null;
   if (keys.videoApiProvider !== undefined) body.video_api_provider = keys.videoApiProvider || null;
   if (keys.videoTemplateId !== undefined) body.video_template_id = keys.videoTemplateId || null;
   if (keys.imageTemplateId !== undefined) body.image_template_id = keys.imageTemplateId || null;
