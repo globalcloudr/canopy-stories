@@ -4,6 +4,8 @@ Canopy Stories is the AI-powered success story production product in the Canopy 
 
 Read `README.md` for current implementation status. Read `docs/PRD.md` for full product scope.
 
+> **Production readiness (July 2026):** an active security + reliability pass across all Canopy repos. The prioritized plan and live progress log are in `canopy-platform/docs/production-readiness-plan.md`. See this repo's `docs/progress.md` for what changed here.
+
 ## Repos
 
 | Repo | Purpose |

@@ -4,6 +4,17 @@ Append new sessions at the top. Do not overwrite history.
 
 ---
 
+## 2026-07-02 — Production readiness: public-endpoint + secret hardening, deps, CI
+
+Part of the full-platform readiness pass. Central plan: `canopy-platform/docs/production-readiness-plan.md`.
+
+- **Security:** public form-submit uses a trusted client IP + per-form daily cap (bounds AI/render cost); `/api/upload` rate-limited + magic-byte sniffed (`lib/rate-limit.ts`); package share pages enforce `expires_at`; form fields capped + delimited before OpenAI prompts (prompt-injection / token-cost); `stories_canopy` entitlement now enforced on data APIs (`lib/stories-entitlements.ts`).
+- **Encryption at rest:** `workspace_api_keys` (OpenAI/video) encrypted via `lib/secret-crypto.ts` (AES-256-GCM). Backfill: `scripts/backfill-encrypt-keys.ts`.
+- **Deps/tooling:** Next 16.2.10 (0 vulns); lint restored; CI added.
+- **Deferred (see plan):** move handoff tokens out of localStorage to httpOnly cookies (#4).
+- **Env added (prod):** `UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN`, `SECRETS_ENCRYPTION_KEY` (shared across reach/stories/community). Run the backfill after deploy.
+
+---
 ## 2026-04-20 — Design system alignment pass across all products
 
 All Canopy products (photovault, canopy-stories, canopy-reach, canopy-create, canopy-community, canopy-platform portal) are now fully on the shared `@globalcloudr/canopy-ui` design system.
