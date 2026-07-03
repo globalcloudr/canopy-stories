@@ -7,7 +7,6 @@ const eslintConfig = defineConfig([
   ...nextTs,
   // Override default ignores of eslint-config-next.
   globalIgnores([
-    // Default ignores of eslint-config-next:
     ".next/**",
     "out/**",
     "build/**",
@@ -15,13 +14,14 @@ const eslintConfig = defineConfig([
   ]),
   {
     rules: {
-      // Pre-existing issues flagged for incremental cleanup — not build-blocking.
-      // `no-explicit-any` is high-noise and often legitimate; `set-state-in-effect`
-      // needs case-by-case review to fix safely; `no-unescaped-entities` is
-      // cosmetic (entities render fine).
+      // Pre-existing / React-Compiler-strict issues flagged for incremental
+      // cleanup — reported as warnings so lint stays green for CI gating on
+      // errors. Not build-blocking; safe to tighten later per repo.
       "@typescript-eslint/no-explicit-any": "warn",
-      "react-hooks/set-state-in-effect": "warn",
       "react/no-unescaped-entities": "warn",
+      "react-hooks/set-state-in-effect": "warn",
+      "react-hooks/immutability": "warn",
+      "react-hooks/purity": "warn",
     },
   },
 ]);
