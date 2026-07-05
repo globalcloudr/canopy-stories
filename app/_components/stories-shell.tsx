@@ -31,7 +31,7 @@ import { writeStoredWorkspaceId } from "@/lib/workspace-client";
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 type OrgOption = { id: string; name: string; slug: string };
-type LauncherProductKey = "photovault" | "stories_canopy" | "reach_canopy" | "community_canopy";
+type LauncherProductKey = "photovault" | "stories_canopy" | "reach_canopy" | "create_canopy" | "community_canopy";
 type AppSessionPayload = {
   user: { id: string; email: string; displayName: string };
   isPlatformOperator: boolean;
@@ -485,6 +485,9 @@ export function StoriesShell({
       : []),
     ...(launcherProductKeys.includes("stories_canopy")
       ? [{ key: "stories_canopy", label: "Canopy Stories", href: withWorkspaceContext("/", activeOrg?.slug, isPlatformOperator), current: true }]
+      : []),
+    ...(launcherProductKeys.includes("create_canopy")
+      ? [{ key: "create_canopy", label: "Canopy Create", productKey: "create_canopy" as const }]
       : []),
     ...(launcherProductKeys.includes("community_canopy")
       ? [{ key: "community_canopy", label: "Canopy Community", productKey: "community_canopy" as const }]
