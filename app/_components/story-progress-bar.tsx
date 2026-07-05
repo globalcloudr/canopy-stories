@@ -12,12 +12,15 @@ const STAGES = [
 
 type StageKey = (typeof STAGES)[number]["key"];
 
+const WORKING_STAGES: readonly StageKey[] = ["ai_processing", "asset_generation", "packaging"];
+
 function stageIndex(key: string): number {
   return STAGES.findIndex((s) => s.key === key);
 }
 
 export function StoryProgressBar({ currentStage }: { currentStage: string }) {
   const current = stageIndex(currentStage);
+  const working = WORKING_STAGES.includes(currentStage as StageKey);
 
   return (
     <div className="w-full overflow-x-auto">
@@ -36,7 +39,7 @@ export function StoryProgressBar({ currentStage }: { currentStage: string }) {
                     done
                       ? "border-[var(--accent-ink)] bg-[var(--accent-ink)] text-white"
                       : active
-                      ? "border-[var(--accent-ink)] bg-white text-[var(--accent-ink)]"
+                      ? `border-[var(--accent-ink)] bg-white text-[var(--accent-ink)]${working ? " animate-pulse" : ""}`
                       : "border-[var(--border)] bg-[var(--surface-muted)] text-[var(--text-muted)]"
                   }`}
                 >

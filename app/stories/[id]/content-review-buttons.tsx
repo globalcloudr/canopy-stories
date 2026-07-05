@@ -9,9 +9,11 @@ type ReviewStatus = "draft" | "ready" | "approved";
 export function ContentReviewButtons({
   contentId,
   currentStatus,
+  onStatusChange,
 }: {
   contentId: string;
   currentStatus: string;
+  onStatusChange?: (status: ReviewStatus) => void;
 }) {
   const [status, setStatus] = useState<ReviewStatus>(currentStatus as ReviewStatus);
   const [loading, setLoading] = useState(false);
@@ -29,6 +31,7 @@ export function ContentReviewButtons({
       });
       if (res.ok) {
         setStatus(next);
+        onStatusChange?.(next);
         return true;
       }
       setError("Couldn't save — please try again.");

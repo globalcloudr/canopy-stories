@@ -2610,3 +2610,15 @@ export async function updateContentStatus(
     body: { status },
   });
 }
+
+export async function updateContentBody(
+  contentId: string,
+  workspaceId: string,
+  body: string
+): Promise<void> {
+  const params = new URLSearchParams({ id: `eq.${contentId}`, workspace_id: `eq.${workspaceId}` });
+  await requestJson<unknown>(`/rest/v1/story_content?${params.toString()}`, undefined, {
+    method: "PATCH",
+    body: { body },
+  });
+}
