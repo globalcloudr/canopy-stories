@@ -16,8 +16,9 @@ export function ContentReviewButtons({
   const [status, setStatus] = useState<ReviewStatus>(currentStatus as ReviewStatus);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [flagged, setFlagged] = useState(false);
 
-  async function setContentStatus(next: ReviewStatus) {
+  async function setContentStatus(next: ReviewStatus): Promise<boolean> {
     setLoading(true);
     setError(null);
     try {
@@ -28,11 +29,13 @@ export function ContentReviewButtons({
       });
       if (res.ok) {
         setStatus(next);
-      } else {
-        setError("Couldn't save — please try again.");
+        return true;
       }
+      setError("Couldn't save — please try again.");
+      return false;
     } catch {
       setError("Couldn't save — check your connection and try again.");
+      return false;
     } finally {
       setLoading(false);
     }
@@ -46,7 +49,10 @@ export function ContentReviewButtons({
           Approved
         </span>
         <button
-          onClick={() => setContentStatus("draft")}
+          onClick={async () => {
+            setFlagged(false);
+            await setContentStatus("draft");
+          }}
           disabled={loading}
           className="text-[12px] text-[var(--text-muted)] underline underline-offset-2 hover:text-[var(--foreground)] disabled:opacity-50"
         >
@@ -66,19 +72,36 @@ export function ContentReviewButtons({
       <Button
         variant="accent"
         size="sm"
-        onClick={() => setContentStatus("approved")}
+        onClick={async () => {
+          const ok = await setContentStatus("approved");
+          if (ok) {
+            setFlagged(false);
+          }
+        }}
         disabled={loading}
       >
         {loading ? "Saving…" : "Approve"}
       </Button>
-      <Button
-        variant="secondary"
-        size="sm"
-        onClick={() => setContentStatus("draft")}
-        disabled={loading || status === "draft"}
-      >
-        Flag for revision
-      </Button>
+      {status === "draft" && flagged ? (
+        <span className="inline-flex items-center gap-1.5 rounded-full border border-[var(--rule)] bg-[var(--surface-muted)] px-2.5 py-1 text-[12px] font-medium text-[var(--warning)]">
+          <span className="h-1.5 w-1.5 rounded-full bg-[var(--warning)]" />
+          Flagged for revision
+        </span>
+      ) : (
+        <Button
+          variant="secondary"
+          size="sm"
+          onClick={async () => {
+            const ok = await setContentStatus("draft");
+            if (ok) {
+              setFlagged(true);
+            }
+          }}
+          disabled={loading || status === "draft"}
+        >
+          Flag for revision
+        </Button>
+      )}
       {error && (
         <span role="alert" className="text-[12px] text-red-600">
           {error}

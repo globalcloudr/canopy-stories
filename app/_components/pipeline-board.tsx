@@ -61,7 +61,7 @@ export function PipelineBoard({ stories }: { stories: PipelineStory[] }) {
             </div>
             <div className="space-y-2">
               {items.map((story) => (
-                <Card key={story.id} variant="soft" padding="sm" className="rounded-[16px] border border-[#dfe7f4] bg-white/62 shadow-none">
+                <Card key={story.id} variant="soft" padding="sm" className="rounded-[16px] border border-[var(--rule)] bg-white/62 shadow-none">
                   <p className="line-clamp-2 text-[13px] font-semibold leading-snug text-[var(--foreground)]">
                     {story.title}
                   </p>
@@ -76,7 +76,7 @@ export function PipelineBoard({ stories }: { stories: PipelineStory[] }) {
                 </Card>
               ))}
               {items.length === 0 && (
-                <div className="rounded-xl border border-dashed border-[#dfe7f4] bg-transparent px-3 py-6 text-center">
+                <div className="rounded-xl border border-dashed border-[var(--rule)] bg-transparent px-3 py-6 text-center">
                   <BodyText muted className="text-[12px]">No stories</BodyText>
                 </div>
               )}

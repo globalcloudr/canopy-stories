@@ -6,6 +6,7 @@ import { PublicStoriesFrame } from "@/app/_components/stories-shell";
 import { getPackageDetailSnapshot } from "@/lib/stories-data";
 import { buildWorkspaceHref } from "@/lib/workspace-href";
 import { MarkdownBody } from "@/app/_components/markdown-body";
+import { CopyButton } from "@/app/_components/copy-button";
 
 type PublicPackagePageProps = {
   params: Promise<{
@@ -56,16 +57,18 @@ export default async function PublicPackagePage({ params, searchParams }: Public
 
         <div className="mt-6 flex flex-wrap gap-3">
           {snapshot.storyPackage.packageUrl ? (
-            <a href={snapshot.storyPackage.packageUrl} target="_blank" rel="noopener noreferrer">
-              <Button variant="accent">Download Ready-to-Publish Package</Button>
-            </a>
+            <Button asChild variant="accent">
+              <a href={snapshot.storyPackage.packageUrl} target="_blank" rel="noopener noreferrer">
+                Download Ready-to-Publish Package
+              </a>
+            </Button>
           ) : (
             <Button variant="secondary">Download All Content</Button>
           )}
           {snapshot.story ? (
-            <Link href={buildWorkspaceHref(`/stories/${snapshot.story.id}`, workspaceSlug)}>
-              <Button variant="secondary">View Story</Button>
-            </Link>
+            <Button asChild variant="secondary">
+              <Link href={buildWorkspaceHref(`/stories/${snapshot.story.id}`, workspaceSlug)}>View Story</Link>
+            </Button>
           ) : null}
         </div>
       </Card>
@@ -104,7 +107,10 @@ export default async function PublicPackagePage({ params, searchParams }: Public
               <div className="mt-5 space-y-4">
                 {socialContent.map((post) => (
                   <div key={post.id} className="rounded-2xl border border-[var(--border)] bg-[var(--surface-muted)] p-5">
-                    <CardTitle className="text-base">{post.title || "Post"}</CardTitle>
+                    <div className="flex flex-wrap items-start justify-between gap-3">
+                      <CardTitle className="text-base">{post.title || "Post"}</CardTitle>
+                      <CopyButton text={post.body} />
+                    </div>
                     <div className="mt-4 whitespace-pre-wrap break-words text-[15px] leading-7 text-[var(--foreground)]">
                       {post.body}
                     </div>

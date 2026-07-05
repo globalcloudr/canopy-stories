@@ -8,6 +8,7 @@ import { ContentReviewButtons } from "./content-review-buttons";
 import { StoryProgressBar } from "@/app/_components/story-progress-bar";
 import { RegenerateButton } from "./regenerate-button";
 import { MarkdownBody } from "@/app/_components/markdown-body";
+import { CopyButton } from "@/app/_components/copy-button";
 import { buildWorkspaceHref } from "@/lib/workspace-href";
 
 type StoryDetailPageProps = {
@@ -52,17 +53,17 @@ export default async function StoryDetailPage({ params, searchParams }: StoryDet
       subtitle={`${snapshot.projectName} · ${snapshot.workspaceName}`}
       headerActions={
         <>
-          <Link href={buildWorkspaceHref("/stories", workspaceSlug)}>
-            <Button variant="secondary">Back to Stories</Button>
-          </Link>
+          <Button asChild variant="secondary">
+            <Link href={buildWorkspaceHref("/stories", workspaceSlug)}>Back to Stories</Link>
+          </Button>
           {snapshot.storyPackage ? (
-            <Link href={buildWorkspaceHref(`/package/${snapshot.storyPackage.id}`, workspaceSlug)}>
-              <Button variant="accent">View Ready-to-Publish Package</Button>
-            </Link>
+            <Button asChild variant="accent">
+              <Link href={buildWorkspaceHref(`/package/${snapshot.storyPackage.id}`, workspaceSlug)}>View Ready-to-Publish Package</Link>
+            </Button>
           ) : null}
-          <Link href={buildWorkspaceHref("/projects", workspaceSlug)}>
-            <Button variant="secondary">View Projects</Button>
-          </Link>
+          <Button asChild variant="secondary">
+            <Link href={buildWorkspaceHref("/projects", workspaceSlug)}>View Projects</Link>
+          </Button>
           <RegenerateButton storyId={id} />
         </>
       }
@@ -100,7 +101,7 @@ export default async function StoryDetailPage({ params, searchParams }: StoryDet
       <section className="grid gap-4 lg:grid-cols-[1.4fr_1fr]">
         <Card padding="md" className="border border-[var(--rule)] bg-transparent shadow-none sm:p-7">
           <Eyebrow>Response</Eyebrow>
-          <PageTitle className="mt-3 text-[2rem]">About {snapshot.story.subjectName || "this subject"}</PageTitle>
+          <PageTitle as="h2" className="mt-3 text-[2rem]">About {snapshot.story.subjectName || "this subject"}</PageTitle>
           <div className="mt-5 space-y-4">
             <div className="grid grid-cols-[120px_1fr] gap-2 text-[15px]">
               <span className="text-[var(--text-muted)]">Name</span>
@@ -119,7 +120,7 @@ export default async function StoryDetailPage({ params, searchParams }: StoryDet
 
         <Card padding="md" className="border border-[var(--rule)] bg-transparent shadow-none sm:p-7">
           <Eyebrow>Ready-to-Publish Package</Eyebrow>
-          <PageTitle className="mt-3 text-[2rem]">Content delivery</PageTitle>
+          <PageTitle as="h2" className="mt-3 text-[2rem]">Content delivery</PageTitle>
           {snapshot.storyPackage ? (
             <div className="mt-5 space-y-4">
               <div className="grid grid-cols-[120px_1fr] gap-2 text-[15px]">
@@ -131,9 +132,9 @@ export default async function StoryDetailPage({ params, searchParams }: StoryDet
                 <span>{snapshot.storyPackage.downloadCount}</span>
               </div>
               <div className="pt-1">
-                <Link href={buildWorkspaceHref(`/package/${snapshot.storyPackage.id}`, workspaceSlug)}>
-                  <Button variant="secondary" size="sm">Open Ready-to-Publish Package</Button>
-                </Link>
+                <Button asChild variant="secondary" size="sm">
+                  <Link href={buildWorkspaceHref(`/package/${snapshot.storyPackage.id}`, workspaceSlug)}>Open Ready-to-Publish Package</Link>
+                </Button>
               </div>
             </div>
           ) : (
@@ -145,7 +146,7 @@ export default async function StoryDetailPage({ params, searchParams }: StoryDet
       <section className="space-y-4">
         <div>
           <Eyebrow>Content</Eyebrow>
-          <PageTitle className="mt-3 text-[2rem]">Ready to publish</PageTitle>
+          <PageTitle as="h2" className="mt-3 text-[2rem]">Ready to publish</PageTitle>
         </div>
         {snapshot.contents.length === 0 ? (
           <Card padding="md" className="border border-[var(--rule)] bg-transparent shadow-none sm:p-8">
@@ -167,8 +168,9 @@ export default async function StoryDetailPage({ params, searchParams }: StoryDet
                 <div className="mt-5 rounded-2xl border border-[var(--rule)] bg-white/62 p-5 text-sm">
                   <MarkdownBody>{content.body}</MarkdownBody>
                 </div>
-                <div className="mt-4 border-t border-[var(--border)] pt-4">
+                <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-[var(--border)] pt-4">
                   <ContentReviewButtons contentId={content.id} currentStatus={content.status} />
+                  <CopyButton text={content.body} />
                 </div>
               </Card>
             ))}
@@ -179,7 +181,7 @@ export default async function StoryDetailPage({ params, searchParams }: StoryDet
       <section className="space-y-4">
         <div>
           <Eyebrow>Media</Eyebrow>
-          <PageTitle className="mt-3 text-[2rem]">Graphics and video</PageTitle>
+          <PageTitle as="h2" className="mt-3 text-[2rem]">Graphics and video</PageTitle>
         </div>
         {snapshot.assets.length === 0 ? (
           <Card padding="md" className="border border-[var(--rule)] bg-transparent shadow-none sm:p-8">
