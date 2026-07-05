@@ -24,7 +24,7 @@ All three repos share one Supabase project.
 - **AI**: OpenAI (content generation — blog, social, newsletter, press release)
 - **Video/graphics**: Creatomate API (default — 15-second vertical video + 1:1 highlight card); JSON2Video retained as legacy fallback
 - **Markdown rendering**: `react-markdown` (used in package and story detail pages)
-- **Design system**: `@globalcloudr/canopy-ui` v0.2.9 — installed from npm
+- **Design system**: `@globalcloudr/canopy-ui` ^0.2.13 — installed from npm. Mobile navigation is built into the shell: `CanopyHeader` renders a hamburger below `md` opening the sidebar nav in a non-modal sheet — do NOT add an app-level drawer. Launcher product keys come from the shared `@globalcloudr/canopy-ui/product-keys` subpath (`LAUNCHER_PRODUCT_KEYS`, `isLauncherProductKey`, `LAUNCHER_PRODUCT_LABELS`) — never redeclare launcher key lists locally (three per-app copies once drifted and silently hid Canopy Create from switchers)
 - **Deployment**: Vercel
 
 ## App Structure
@@ -88,7 +88,7 @@ canopy-stories/
 | `GET /api/organizations` | Workspace context lookup |
 | `POST /api/upload` | Public-form image upload — returns signed preview + private storage ref |
 | `GET /api/submissions` | List submissions for a form |
-| `PATCH /api/content/[id]` | Update content item status (approve / flag for revision) |
+| `PATCH /api/content/[id]` | Update content item — accepts `{ status?, body? }` (`body`: non-empty string ≤100k chars); powers per-card draft editing (approved content must be un-approved first) |
 | `GET/POST /api/settings/api-keys` | Read and save per-workspace API keys and notification config |
 | `GET /api/launcher-products` | Products the current workspace is entitled to (used by in-app switcher) |
 | `GET /api/app-session` | Server-backed workspace session — user identity, active workspace, accessible workspaces |
@@ -138,6 +138,8 @@ StoryAssetType: "image" | "graphic" | "video" | "document"
 **Switcher flow**:
 - in-app product switching submits back to Portal through `POST /auth/product-launch`
 - returning to Portal submits through `POST /auth/portal-return`
+- switcher display is entitlement-driven per workspace; keys/labels come from `@globalcloudr/canopy-ui/product-keys`
+- the shell keeps a module-level replay guard over single-use `?launch=` codes — never re-exchange a consumed code on effect re-runs
 
 **Workspace behavior**:
 - `/api/app-session` should only return workspaces where `stories_canopy` is actually enabled
@@ -188,8 +190,10 @@ When a form is submitted:
 - Do not re-implement auth or workspace management — consume it from the Canopy handoff
 - Use `lib/stories-data.ts` as the data access layer; do not write raw Supabase calls in components
 - Use `@globalcloudr/canopy-ui` components for shell and common UI
-- The public intake form (`/forms/[id]`) requires NO auth — subjects fill it out without logging in
+- The public intake form (`/forms/[id]`) requires NO auth — subjects fill it out without logging in; it has client-side validation and label/id association — keep both intact
 - Public-form photo uploads should persist private storage refs, not permanent public bucket URLs
+- Dashboard metrics must be real — the fake Avg Turnaround / Completion Rate stats were removed 2026-07; do not reintroduce placeholder numbers as live stats
+- The story detail page auto-refreshes every 5s during generation stages — keep polling scoped to in-flight pipeline stages
 
 ## Environment Variables
 
@@ -204,6 +208,9 @@ NEXT_PUBLIC_PORTAL_URL=https://app.usecanopy.school
 RESEND_API_KEY=
 STORIES_EMAIL_FROM=Canopy Stories <notifications@usecanopy.school>
 NEXT_PUBLIC_APP_URL=https://canopy-stories.vercel.app
+
+# Secrets at rest — REQUIRED for the app to read workspace API keys (set in Vercel)
+SECRETS_ENCRYPTION_KEY=
 ```
 
-> **Note**: OpenAI and video API keys are stored per-workspace in the `workspace_api_keys` table (Settings page), not in environment variables. The default video provider is Creatomate. JSON2Video is supported as a legacy provider.
+> **Note**: OpenAI and video API keys are stored per-workspace in the `workspace_api_keys` table (Settings page), not in environment variables. The default video provider is Creatomate. JSON2Video is supported as a legacy provider. `workspace_api_keys.openai_api_key`/`video_api_key` are AES-256-GCM encrypted at rest (`enc:v1:` prefix) via `lib/secret-crypto.ts` — `SECRETS_ENCRYPTION_KEY` must be set or the app cannot read keys; backfill completed 2026-07-05.

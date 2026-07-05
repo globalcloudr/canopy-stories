@@ -4,6 +4,19 @@ Append new sessions at the top. Do not overwrite history.
 
 ---
 
+## 2026-07-05 — UX phases, draft editing, shared launcher keys, encryption backfill done
+
+Part of the full-platform readiness pass. Central plan: `canopy-platform/docs/production-readiness-plan.md`.
+
+- **Shared UI:** `@globalcloudr/canopy-ui` → `^0.2.13`. Mobile nav is now built into the shell — `CanopyHeader` renders a hamburger below `md` opening the sidebar nav in a non-modal sheet; apps must not add their own drawers. Launcher product keys now come from the shared `@globalcloudr/canopy-ui/product-keys` subpath (`LAUNCHER_PRODUCT_KEYS`, `isLauncherProductKey`, `LAUNCHER_PRODUCT_LABELS`) — three per-app copies had drifted and silently hid Canopy Create from switchers; never redeclare launcher key lists locally. Switcher display remains entitlement-driven per workspace.
+- **Launch hardening:** module-level replay guard over single-use `?launch=` codes in the shell — a consumed code is never re-exchanged on effect re-runs.
+- **API contract change:** `PATCH /api/content/[id]` now accepts `{ status?, body? }` (`body`: non-empty string ≤100k chars) — powers the new per-card draft editing UI (Edit → textarea → save; approved content must be un-approved first). Story detail auto-refreshes every 5s during generation stages.
+- **Public form:** `app/forms/[id]/` now has client-side validation + label/id association.
+- **Secrets at rest:** `workspace_api_keys.openai_api_key`/`video_api_key` are AES-256-GCM encrypted (`enc:v1:` prefix) via `lib/secret-crypto`; `SECRETS_ENCRYPTION_KEY` is set in Vercel and REQUIRED for the app to read keys; backfill completed 2026-07-05.
+- **Dashboard:** fake metrics (Avg Turnaround / Completion Rate) removed — do not reintroduce placeholder numbers as live stats.
+
+---
+
 ## 2026-07-02 — Production readiness: public-endpoint + secret hardening, deps, CI
 
 Part of the full-platform readiness pass. Central plan: `canopy-platform/docs/production-readiness-plan.md`.
