@@ -4,11 +4,10 @@ import { Badge, BodyText, Button, Card, CardTitle, Eyebrow, PageTitle, SectionTi
 import { StoriesShell } from "@/app/_components/stories-shell";
 import { getStoryDetailSnapshot } from "@/lib/stories-data";
 import { formatRelativeDate, pipelineStageLabel, storyTypeLabel, contentStatusLabel } from "@/lib/stories-domain";
-import { ContentReviewButtons } from "./content-review-buttons";
+import { EditableContentBody } from "./editable-content-body";
+import { StoryAutoRefresh } from "./story-auto-refresh";
 import { StoryProgressBar } from "@/app/_components/story-progress-bar";
 import { RegenerateButton } from "./regenerate-button";
-import { MarkdownBody } from "@/app/_components/markdown-body";
-import { CopyButton } from "@/app/_components/copy-button";
 import { buildWorkspaceHref } from "@/lib/workspace-href";
 
 type StoryDetailPageProps = {
@@ -69,6 +68,7 @@ export default async function StoryDetailPage({ params, searchParams }: StoryDet
       }
       headerMeta={`Created ${formatRelativeDate(snapshot.story.createdAt)}`}
     >
+      <StoryAutoRefresh currentStage={snapshot.story.currentStage} />
       <section className="space-y-4">
         <StoryProgressBar currentStage={snapshot.story.currentStage} />
         <div className="flex flex-wrap items-center gap-3">
@@ -165,13 +165,11 @@ export default async function StoryDetailPage({ params, searchParams }: StoryDet
                   </div>
                   <Badge variant="outline" className="border-[var(--rule)] bg-[var(--surface-muted)]">{contentStatusLabel(content.status)}</Badge>
                 </div>
-                <div className="mt-5 rounded-2xl border border-[var(--rule)] bg-white/62 p-5 text-sm">
-                  <MarkdownBody>{content.body}</MarkdownBody>
-                </div>
-                <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-[var(--border)] pt-4">
-                  <ContentReviewButtons contentId={content.id} currentStatus={content.status} />
-                  <CopyButton text={content.body} />
-                </div>
+                <EditableContentBody
+                  contentId={content.id}
+                  initialBody={content.body}
+                  initialStatus={content.status}
+                />
               </Card>
             ))}
           </div>
