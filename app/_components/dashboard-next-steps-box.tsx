@@ -45,7 +45,7 @@ export function DashboardNextStepsBox({ items, storageKey }: DashboardNextStepsB
   }
 
   return (
-    <Card padding="md" className="rounded-[24px] border border-[#dfe7f4] bg-[#f7fafd] shadow-none sm:p-7">
+    <Card padding="md" className="rounded-[24px] border border-[var(--rule)] bg-[#f7fafd] shadow-none sm:p-7">
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0">
           <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#2f76dd]">Quick Start</p>
@@ -69,7 +69,7 @@ export function DashboardNextStepsBox({ items, storageKey }: DashboardNextStepsB
 
       <div className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         {items.map((item) => (
-          <div key={item.title} className="rounded-[20px] border border-[#dfe7f4] bg-white px-5 py-5">
+          <div key={item.title} className="rounded-[20px] border border-[var(--rule)] bg-white px-5 py-5">
             <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#7b8ca3]">{item.eyebrow}</p>
             <CardTitle className="mt-2 text-[1.1rem] leading-snug">{item.title}</CardTitle>
             <BodyText muted className="mt-3 text-[14px] leading-6">{item.description}</BodyText>

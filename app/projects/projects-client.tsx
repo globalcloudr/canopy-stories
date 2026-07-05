@@ -6,6 +6,7 @@ import { supabase } from "@/lib/supabase-client";
 import { apiFetch } from "@/lib/api-client";
 import { useStoriesWorkspaceId } from "@/lib/workspace-client";
 import { buildWorkspaceHref } from "@/lib/workspace-href";
+import { copyTextToClipboard } from "@/lib/copy-text";
 import { referenceIntakeTemplates } from "@/lib/reference-form-templates";
 import Link from "next/link";
 import {
@@ -277,13 +278,13 @@ export function ProjectsClient({ initial }: { initial: FlatProject[] }) {
   async function copyText(value: string, label: string) {
     if (!value.trim()) return;
 
-    try {
-      await navigator.clipboard.writeText(value);
+    const copied = await copyTextToClipboard(value);
+    if (copied) {
       setCopyFeedback(`${label} copied.`);
       window.setTimeout(() => {
         setCopyFeedback((current) => (current === `${label} copied.` ? null : current));
       }, 2000);
-    } catch {
+    } else {
       setCopyFeedback(`Could not copy ${label.toLowerCase()}.`);
     }
   }

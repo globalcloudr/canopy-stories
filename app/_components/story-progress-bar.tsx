@@ -28,15 +28,15 @@ export function StoryProgressBar({ currentStage }: { currentStage: string }) {
           const upcoming = i > current;
 
           return (
-            <li key={stage.key} className="flex flex-1 items-center">
+            <li key={stage.key} className="flex flex-1 items-center" aria-current={active ? "step" : undefined}>
               {/* Step bubble */}
               <div className="flex flex-col items-center gap-1.5">
                 <div
                   className={`grid h-8 w-8 shrink-0 place-items-center rounded-full border-2 text-[12px] font-bold transition-colors ${
                     done
-                      ? "border-[#1e40af] bg-[#1e40af] text-white"
+                      ? "border-[var(--accent-ink)] bg-[var(--accent-ink)] text-white"
                       : active
-                      ? "border-[#1e40af] bg-white text-[#1e40af]"
+                      ? "border-[var(--accent-ink)] bg-white text-[var(--accent-ink)]"
                       : "border-[var(--border)] bg-[var(--surface-muted)] text-[var(--text-muted)]"
                   }`}
                 >
@@ -54,7 +54,7 @@ export function StoryProgressBar({ currentStage }: { currentStage: string }) {
                       ? "font-semibold text-[var(--foreground)]"
                       : upcoming
                       ? "text-[var(--text-muted)]"
-                      : "text-[#1e40af]"
+                      : "text-[var(--accent-ink)]"
                   }`}
                 >
                   {stage.label}
@@ -65,7 +65,7 @@ export function StoryProgressBar({ currentStage }: { currentStage: string }) {
               {i < STAGES.length - 1 && (
                 <div
                   className={`h-0.5 flex-1 transition-colors ${
-                    i < current ? "bg-[#1e40af]" : "bg-[var(--border)]"
+                    i < current ? "bg-[var(--accent-ink)]" : "bg-[var(--border)]"
                   }`}
                   aria-hidden="true"
                 />

@@ -19,14 +19,43 @@ export function PublicFormExperience({ form }: PublicFormExperienceProps) {
   const [photoRefs, setPhotoRefs] = useState<string[]>([]);
   const [uploadingFields, setUploadingFields] = useState<Record<string, boolean>>({});
   const [submitState, setSubmitState] = useState<SubmitState>({ type: "idle" });
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
   const requiredIds = useMemo(
     () => new Set(form.fields.filter((field) => field.required).map((field) => field.id)),
     [form.fields]
   );
 
+  function updateField(fieldId: string, value: string) {
+    setFormData((current) => ({ ...current, [fieldId]: value }));
+    setFieldErrors((current) => {
+      if (!current[fieldId]) return current;
+      const next = { ...current };
+      delete next[fieldId];
+      return next;
+    });
+  }
+
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
+
+    const missingFields = form.fields.filter(
+      (field) => requiredIds.has(field.id) && !(formData[field.id] ?? "").trim()
+    );
+    if (missingFields.length > 0) {
+      const errors: Record<string, string> = {};
+      for (const field of missingFields) {
+        errors[field.id] = "This field is required.";
+      }
+      setFieldErrors(errors);
+      const firstInvalid = document.getElementById(missingFields[0].id);
+      if (firstInvalid) {
+        firstInvalid.scrollIntoView({ behavior: "smooth", block: "center" });
+        firstInvalid.focus({ preventScroll: true });
+      }
+      return;
+    }
+    setFieldErrors({});
     setSubmitState({ type: "submitting" });
 
     try {
@@ -77,7 +106,7 @@ export function PublicFormExperience({ form }: PublicFormExperienceProps) {
       const payload = (await res.json()) as { url?: string; photoRef?: string; error?: string };
       if (!res.ok || !payload.url || !payload.photoRef) throw new Error(payload.error ?? "Upload failed.");
       setPhotoRefs((prev) => [...prev, payload.photoRef!]);
-      setFormData((prev) => ({ ...prev, [fieldId]: payload.url! }));
+      updateField(fieldId, payload.url!);
     } catch (err) {
       setSubmitState({
         type: "error",
@@ -107,25 +136,40 @@ export function PublicFormExperience({ form }: PublicFormExperienceProps) {
   }
 
   return (
-    <form className="mt-8 space-y-5" onSubmit={handleSubmit}>
-      {form.fields.map((field) => (
+    <form className="mt-8 space-y-5" onSubmit={handleSubmit} noValidate>
+      {form.fields.map((field) => {
+        const isRequired = requiredIds.has(field.id);
+        const fieldError = fieldErrors[field.id];
+        const errorId = `${field.id}-error`;
+
+        return (
         <div key={field.id} className="space-y-2">
-          <FieldLabel>
+          <FieldLabel htmlFor={field.id}>
             {field.label}
-            {requiredIds.has(field.id) ? <span className="ml-1 text-[#2f76dd]">*</span> : null}
+            {isRequired ? <span className="ml-1 text-[#2f76dd]">*</span> : null}
           </FieldLabel>
           {field.type === "textarea" ? (
             <Textarea
+              id={field.id}
               placeholder={field.placeholder}
               value={formData[field.id] ?? ""}
-              onChange={(event) => setFormData((current) => ({ ...current, [field.id]: event.target.value }))}
+              onChange={(event) => updateField(field.id, event.target.value)}
               rows={6}
+              required={isRequired}
+              aria-required={isRequired || undefined}
+              aria-invalid={fieldError ? true : undefined}
+              aria-describedby={fieldError ? errorId : undefined}
             />
           ) : field.type === "select" ? (
             <select
+              id={field.id}
               className="flex h-11 w-full rounded-xl border border-slate-300 bg-white px-3 text-sm text-slate-900 shadow-sm outline-none"
               value={formData[field.id] ?? ""}
-              onChange={(event) => setFormData((current) => ({ ...current, [field.id]: event.target.value }))}
+              onChange={(event) => updateField(field.id, event.target.value)}
+              required={isRequired}
+              aria-required={isRequired || undefined}
+              aria-invalid={fieldError ? true : undefined}
+              aria-describedby={fieldError ? errorId : undefined}
             >
               <option value="">Select an option</option>
               {(field.options ?? []).map((option) => (
@@ -145,11 +189,16 @@ export function PublicFormExperience({ form }: PublicFormExperienceProps) {
                 </span>
                 <span className="text-xs text-slate-400">JPG, PNG or WEBP · Max 10MB</span>
                 <input
+                  id={field.id}
                   type="file"
                   accept="image/jpeg,image/png,image/webp"
                   className="sr-only"
                   disabled={uploadingFields[field.id]}
                   onChange={(e) => handleFileChange(field.id, e.target.files?.[0] ?? null)}
+                  required={isRequired}
+                  aria-required={isRequired || undefined}
+                  aria-invalid={fieldError ? true : undefined}
+                  aria-describedby={fieldError ? errorId : undefined}
                 />
               </label>
               {formData[field.id] && (
@@ -161,14 +210,25 @@ export function PublicFormExperience({ form }: PublicFormExperienceProps) {
             </div>
           ) : (
             <Input
+              id={field.id}
               type={field.type}
               placeholder={field.placeholder}
               value={formData[field.id] ?? ""}
-              onChange={(event) => setFormData((current) => ({ ...current, [field.id]: event.target.value }))}
+              onChange={(event) => updateField(field.id, event.target.value)}
+              required={isRequired}
+              aria-required={isRequired || undefined}
+              aria-invalid={fieldError ? true : undefined}
+              aria-describedby={fieldError ? errorId : undefined}
             />
           )}
+          {fieldError ? (
+            <p id={errorId} role="alert" className="text-sm text-rose-700">
+              {fieldError}
+            </p>
+          ) : null}
         </div>
-      ))}
+        );
+      })}
 
       {submitState.type === "error" ? (
         <div className="rounded-[24px] border border-rose-200 bg-rose-50 px-4 py-3">
