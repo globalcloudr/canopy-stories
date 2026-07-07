@@ -121,8 +121,8 @@ export default async function HomePage({
         storageKey={`cs_dashboard_next_steps_dismissed:${workspaceSlug ?? "all"}`}
       />
       <DashboardHero
-        eyebrow="Adult Education Success Stories"
-        headline="Collect Success Stories From Your School Community"
+        eyebrow="Canopy Stories"
+        headline={<>Everyday wins, ready to <span className="font-bold text-[var(--accent)]">publish</span>.</>}
         subheading="Gather responses from students, staff, and partners, then turn them into polished success stories your team can publish."
         ctaLabel="New Project"
         ctaHref={buildWorkspaceHref("/projects", workspaceSlug)}
